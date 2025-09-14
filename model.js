@@ -73,8 +73,8 @@ class ConferenceModel {
                 duration: 15
             },
             {
-                time: "18:00",
-                displayTime: "6:00 PM",
+                time: "20:00",
+                displayTime: "8:00 PM",
                 title: "Conference Conclusion",
                 description: "Official end of the conference. Thank you for your active participation and engagement. Safe travels to all attendees. See you at our next event!",
                 duration: 0
