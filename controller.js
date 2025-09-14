@@ -273,7 +273,7 @@ class ConferenceController {
             case 'H':
                 e.preventDefault();
                 // Toggle control visibility
-                if (this.view.controls.classList.contains('hidden')) {
+                if (this.view.controls && this.view.controls.classList.contains('hidden')) {
                     this.view.showControls();
                     console.log('👁️ Controls shown');
                 } else {

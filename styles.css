@@ -123,12 +123,12 @@ body {
 .current-event-card .time {
     font-size: 2.5em;
     font-weight: bold;
-    color: #8b1538; /* Dark red */
+    color: #8b1538; /* Dark red on white background */
     margin-bottom: 15px;
 }
 
 .current-event-card .title {
-    color: #2c3e50;
+    color: #0C2E53; /* Dark blue text on white background */
     font-size: 1.4em;
     font-weight: 600;
     line-height: 1.3;
