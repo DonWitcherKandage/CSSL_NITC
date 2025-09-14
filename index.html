@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conference Real-Time Display - NITC 2025</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Live indicator showing system is running -->
+    <div class="status-indicator">● LIVE</div>
+    
+    <!-- Current time clock -->
+    <div class="clock" id="currentClock">00:00:00</div>
+    
+    <!-- Main container holding both screens -->
+    <div class="container">
+        <!-- Screen 1: Agenda List (Left Side) - New Design -->
+        <div class="screen screen-1">
+            <div class="agenda-list" id="agendaList">
+                <!-- Dynamic content will be populated here -->
+            </div>
+        </div>
+
+        <!-- Screen 2: Current Item Details (Right Side) -->
+        <div class="screen screen-2">
+            <div class="current-detail" id="currentDetail">
+                <!-- Current item details will be dynamically populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Control buttons -->
+    <div class="controls" id="controls">
+        <button class="btn" id="prevBtn">← Previous</button>
+        <button class="btn" id="nextBtn">Next →</button>
+        <button class="btn" id="autoBtn">Auto Mode</button>
+    </div>
+
+    <!-- Debug panel -->
+    <div class="debug-panel" id="debugPanel">
+        <div>System Time: <span id="debugSystemTime"></span></div>
+        <div>Display Time: <span id="debugDisplayTime"></span></div>
+        <div>Current Event: <span id="debugCurrentEvent"></span></div>
+        <div>Mode: <span id="debugMode">Real-Time</span></div>
+        <div>Status: <span id="debugStatus">Waiting</span></div>
+        <div>Day: <span id="debugDay">Inauguration</span></div>
+    </div>
+
+    <!-- Load JavaScript files in correct order -->
+    <script src="model.js"></script>
+    <script src="view.js"></script>
+    <script src="controller.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

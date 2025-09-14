@@ -1,0 +1,382 @@
+/* ============================================================================
+   CSS STYLES - PRESENTATION LAYER
+   ============================================================================ */
+
+/* Reset all default margins and padding for clean design */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Main body styling */
+body {
+    font-family: 'Arial', sans-serif;
+    background: #1a1d3a; /* Dark blue background like the design */
+    height: 100vh;
+    overflow: hidden; /* Prevent scrolling on main body */
+}
+
+/* Container to hold both screens side by side */
+.container {
+    display: flex;
+    height: 100vh;
+}
+
+/* Base styling for each screen - takes up 50% width each */
+.screen {
+    flex: 1;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Screen 1 (Left) - Agenda List Display */
+.screen-1 {
+    background: #1a1d3a; /* Dark blue background */
+    color: white;
+    padding: 40px;
+}
+
+/* Screen 2 (Right) - Current Item Details */
+.screen-2 {
+    background: linear-gradient(135deg, #1a252f 0%, #2c3e50 100%);
+    color: white;
+    padding: 40px;
+}
+
+/* Header card styling for Screen 1 */
+.agenda-header {
+    background: linear-gradient(135deg, #f0f0f0 0%, #ffffff 100%);
+    border-radius: 20px;
+    padding: 30px;
+    margin-bottom: 40px;
+    display: flex;
+    align-items: flex-start;
+    position: relative;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    min-height: 150px;
+}
+
+/* Logo styling - left side */
+.conference-logo {
+    flex-shrink: 0;
+    margin-right: 40px;
+}
+
+.conference-logo img {
+    max-width: 200px;
+    height: auto;
+}
+
+/* Event title section - right side, left aligned */
+.event-title-section {
+    flex: 1;
+    text-align: left;
+    position: relative;
+}
+
+/* EVENT SCHEDULE title - left aligned */
+.event-title {
+    color: #2c3e50;
+    font-size: 3.5em;
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    line-height: 1.1;
+    text-align: left;
+}
+
+/* Day indicator - full width, no corner radius */
+.event-day {
+    background: #2c3e50;
+    color: white;
+    padding: 12px 30px;
+    font-weight: bold;
+    font-size: 1.3em;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-radius: 0;
+    position: absolute;
+    right: -30px;
+    left: 0;
+    margin-left: 0;
+}
+
+/* Current event card (always on top) */
+.current-event-card {
+    background: linear-gradient(135deg, #e8e8e8 0%, #f5f5f5 100%);
+    border-radius: 20px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    border: 3px solid #e74c3c;
+    animation: currentPulse 2s infinite;
+}
+
+@keyframes currentPulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 8px 32px rgba(231, 76, 60, 0.3); }
+    50% { transform: scale(1.02); box-shadow: 0 12px 40px rgba(231, 76, 60, 0.5); }
+}
+
+.current-event-card .time {
+    font-size: 2.5em;
+    font-weight: bold;
+    color: #8b1538; /* Dark red */
+    margin-bottom: 15px;
+}
+
+.current-event-card .title {
+    color: #2c3e50;
+    font-size: 1.4em;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+/* Upcoming events list */
+.upcoming-events {
+    flex: 1;
+}
+
+/* Individual upcoming event item */
+.upcoming-event {
+    color: #bbb;
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #333;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.upcoming-event:hover {
+    color: #fff;
+    transform: translateX(10px);
+}
+
+.upcoming-event .time {
+    font-size: 1.3em;
+    font-weight: bold;
+    color: #7f8c8d;
+    margin-bottom: 8px;
+}
+
+.upcoming-event .title {
+    font-size: 1.1em;
+    font-weight: 500;
+    line-height: 1.4;
+    color: #95a5a6;
+}
+
+/* Container for current item details on Screen 2 */
+.current-detail {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 40px;
+}
+
+/* Large time display for current item */
+.current-time {
+    font-size: 4em;
+    font-weight: bold;
+    color: #e74c3c;
+    margin-bottom: 30px;
+    text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+}
+
+/* Large title display for current item */
+.current-title {
+    font-size: 2.5em;
+    font-weight: bold;
+    margin-bottom: 30px;
+    line-height: 1.3;
+    color: #ecf0f1;
+}
+
+/* Description text for current item */
+.current-description {
+    font-size: 1.5em;
+    line-height: 1.6;
+    color: #bdc3c7;
+    max-width: 80%;
+}
+
+/* Live indicator in top corner */
+.status-indicator {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    padding: 10px 20px;
+    background: #27ae60;
+    color: white;
+    border-radius: 25px;
+    font-weight: bold;
+    animation: blink 1.5s infinite;
+    z-index: 1001;
+}
+
+/* Blinking animation for live indicator */
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0.3; }
+}
+
+/* Current time clock display */
+.clock {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    padding: 10px 20px;
+    background: rgba(0,0,0,0.5);
+    color: white;
+    border-radius: 25px;
+    font-weight: bold;
+    font-size: 1.2em;
+    z-index: 1001;
+}
+
+/* Control buttons styling */
+.controls {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 15px;
+    z-index: 1000;
+}
+
+.btn {
+    padding: 12px 24px;
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    background: #2980b9;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn.auto-active {
+    background: #e74c3c;
+}
+
+/* Debug panel styling */
+.debug-panel {
+    position: fixed;
+    bottom: 80px;
+    left: 20px;
+    background: rgba(0,0,0,0.8);
+    color: white;
+    padding: 15px;
+    border-radius: 10px;
+    font-family: monospace;
+    font-size: 0.9em;
+    z-index: 1000;
+    display: block;
+}
+
+/* Status messages for no current event */
+.no-current-event {
+    text-align: center;
+    color: #bdc3c7;
+    font-size: 2em;
+    animation: fadeInOut 3s infinite;
+}
+
+.no-current-event h2 {
+    font-size: 1.2em;
+    margin-bottom: 20px;
+    color: #ecf0f1;
+}
+
+.no-current-event p {
+    font-size: 0.7em;
+    margin-bottom: 30px;
+}
+
+/* Fade in/out animation for waiting message */
+@keyframes fadeInOut {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+
+/* Next event preview styling */
+.next-event-preview {
+    margin-top: 40px;
+    padding: 20px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 15px;
+    text-align: center;
+}
+
+.next-event-preview h3 {
+    color: #f39c12;
+    margin-bottom: 10px;
+}
+
+/* Hide controls class - use this to hide buttons */
+.controls.hidden {
+    display: none !important;
+}
+
+/* Conference info styling */
+.conference-info {
+    background: rgba(52, 152, 219, 0.2);
+    padding: 20px;
+    border-radius: 15px;
+    margin-top: 20px;
+    border: 1px solid rgba(52, 152, 219, 0.3);
+}
+
+.conference-info h4 {
+    color: #3498db;
+    margin-bottom: 10px;
+}
+
+.conference-info p {
+    font-size: 0.9em;
+    line-height: 1.4;
+}
+
+/* Scrollable container for upcoming events */
+.agenda-list {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+/* Custom scrollbar for agenda list */
+.agenda-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.agenda-list::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.1);
+    border-radius: 3px;
+}
+
+.agenda-list::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.3);
+    border-radius: 3px;
+}
+
+.agenda-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,0.5);
+}
