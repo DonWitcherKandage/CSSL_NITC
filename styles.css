@@ -1,5 +1,5 @@
 /* ============================================================================
-   CSS STYLES - PRESENTATION LAYER
+   CSS STYLES - PRESENTATION LAYER WITH MUCH SLOWER MANUAL ANIMATIONS
    ============================================================================ */
 
 /* Reset all default margins and padding for clean design */
@@ -77,6 +77,8 @@ body {
     box-shadow: 0 8px 32px rgba(0,0,0,0.2);
     min-height: 150px;
     z-index: 3; /* Ensure header is above particles */
+    transform: scale(1);
+    transition: transform 0.3s ease;
 }
 
 /* Logo styling - left side */
@@ -125,7 +127,7 @@ body {
     margin-left: 0;
 }
 
-/* Current event card (always on top) - NO ANIMATION, NO STROKE */
+/* Current event card (always on top) - WITH MUCH SLOWER SCALING ANIMATION */
 .current-event-card {
     background: linear-gradient(135deg, #e8e8e8 0%, #f5f5f5 100%);
     border-radius: 20px;
@@ -134,6 +136,27 @@ body {
     box-shadow: 0 4px 20px rgba(255, 255, 255, 0.1); /* Light white shadow */
     position: relative;
     z-index: 3; /* Above particles */
+    transform: scale(1);
+    transition: all 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Much slower base transition */
+    opacity: 1;
+}
+
+/* Animation classes for current event card - MUCH SLOWER TIMING */
+.current-event-card.event-change-enter {
+    transform: scale(0.8);
+    opacity: 0;
+}
+
+.current-event-card.event-change-active {
+    transform: scale(1.12); /* More dramatic scale for visibility */
+    opacity: 1;
+    transition: all 2.0s cubic-bezier(0.34, 1.56, 0.64, 1); /* Much longer, very bouncy */
+}
+
+.current-event-card.event-change-complete {
+    transform: scale(1);
+    opacity: 1;
+    transition: all 1.0s ease-out; /* Slower return to normal */
 }
 
 .current-event-card .time {
@@ -141,6 +164,12 @@ body {
     font-weight: bold;
     color: #0C2E53; /* Same color as EVENT SCHEDULE text */
     margin-bottom: 15px;
+    transform: translateY(0);
+    transition: transform 0.8s ease 0.2s; /* Much slower stagger */
+}
+
+.current-event-card.event-change-enter .time {
+    transform: translateY(20px);
 }
 
 .current-event-card .title {
@@ -148,6 +177,12 @@ body {
     font-size: 1.4em;
     font-weight: 600;
     line-height: 1.3;
+    transform: translateY(0);
+    transition: transform 0.8s ease 0.4s; /* Much slower stagger */
+}
+
+.current-event-card.event-change-enter .title {
+    transform: translateY(20px);
 }
 
 /* Upcoming events list */
@@ -167,6 +202,7 @@ body {
     transition: all 0.3s ease;
     position: relative;
     z-index: 2;
+    transform: translateX(0);
 }
 
 .upcoming-event:hover {
@@ -201,7 +237,7 @@ body {
     z-index: 2; /* Above particles */
 }
 
-/* Large time display for current item - WHITE COLOR */
+/* Large time display for current item - WHITE COLOR WITH MUCH SLOWER ANIMATION */
 .current-time {
     font-size: 4em;
     font-weight: bold;
@@ -210,9 +246,30 @@ body {
     text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
     position: relative;
     z-index: 3;
+    transform: scale(1) translateY(0);
+    opacity: 1;
+    transition: all 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Much slower base transition */
 }
 
-/* Large title display for current item */
+/* Animation classes for current time - MUCH SLOWER TIMING */
+.current-time.event-change-enter {
+    transform: scale(0.7) translateY(-30px);
+    opacity: 0;
+}
+
+.current-time.event-change-active {
+    transform: scale(1.20) translateY(0); /* Very dramatic scale */
+    opacity: 1;
+    transition: all 2.2s cubic-bezier(0.34, 1.56, 0.64, 1); /* Very long, very bouncy */
+}
+
+.current-time.event-change-complete {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+    transition: all 1.2s ease-out; /* Much slower return */
+}
+
+/* Large title display for current item WITH MUCH SLOWER ANIMATION */
 .current-title {
     font-size: 2.5em;
     font-weight: bold;
@@ -221,9 +278,30 @@ body {
     color: #ecf0f1;
     position: relative;
     z-index: 3;
+    transform: scale(1) translateY(0);
+    opacity: 1;
+    transition: all 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.3s; /* Much slower with delay */
 }
 
-/* Description text for current item */
+/* Animation classes for current title - MUCH SLOWER TIMING */
+.current-title.event-change-enter {
+    transform: scale(0.9) translateY(20px);
+    opacity: 0;
+}
+
+.current-title.event-change-active {
+    transform: scale(1.15) translateY(0); /* Very noticeable scale */
+    opacity: 1;
+    transition: all 2.0s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s; /* Very long with stagger */
+}
+
+.current-title.event-change-complete {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+    transition: all 1.0s ease-out 0.3s; /* Much slower return with delay */
+}
+
+/* Description text for current item WITH MUCH SLOWER ANIMATION */
 .current-description {
     font-size: 1.5em;
     line-height: 1.6;
@@ -231,6 +309,21 @@ body {
     max-width: 80%;
     position: relative;
     z-index: 3;
+    transform: translateY(0);
+    opacity: 1;
+    transition: all 1.2s ease 0.8s; /* Much slower with long delay */
+}
+
+/* Animation classes for current description - MUCH SLOWER TIMING */
+.current-description.event-change-enter {
+    transform: translateY(30px);
+    opacity: 0;
+}
+
+.current-description.event-change-active {
+    transform: translateY(0);
+    opacity: 1;
+    transition: all 1.5s ease 0.8s; /* Much longer transition */
 }
 
 /* Live indicator in top corner */
@@ -302,7 +395,16 @@ body {
 }
 
 .btn.auto-active {
-    background: #e74c3c;
+    background: #2c3e50; /* Dark blue-grey for Real-Time Mode */
+    color: #ecf0f1; /* Light text */
+    border: 2px solid #34495e; /* Darker border */
+    box-shadow: 0 0 15px rgba(44, 62, 80, 0.5); /* Dark glow */
+}
+
+.btn.auto-active:hover {
+    background: #34495e; /* Slightly lighter on hover */
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(44, 62, 80, 0.7); /* Stronger dark glow */
 }
 
 /* Debug panel styling */
@@ -320,7 +422,7 @@ body {
     display: block;
 }
 
-/* Status messages for no current event */
+/* Status messages for no current event WITH MUCH SLOWER ANIMATION */
 .no-current-event {
     text-align: center;
     color: #bdc3c7;
@@ -328,17 +430,50 @@ body {
     animation: fadeInOut 3s infinite;
     position: relative;
     z-index: 3; /* Above particles */
+    transform: scale(1);
+    opacity: 1;
+    transition: all 1.2s ease; /* Much slower transition */
+}
+
+/* Animation classes for no current event - MUCH SLOWER TIMING */
+.no-current-event.event-change-enter {
+    transform: scale(0.9);
+    opacity: 0;
+}
+
+.no-current-event.event-change-active {
+    transform: scale(1.08); /* More visible scale */
+    opacity: 1;
+    transition: all 1.8s cubic-bezier(0.34, 1.56, 0.64, 1); /* Much longer, bouncier */
+}
+
+.no-current-event.event-change-complete {
+    transform: scale(1);
+    opacity: 1;
+    transition: all 1.0s ease-out; /* Much slower return */
 }
 
 .no-current-event h2 {
     font-size: 1.2em;
     margin-bottom: 20px;
     color: #ecf0f1;
+    transform: translateY(0);
+    transition: transform 0.8s ease 0.3s; /* Much slower stagger */
+}
+
+.no-current-event.event-change-enter h2 {
+    transform: translateY(-20px);
 }
 
 .no-current-event p {
     font-size: 0.7em;
     margin-bottom: 30px;
+    transform: translateY(0);
+    transition: transform 0.8s ease 0.6s; /* Much slower stagger */
+}
+
+.no-current-event.event-change-enter p {
+    transform: translateY(20px);
 }
 
 /* Fade in/out animation for waiting message */
@@ -347,7 +482,7 @@ body {
     50% { opacity: 1; }
 }
 
-/* Next event preview styling */
+/* Next event preview styling WITH MUCH SLOWER ANIMATION */
 .next-event-preview {
     margin-top: 40px;
     padding: 20px;
@@ -356,6 +491,14 @@ body {
     text-align: center;
     position: relative;
     z-index: 3; /* Above particles */
+    transform: translateY(0);
+    opacity: 1;
+    transition: all 1.2s ease 1.0s; /* Much slower with longer delay */
+}
+
+.next-event-preview.event-change-enter {
+    transform: translateY(30px);
+    opacity: 0;
 }
 
 .next-event-preview h3 {
@@ -368,7 +511,7 @@ body {
     display: none !important;
 }
 
-/* Conference info styling */
+/* Conference info styling WITH MUCH SLOWER ANIMATION */
 .conference-info {
     background: rgba(52, 152, 219, 0.2);
     padding: 20px;
@@ -377,6 +520,14 @@ body {
     border: 1px solid rgba(52, 152, 219, 0.3);
     position: relative;
     z-index: 3; /* Above particles */
+    transform: translateY(0);
+    opacity: 1;
+    transition: all 1.2s ease 1.2s; /* Much slower with longest delay */
+}
+
+.conference-info.event-change-enter {
+    transform: translateY(40px);
+    opacity: 0;
 }
 
 .conference-info h4 {
@@ -415,4 +566,26 @@ body {
 
 .agenda-list::-webkit-scrollbar-thumb:hover {
     background: rgba(255,255,255,0.5);
+}
+
+/* Global animation for smooth transitions - MUCH SLOWER VERSION */
+@keyframes eventChangeScale {
+    0% {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.12); /* Much more dramatic peak */
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Apply much slower scaling animation to main content areas when events change */
+.agenda-list.event-changing,
+.current-detail.event-changing {
+    animation: eventChangeScale 2.0s cubic-bezier(0.34, 1.56, 0.64, 1); /* Much longer duration */
 }
