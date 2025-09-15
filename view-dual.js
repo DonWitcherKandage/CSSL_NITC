@@ -1,5 +1,5 @@
 /* ============================================================================
-   VIEW - PRESENTATION LAYER (MVC Architecture) - UNIVERSAL VERSION
+   VIEW - PRESENTATION LAYER (MVC Architecture) - DUAL DISPLAY FIXED
    ============================================================================ */
 
 /**
@@ -28,22 +28,11 @@ class ConferenceView {
         this.logoUrl = null; // Custom logo URL
         this.logoAltText = 'Conference Logo';
         
-        // Detect which display we're on based on URL and available elements
-        const url = window.location.pathname;
-        if (url.includes('display1')) {
-            this.isDisplay1 = true;
-            this.isDisplay2 = false;
-            console.log('View initialized for Display 1 (Agenda)');
-        } else if (url.includes('display2')) {
-            this.isDisplay1 = false;
-            this.isDisplay2 = true;
-            console.log('View initialized for Display 2 (Details)');
-        } else {
-            // Original index.html - render both screens
-            this.isDisplay1 = !!this.agendaList;
-            this.isDisplay2 = !!this.currentDetail;
-            console.log('View initialized for Combined Display (Both Screens)');
-        }
+        // Detect which display we're on
+        this.isDisplay1 = !!this.agendaList;
+        this.isDisplay2 = !!this.currentDetail && !this.agendaList;
+        
+        console.log(`View initialized for ${this.isDisplay1 ? 'Display 1 (Agenda)' : 'Display 2 (Details)'}`);
     }
 
     /**
@@ -79,10 +68,8 @@ class ConferenceView {
      * @param {number} currentIndex Currently active event index (-1 if none)
      */
     renderAgendaList(agendaData, currentIndex) {
-        const url = window.location.pathname;
-        
-        // Skip rendering if we're on Display 2 only or if agendaList doesn't exist
-        if (url.includes('display2') || !this.agendaList) {
+        // Only render if we're on Display 1
+        if (!this.isDisplay1 || !this.agendaList) {
             return;
         }
 
@@ -187,10 +174,8 @@ class ConferenceView {
      * @param {number} timeUntilNext Minutes until next event
      */
     renderCurrentEvent(currentEvent, status, nextEvent, timeUntilNext) {
-        const url = window.location.pathname;
-        
-        // Skip rendering if we're on Display 1 only or if currentDetail doesn't exist
-        if (url.includes('display1') || !this.currentDetail) {
+        // Only render if we're on Display 2
+        if (!this.isDisplay2 || !this.currentDetail) {
             return;
         }
 
@@ -265,8 +250,8 @@ class ConferenceView {
                         <p>Waiting for event information...</p>
                         <div class="conference-info">
                             <h4>System Status</h4>
-                            <p>📺 ${url.includes('display2') ? 'Display 2 - Event Details' : 'Combined Display'}</p>
-                            <p>🔄 ${url.includes('display2') ? 'Syncing with Display 1...' : 'Real-time updates enabled'}</p>
+                            <p>📺 Display 2 - Event Details</p>
+                            <p>🔄 Syncing with Display 1...</p>
                             <p>⏰ Real-time updates enabled</p>
                         </div>
                     </div>
@@ -301,10 +286,8 @@ class ConferenceView {
      * @param {boolean} isAutoMode Whether auto mode is active (always false for real-time)
      */
     updateControls(currentIndex, totalEvents, isAutoMode) {
-        const url = window.location.pathname;
-        
-        // Skip if we're on Display 2 only
-        if (url.includes('display2')) {
+        // Only update controls on Display 1
+        if (!this.isDisplay1) {
             return;
         }
 
@@ -342,10 +325,8 @@ class ConferenceView {
      * @param {Object} debugInfo Debug information object
      */
     updateDebugPanel(debugInfo) {
-        const url = window.location.pathname;
-        
-        // Skip if we're on Display 2 only
-        if (url.includes('display2')) {
+        // Only update debug panel on Display 1
+        if (!this.isDisplay1) {
             return;
         }
 
@@ -388,9 +369,8 @@ class ConferenceView {
         this.onAutoToggle = handlers.onAutoToggle;
         this.onItemClick = handlers.onItemClick;
         
-        // Bind button events (skip if Display 2 only)
-        const url = window.location.pathname;
-        if (!url.includes('display2')) {
+        // Bind button events (only on Display 1)
+        if (this.isDisplay1) {
             if (this.prevBtn) this.prevBtn.addEventListener('click', this.onPrevious);
             if (this.nextBtn) this.nextBtn.addEventListener('click', this.onNext);
             if (this.autoBtn) this.autoBtn.addEventListener('click', this.onAutoToggle);
@@ -402,9 +382,7 @@ class ConferenceView {
      */
     showLoading() {
         try {
-            const url = window.location.pathname;
-            
-            if (!url.includes('display1') && this.currentDetail) {
+            if (this.isDisplay2 && this.currentDetail) {
                 this.currentDetail.innerHTML = `
                     <div class="no-current-event">
                         <h2>Loading Conference Data...</h2>
@@ -413,7 +391,7 @@ class ConferenceView {
                 `;
             }
             
-            if (!url.includes('display2') && this.agendaList) {
+            if (this.isDisplay1 && this.agendaList) {
                 this.agendaList.innerHTML = `
                     <div class="agenda-header">
                         <div class="conference-logo">
@@ -437,9 +415,7 @@ class ConferenceView {
      */
     showError(errorMessage) {
         try {
-            const url = window.location.pathname;
-            
-            if (!url.includes('display1') && this.currentDetail) {
+            if (this.isDisplay2 && this.currentDetail) {
                 this.currentDetail.innerHTML = `
                     <div class="no-current-event">
                         <h2>System Error</h2>
@@ -454,7 +430,7 @@ class ConferenceView {
                 `;
             }
 
-            if (!url.includes('display2') && this.agendaList) {
+            if (this.isDisplay1 && this.agendaList) {
                 this.agendaList.innerHTML = `
                     <div style="color: white; text-align: center; padding: 50px;">
                         <h2>System Error</h2>
