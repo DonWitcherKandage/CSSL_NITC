@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NITC 2025 Conference Display - Screen 2</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Override for single screen display */
+        .container { 
+            display: block; 
+        }
+        .screen-1 { 
+            display: none !important; 
+        }
+        .screen-2 { 
+            width: 100vw; 
+            height: 100vh; 
+            flex: none;
+        }
+        .controls { 
+            display: none !important; 
+        }
+        .debug-panel { 
+            display: none !important; 
+        }
+    </style>
+</head>
+<body>
+    <!-- Live indicator showing system is running -->
+    <div class="status-indicator">● LIVE</div>
+    
+    <!-- Current time clock -->
+    <div class="clock" id="currentClock">00:00:00</div>
+
+    <!-- Main container holding screen 2 only -->
+    <div class="container">
+        <!-- Screen 2: Current Item Details (Full Screen) with Particles -->
+        <div id="screen2" class="screen screen-2">
+            <div id="tsparticles-right"></div>
+            <div id="currentDetail" class="current-detail"></div>
+        </div>
+    </div>
+
+    <!-- tsParticles Core Library -->
+    <script src="https://unpkg.com/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
+    
+    <!-- Conference System Scripts -->
+    <script src="model.js"></script>
+    <script src="view.js"></script>
+    <script src="controller.js"></script>
+    <script src="app-display2.js"></script>
+</body>
+</html>
