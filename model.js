@@ -1,14 +1,22 @@
 /* ============================================================================
-   MODEL - DATA LAYER (MVC Architecture)
+   MODEL - DATA LAYER (MVC Architecture) - WITH AUTOMATIC DAY DETECTION
    ============================================================================ */
 
 /**
- * ConferenceModel - Manages all data and business logic
+ * ConferenceModel - Manages all data and business logic with automatic day switching
  */
 class ConferenceModel {
     constructor() {
-        // Current day selection
-        this.currentDay = 'Inauguration'; // 'Inauguration', 'Day 1', 'Day 2'
+        // Conference dates (modify these to match your actual conference dates)
+        this.conferenceDates = {
+            'Inauguration': '2025-09-15', // Yesterday's date
+            'Day 1': '2025-09-16',        // Today's date  
+            'Day 2': '2025-09-17'         // Tomorrow's date
+        };
+        
+        // Automatically detect current day based on real date
+        this.currentDay = this.detectCurrentDay();
+        console.log(`🗓️ Automatically detected conference day: ${this.currentDay}`);
         
         // Multi-day agenda data
         this.allAgendaData = {
@@ -77,8 +85,8 @@ class ConferenceModel {
                     duration: 15
                 },
                 {
-                    time: "17:00",
-                    displayTime: "5:00 PM",
+                    time: "23:30",
+                    displayTime: "11:30 PM",
                     title: "Inauguration Conclusion",
                     description: "Official end of the inauguration ceremony. Thank you for your active participation. See you tomorrow for Day 1 sessions!",
                     duration: 0
@@ -244,6 +252,98 @@ class ConferenceModel {
         this.isAutoMode = false; // Manual mode disabled for real-time
         this.lastRealTimeCheck = null; // Track when we last checked real time
         this.conferenceStatus = 'waiting'; // waiting, active, completed
+        
+        // Check for day changes every minute
+        this.setupDayChangeDetection();
+    }
+
+    /**
+     * Automatically detect which conference day it should be based on current date
+     * @returns {string} Conference day name
+     */
+    detectCurrentDay() {
+        const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
+        
+        console.log(`📅 Today's date: ${today}`);
+        console.log(`📋 Conference dates:`, this.conferenceDates);
+        
+        // Check if today matches any conference date
+        for (const [dayName, date] of Object.entries(this.conferenceDates)) {
+            if (date === today) {
+                console.log(`✅ Found matching day: ${dayName} for date ${today}`);
+                return dayName;
+            }
+        }
+        
+        // If no exact match, check if we're past certain dates
+        const todayTime = new Date(today).getTime();
+        
+        // Check if today is after Day 2
+        const day2Time = new Date(this.conferenceDates['Day 2']).getTime();
+        if (todayTime > day2Time) {
+            console.log(`📅 Today is after Day 2, showing Day 2 content`);
+            return 'Day 2';
+        }
+        
+        // Check if today is after Day 1
+        const day1Time = new Date(this.conferenceDates['Day 1']).getTime();
+        if (todayTime > day1Time) {
+            console.log(`📅 Today is after Day 1, showing Day 1 content`);
+            return 'Day 1';
+        }
+        
+        // Check if today is after Inauguration
+        const inaugTime = new Date(this.conferenceDates['Inauguration']).getTime();
+        if (todayTime > inaugTime) {
+            console.log(`📅 Today is after Inauguration, showing Inauguration content`);
+            return 'Inauguration';
+        }
+        
+        // Default to Inauguration if before conference starts
+        console.log(`📅 Before conference starts, defaulting to Inauguration`);
+        return 'Inauguration';
+    }
+
+    /**
+     * Set up automatic day change detection
+     */
+    setupDayChangeDetection() {
+        // Check for day changes every minute
+        setInterval(() => {
+            const detectedDay = this.detectCurrentDay();
+            if (detectedDay !== this.currentDay) {
+                console.log(`🔄 Day change detected: ${this.currentDay} → ${detectedDay}`);
+                this.currentDay = detectedDay;
+                this.currentEventIndex = -1; // Reset event index
+                this.conferenceStatus = 'waiting'; // Reset status
+                
+                // Notify the view to update the day display
+                if (window.conferenceApp && window.conferenceApp.view) {
+                    window.conferenceApp.view.updateConferenceDay(detectedDay);
+                }
+            }
+        }, 60000); // Check every minute
+    }
+
+    /**
+     * Update conference dates (call this to change the dates for your actual conference)
+     * @param {Object} dates Object with day names as keys and dates as values
+     */
+    updateConferenceDates(dates) {
+        this.conferenceDates = { ...this.conferenceDates, ...dates };
+        console.log('📅 Conference dates updated:', this.conferenceDates);
+        
+        // Re-detect current day
+        const newDay = this.detectCurrentDay();
+        if (newDay !== this.currentDay) {
+            this.currentDay = newDay;
+            this.currentEventIndex = -1;
+            this.conferenceStatus = 'waiting';
+            
+            if (window.conferenceApp && window.conferenceApp.view) {
+                window.conferenceApp.view.updateConferenceDay(newDay);
+            }
+        }
     }
 
     /**
@@ -263,7 +363,7 @@ class ConferenceModel {
     }
 
     /**
-     * Set current day
+     * Set current day (manual override)
      * @param {string} dayName Day name ('Inauguration', 'Day 1', 'Day 2')
      * @returns {boolean} True if day was set successfully
      */
@@ -272,7 +372,7 @@ class ConferenceModel {
             this.currentDay = dayName;
             this.currentEventIndex = -1; // Reset event index
             this.conferenceStatus = 'waiting'; // Reset status
-            console.log(`Conference day switched to: ${dayName}`);
+            console.log(`Conference day manually switched to: ${dayName}`);
             return true;
         } else {
             console.log(`Day "${dayName}" not found. Available days: ${this.getAvailableDays().join(', ')}`);
@@ -364,7 +464,7 @@ class ConferenceModel {
             return {
                 eventIndex: -1,
                 status: 'waiting',
-                message: 'No events for current day'
+                message: `No events for ${this.currentDay}`
             };
         }
         
@@ -376,7 +476,7 @@ class ConferenceModel {
             return {
                 eventIndex: -1,
                 status: 'waiting',
-                message: 'Conference starts soon...'
+                message: `${this.currentDay} starts soon...`
             };
         }
         
@@ -385,7 +485,7 @@ class ConferenceModel {
             return {
                 eventIndex: -1,
                 status: 'completed',
-                message: 'Conference day has concluded'
+                message: `${this.currentDay} has concluded`
             };
         }
         
@@ -520,3 +620,13 @@ class ConferenceModel {
         console.log(`Reset to real-time mode for ${this.currentDay}`);
     }
 }
+
+// Add global function to update conference dates
+window.updateConferenceDates = function(dates) {
+    if (window.conferenceApp && window.conferenceApp.model) {
+        window.conferenceApp.model.updateConferenceDates(dates);
+    }
+};
+
+console.log('ConferenceModel loaded with automatic day detection');
+console.log('Use updateConferenceDates() to change conference dates if needed');

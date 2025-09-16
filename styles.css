@@ -1,5 +1,5 @@
 /* ============================================================================
-   CSS STYLES - PRESENTATION LAYER WITH MUCH SLOWER MANUAL ANIMATIONS
+   CSS STYLES - PRESENTATION LAYER WITH LIVE CAMERA FEED INTEGRATION
    ============================================================================ */
 
 /* Reset all default margins and padding for clean design */
@@ -39,11 +39,12 @@ body {
     padding: 40px;
 }
 
-/* Screen 2 (Right) - Current Item Details */
+/* Screen 2 (Right) - Current Item Details with Camera Feed */
 .screen-2 {
     background: linear-gradient(180deg, #081A30 0%, #124680 50%, #040E18 100%);
     color: white;
     padding: 40px;
+    overflow-y: auto; /* Allow scrolling for camera + content */
 }
 
 /* Particles container for each screen - full coverage, behind content */
@@ -65,6 +66,172 @@ body {
     z-index: 2;
 }
 
+/* ============================================================================
+   CAMERA FEED STYLING
+   ============================================================================ */
+
+/* Main camera container */
+.camera-container {
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 15px;
+    padding: 15px;
+    margin-bottom: 30px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    position: relative;
+    z-index: 3;
+    transform: scale(1);
+    opacity: 1;
+    transition: all 1.2s ease;
+}
+
+/* Camera container positions */
+.camera-container.camera-top {
+    order: -1; /* Appears first */
+    margin-bottom: 30px;
+}
+
+.camera-container.camera-bottom {
+    order: 1; /* Appears last */
+    margin-top: 30px;
+    margin-bottom: 0;
+}
+
+.camera-container.camera-left {
+    width: 45%;
+    margin-right: 20px;
+    margin-bottom: 0;
+}
+
+.camera-container.camera-right {
+    width: 45%;
+    margin-left: 20px;
+    margin-bottom: 0;
+}
+
+/* Camera header with title and status */
+.camera-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.camera-title {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #ecf0f1;
+}
+
+.camera-status {
+    font-size: 0.9em;
+    color: #e74c3c;
+    animation: blink 2s infinite;
+    font-weight: bold;
+}
+
+/* Live video element */
+.camera-feed {
+    width: 100%;
+    height: 300px;
+    border-radius: 10px;
+    background: #000;
+    object-fit: cover;
+}
+
+/* Camera feed for horizontal layouts */
+.event-layout-horizontal .camera-feed {
+    height: 400px;
+}
+
+/* RTMP player iframe */
+.camera-feed.rtmp-player iframe {
+    width: 100%;
+    height: 300px;
+    border-radius: 10px;
+}
+
+/* Camera placeholder/loading state */
+.camera-placeholder {
+    background: linear-gradient(45deg, #2c3e50, #34495e);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    color: #bdc3c7;
+    text-align: center;
+}
+
+.camera-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-left: 4px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Event content wrapper */
+.event-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    z-index: 3;
+}
+
+/* Horizontal layout for left/right camera positions */
+.event-layout-horizontal {
+    display: flex;
+    align-items: stretch;
+    gap: 30px;
+    height: 100%;
+}
+
+.event-layout-horizontal .event-content {
+    flex: 1;
+    padding: 20px;
+}
+
+/* Camera feed animation classes */
+.camera-container.event-change-enter {
+    transform: scale(0.9);
+    opacity: 0;
+}
+
+.camera-container.event-change-active {
+    transform: scale(1.05);
+    opacity: 1;
+    transition: all 1.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.camera-container.event-change-complete {
+    transform: scale(1);
+    opacity: 1;
+    transition: all 0.8s ease-out;
+}
+
+/* ============================================================================
+   EXISTING STYLES (PRESERVED)
+   ============================================================================ */
+
 /* Header card styling for Screen 1 */
 .agenda-header {
     background: linear-gradient(135deg, #f0f0f0 0%, #ffffff 100%);
@@ -76,7 +243,7 @@ body {
     position: relative;
     box-shadow: 0 8px 32px rgba(0,0,0,0.2);
     min-height: 150px;
-    z-index: 3; /* Ensure header is above particles */
+    z-index: 3;
     transform: scale(1);
     transition: transform 0.3s ease;
 }
@@ -101,7 +268,7 @@ body {
 
 /* EVENT SCHEDULE title - left aligned */
 .event-title {
-    color: #0C2E53; /* Dark blue text on white background */
+    color: #0C2E53;
     font-size: 3.5em;
     font-weight: bold;
     margin-bottom: 15px;
@@ -113,8 +280,8 @@ body {
 
 /* Day indicator - full width, no corner radius */
 .event-day {
-    background: #2D3691; /* Blue background */
-    color: white; /* White text on colored background */
+    background: #2D3691;
+    color: white;
     padding: 12px 30px;
     font-weight: bold;
     font-size: 1.3em;
@@ -133,11 +300,11 @@ body {
     border-radius: 20px;
     padding: 30px;
     margin-bottom: 30px;
-    box-shadow: 0 4px 20px rgba(255, 255, 255, 0.1); /* Light white shadow */
+    box-shadow: 0 4px 20px rgba(255, 255, 255, 0.1);
     position: relative;
-    z-index: 3; /* Above particles */
+    z-index: 3;
     transform: scale(1);
-    transition: all 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Much slower base transition */
+    transition: all 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     opacity: 1;
 }
 
@@ -148,24 +315,24 @@ body {
 }
 
 .current-event-card.event-change-active {
-    transform: scale(1.12); /* More dramatic scale for visibility */
+    transform: scale(1.12);
     opacity: 1;
-    transition: all 2.0s cubic-bezier(0.34, 1.56, 0.64, 1); /* Much longer, very bouncy */
+    transition: all 2.0s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .current-event-card.event-change-complete {
     transform: scale(1);
     opacity: 1;
-    transition: all 1.0s ease-out; /* Slower return to normal */
+    transition: all 1.0s ease-out;
 }
 
 .current-event-card .time {
     font-size: 2.5em;
     font-weight: bold;
-    color: #0C2E53; /* Same color as EVENT SCHEDULE text */
+    color: #0C2E53;
     margin-bottom: 15px;
     transform: translateY(0);
-    transition: transform 0.8s ease 0.2s; /* Much slower stagger */
+    transition: transform 0.8s ease 0.2s;
 }
 
 .current-event-card.event-change-enter .time {
@@ -173,12 +340,12 @@ body {
 }
 
 .current-event-card .title {
-    color: #0C2E53; /* Dark blue text on white background */
+    color: #0C2E53;
     font-size: 1.4em;
     font-weight: 600;
     line-height: 1.3;
     transform: translateY(0);
-    transition: transform 0.8s ease 0.4s; /* Much slower stagger */
+    transition: transform 0.8s ease 0.4s;
 }
 
 .current-event-card.event-change-enter .title {
@@ -234,21 +401,21 @@ body {
     text-align: center;
     padding: 40px;
     position: relative;
-    z-index: 2; /* Above particles */
+    z-index: 2;
 }
 
 /* Large time display for current item - WHITE COLOR WITH MUCH SLOWER ANIMATION */
 .current-time {
     font-size: 4em;
     font-weight: bold;
-    color: white; /* White color for Screen 2 time */
+    color: white;
     margin-bottom: 30px;
     text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
     position: relative;
     z-index: 3;
     transform: scale(1) translateY(0);
     opacity: 1;
-    transition: all 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Much slower base transition */
+    transition: all 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 /* Animation classes for current time - MUCH SLOWER TIMING */
@@ -258,15 +425,15 @@ body {
 }
 
 .current-time.event-change-active {
-    transform: scale(1.20) translateY(0); /* Very dramatic scale */
+    transform: scale(1.20) translateY(0);
     opacity: 1;
-    transition: all 2.2s cubic-bezier(0.34, 1.56, 0.64, 1); /* Very long, very bouncy */
+    transition: all 2.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .current-time.event-change-complete {
     transform: scale(1) translateY(0);
     opacity: 1;
-    transition: all 1.2s ease-out; /* Much slower return */
+    transition: all 1.2s ease-out;
 }
 
 /* Large title display for current item WITH MUCH SLOWER ANIMATION */
@@ -280,7 +447,7 @@ body {
     z-index: 3;
     transform: scale(1) translateY(0);
     opacity: 1;
-    transition: all 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.3s; /* Much slower with delay */
+    transition: all 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.3s;
 }
 
 /* Animation classes for current title - MUCH SLOWER TIMING */
@@ -290,15 +457,15 @@ body {
 }
 
 .current-title.event-change-active {
-    transform: scale(1.15) translateY(0); /* Very noticeable scale */
+    transform: scale(1.15) translateY(0);
     opacity: 1;
-    transition: all 2.0s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s; /* Very long with stagger */
+    transition: all 2.0s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s;
 }
 
 .current-title.event-change-complete {
     transform: scale(1) translateY(0);
     opacity: 1;
-    transition: all 1.0s ease-out 0.3s; /* Much slower return with delay */
+    transition: all 1.0s ease-out 0.3s;
 }
 
 /* Description text for current item WITH MUCH SLOWER ANIMATION */
@@ -311,7 +478,7 @@ body {
     z-index: 3;
     transform: translateY(0);
     opacity: 1;
-    transition: all 1.2s ease 0.8s; /* Much slower with long delay */
+    transition: all 1.2s ease 0.8s;
 }
 
 /* Animation classes for current description - MUCH SLOWER TIMING */
@@ -323,7 +490,7 @@ body {
 .current-description.event-change-active {
     transform: translateY(0);
     opacity: 1;
-    transition: all 1.5s ease 0.8s; /* Much longer transition */
+    transition: all 1.5s ease 0.8s;
 }
 
 /* Live indicator in top corner */
@@ -337,7 +504,7 @@ body {
     border-radius: 25px;
     font-weight: bold;
     animation: blink 1.5s infinite;
-    z-index: 1001; /* Above everything */
+    z-index: 1001;
 }
 
 /* Blinking animation for live indicator */
@@ -357,7 +524,7 @@ body {
     border-radius: 25px;
     font-weight: bold;
     font-size: 1.2em;
-    z-index: 1001; /* Above everything */
+    z-index: 1001;
 }
 
 /* Control buttons styling */
@@ -368,7 +535,7 @@ body {
     transform: translateX(-50%);
     display: flex;
     gap: 15px;
-    z-index: 1000; /* Above particles */
+    z-index: 1000;
 }
 
 .btn {
@@ -395,16 +562,16 @@ body {
 }
 
 .btn.auto-active {
-    background: #2c3e50; /* Dark blue-grey for Real-Time Mode */
-    color: #ecf0f1; /* Light text */
-    border: 2px solid #34495e; /* Darker border */
-    box-shadow: 0 0 15px rgba(44, 62, 80, 0.5); /* Dark glow */
+    background: #2c3e50;
+    color: #ecf0f1;
+    border: 2px solid #34495e;
+    box-shadow: 0 0 15px rgba(44, 62, 80, 0.5);
 }
 
 .btn.auto-active:hover {
-    background: #34495e; /* Slightly lighter on hover */
+    background: #34495e;
     transform: translateY(-2px);
-    box-shadow: 0 5px 20px rgba(44, 62, 80, 0.7); /* Stronger dark glow */
+    box-shadow: 0 5px 20px rgba(44, 62, 80, 0.7);
 }
 
 /* Debug panel styling */
@@ -418,7 +585,7 @@ body {
     border-radius: 10px;
     font-family: monospace;
     font-size: 0.9em;
-    z-index: 1000; /* Above particles */
+    z-index: 1000;
     display: block;
 }
 
@@ -429,10 +596,10 @@ body {
     font-size: 2em;
     animation: fadeInOut 3s infinite;
     position: relative;
-    z-index: 3; /* Above particles */
+    z-index: 3;
     transform: scale(1);
     opacity: 1;
-    transition: all 1.2s ease; /* Much slower transition */
+    transition: all 1.2s ease;
 }
 
 /* Animation classes for no current event - MUCH SLOWER TIMING */
@@ -442,15 +609,15 @@ body {
 }
 
 .no-current-event.event-change-active {
-    transform: scale(1.08); /* More visible scale */
+    transform: scale(1.08);
     opacity: 1;
-    transition: all 1.8s cubic-bezier(0.34, 1.56, 0.64, 1); /* Much longer, bouncier */
+    transition: all 1.8s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .no-current-event.event-change-complete {
     transform: scale(1);
     opacity: 1;
-    transition: all 1.0s ease-out; /* Much slower return */
+    transition: all 1.0s ease-out;
 }
 
 .no-current-event h2 {
@@ -458,7 +625,7 @@ body {
     margin-bottom: 20px;
     color: #ecf0f1;
     transform: translateY(0);
-    transition: transform 0.8s ease 0.3s; /* Much slower stagger */
+    transition: transform 0.8s ease 0.3s;
 }
 
 .no-current-event.event-change-enter h2 {
@@ -469,7 +636,7 @@ body {
     font-size: 0.7em;
     margin-bottom: 30px;
     transform: translateY(0);
-    transition: transform 0.8s ease 0.6s; /* Much slower stagger */
+    transition: transform 0.8s ease 0.6s;
 }
 
 .no-current-event.event-change-enter p {
@@ -490,10 +657,10 @@ body {
     border-radius: 15px;
     text-align: center;
     position: relative;
-    z-index: 3; /* Above particles */
+    z-index: 3;
     transform: translateY(0);
     opacity: 1;
-    transition: all 1.2s ease 1.0s; /* Much slower with longer delay */
+    transition: all 1.2s ease 1.0s;
 }
 
 .next-event-preview.event-change-enter {
@@ -519,10 +686,10 @@ body {
     margin-top: 20px;
     border: 1px solid rgba(52, 152, 219, 0.3);
     position: relative;
-    z-index: 3; /* Above particles */
+    z-index: 3;
     transform: translateY(0);
     opacity: 1;
-    transition: all 1.2s ease 1.2s; /* Much slower with longest delay */
+    transition: all 1.2s ease 1.2s;
 }
 
 .conference-info.event-change-enter {
@@ -546,7 +713,7 @@ body {
     overflow-y: auto;
     padding-right: 10px;
     position: relative;
-    z-index: 2; /* Above particles */
+    z-index: 2;
 }
 
 /* Custom scrollbar for agenda list */
@@ -575,7 +742,7 @@ body {
         opacity: 0;
     }
     50% {
-        transform: scale(1.12); /* Much more dramatic peak */
+        transform: scale(1.12);
         opacity: 0.8;
     }
     100% {
@@ -587,5 +754,28 @@ body {
 /* Apply much slower scaling animation to main content areas when events change */
 .agenda-list.event-changing,
 .current-detail.event-changing {
-    animation: eventChangeScale 2.0s cubic-bezier(0.34, 1.56, 0.64, 1); /* Much longer duration */
+    animation: eventChangeScale 2.0s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Responsive adjustments for camera feed */
+@media (max-width: 1200px) {
+    .camera-feed {
+        height: 250px;
+    }
+    
+    .event-layout-horizontal .camera-feed {
+        height: 300px;
+    }
+}
+
+@media (max-width: 800px) {
+    .event-layout-horizontal {
+        flex-direction: column;
+    }
+    
+    .camera-container.camera-left,
+    .camera-container.camera-right {
+        width: 100%;
+        margin: 0 0 20px 0;
+    }
 }
