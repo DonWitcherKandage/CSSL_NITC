@@ -16,7 +16,7 @@ class ConferenceModel {
         
         // Automatically detect current day based on real date
         this.currentDay = this.detectCurrentDay();
-        console.log(`🗓️ Automatically detected conference day: ${this.currentDay}`);
+        console.log(`📅 Automatically detected conference day: ${this.currentDay}`);
         
         // Multi-day agenda data
         this.allAgendaData = {

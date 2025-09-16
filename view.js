@@ -26,7 +26,7 @@ class ConferenceView {
         // Camera settings - NEW CAMERA FUNCTIONALITY
         this.cameraStreamUrl = null; // Set this to your camera stream URL
         this.showCameraFeed = false; // Start disabled
-        this.cameraPosition = 'top'; // 'top', 'bottom', 'left', 'right'
+        this.cameraPosition = 'bottom'; // 'top', 'bottom', 'left', 'right' - Default to bottom
         this.hlsPlayer = null; // HLS player instance
         
         // Current day for the conference
@@ -88,6 +88,10 @@ class ConferenceView {
             console.log(`Header updated to show: ${newDay}`);
         }
     }
+
+    /**
+     * Initialize HLS.js support for cross-browser HLS streaming - NEW
+     */
     initializeHLS() {
         if (typeof Hls !== 'undefined' && Hls.isSupported()) {
             this.hlsSupported = true;
@@ -739,8 +743,17 @@ class ConferenceView {
     }
 
     /**
-     * Initialize HLS.js support for cross-browser HLS streaming - NEW
+     * Update the conference day dynamically
+     * @param {string} day New day to display
      */
+    updateConferenceDay(day) {
+        this.setCurrentDay(day);
+        // Find and update the day element if it exists
+        const dayElement = document.querySelector('.event-day');
+        if (dayElement) {
+            dayElement.textContent = day;
+        }
+    }
 }
 
 // Create global shortcuts for easy console testing - NEW CAMERA FUNCTIONS
