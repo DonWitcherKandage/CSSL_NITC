@@ -158,8 +158,8 @@ class ConferenceModel {
                     duration: 90
                 },
                 {
-                    time: "15:45",
-                    displayTime: "3:45 PM",
+                    time: "20.00",
+                    displayTime: "8.00 PM",
                     title: "Day 1 Closing & Day 2 Preview",
                     description: "Wrap-up of Day 1 highlights, key takeaways, and exciting preview of tomorrow's Day 2 sessions. Thank you for an amazing first day!",
                     duration: 15

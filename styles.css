@@ -779,3 +779,207 @@ body {
         margin: 0 0 20px 0;
     }
 }
+/* Camera Feed Styles */
+.camera-container {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    width: 400px;
+    height: 300px;
+    border: 2px solid #00ff00;
+    border-radius: 8px;
+    overflow: hidden;
+    z-index: 1000;
+    background: #000;
+}
+
+.camera-feed {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.camera-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 8px;
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    z-index: 1001;
+}
+
+.camera-status {
+    color: #00ff00;
+    font-weight: bold;
+}
+
+/* ============================================================================
+   WEBCAM FEED STYLES - FOR VERTICAL CONFERENCE DISPLAYS
+   ============================================================================ */
+
+/* Webcam container positioned at bottom center of Display 2 */
+.webcam-container {
+    width: 80%;
+    max-width: 600px;
+    margin: 40px auto 20px auto;
+    background: #1a1a1a;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Webcam header with title and live indicator */
+.webcam-header {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.webcam-title {
+    color: #ecf0f1;
+    font-size: 16px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.webcam-status {
+    color: #00ff00;
+    font-size: 14px;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+    animation: pulse 2s infinite;
+}
+
+/* Live indicator animation */
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+/* Main video element */
+.webcam-feed {
+    width: 100%;
+    height: 360px;
+    background: #000;
+    object-fit: cover;
+    display: block;
+}
+
+/* Error state styling */
+.webcam-error {
+    width: 100%;
+    height: 360px;
+    background: #2c3e50;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: #e74c3c;
+    text-align: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.webcam-error p {
+    margin: 10px 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.webcam-error .error-details {
+    font-size: 12px;
+    color: #95a5a6;
+    font-weight: normal;
+    max-width: 80%;
+    word-wrap: break-word;
+}
+
+/* Fallback styling for browsers without webcam support */
+.webcam-fallback {
+    width: 100%;
+    height: 360px;
+    background: #34495e;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #bdc3c7;
+    font-size: 18px;
+    text-align: center;
+}
+
+/* Responsive adjustments for different screen sizes */
+@media (max-width: 1200px) {
+    .webcam-container {
+        width: 85%;
+        max-width: 500px;
+    }
+    
+    .webcam-feed {
+        height: 300px;
+    }
+    
+    .webcam-error,
+    .webcam-fallback {
+        height: 300px;
+    }
+}
+
+@media (max-width: 800px) {
+    .webcam-container {
+        width: 90%;
+        max-width: 400px;
+        margin: 30px auto 15px auto;
+    }
+    
+    .webcam-feed {
+        height: 240px;
+    }
+    
+    .webcam-error,
+    .webcam-fallback {
+        height: 240px;
+    }
+    
+    .webcam-header {
+        padding: 10px 15px;
+    }
+    
+    .webcam-title {
+        font-size: 14px;
+    }
+    
+    .webcam-status {
+        font-size: 12px;
+    }
+}
+
+/* Enhanced styling for professional appearance - REMOVED GREEN GLOW */
+
+/* Make sure the webcam doesn't interfere with event content */
+.event-content {
+    margin-bottom: 20px;
+}
+
+/* Ensure proper spacing in the layout */
+#currentDetail {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    padding: 40px;
+    box-sizing: border-box;
+}
+
+.event-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}

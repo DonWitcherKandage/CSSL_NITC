@@ -1,9 +1,9 @@
 /* ============================================================================
-   VIEW - PRESENTATION LAYER (MVC Architecture) - WITH LIVE CAMERA FEED
+   VIEW - PRESENTATION LAYER (MVC Architecture) - WITH WEBCAM INTEGRATION
    ============================================================================ */
 
 /**
- * ConferenceView - Manages all UI updates and rendering with live camera integration
+ * ConferenceView - Manages all UI updates and rendering with live webcam integration
  */
 class ConferenceView {
     constructor() {
@@ -23,15 +23,15 @@ class ConferenceView {
         this.debugMode = document.getElementById('debugMode');
         this.debugStatus = document.getElementById('debugStatus');
         
-        // Camera settings - NEW CAMERA FUNCTIONALITY
-        this.cameraStreamUrl = null; // Set this to your camera stream URL
-        this.showCameraFeed = false; // Start disabled
-        this.cameraPosition = 'bottom'; // 'top', 'bottom', 'left', 'right' - Default to bottom
-        this.hlsPlayer = null; // HLS player instance
+        // Webcam settings for production use
+        this.webcamEnabled = true;
+        this.webcamStream = null;
+        this.webcamVideoElement = null;
+        this.webcamInitialized = false;
         
         // Current day for the conference
-        this.currentDay = 'Inauguration'; // Can be changed to 'Day 1', 'Day 2', etc.
-        this.logoUrl = null; // Custom logo URL
+        this.currentDay = 'Inauguration';
+        this.logoUrl = null;
         this.logoAltText = 'Conference Logo';
         
         // Detect which display we're on
@@ -40,11 +40,110 @@ class ConferenceView {
         
         console.log(`View initialized for ${this.isDisplay1 ? 'Display 1 (Agenda)' : 'Display 2 (Details)'}`);
         
-        // Initialize HLS support
-        this.initializeHLS();
-        
-        // Set up periodic day sync (every 30 seconds)
+        // Set up periodic day sync
         this.setupDaySync();
+        
+        // Initialize webcam for Display 2 after a short delay
+        if (this.isDisplay2) {
+            setTimeout(() => this.initializeWebcam(), 1000);
+        }
+    }
+
+    /**
+     * Initialize webcam for Display 2 - PRODUCTION READY
+     */
+    async initializeWebcam() {
+        if (!this.isDisplay2 || this.webcamInitialized) return;
+        
+        try {
+            console.log('Initializing webcam for Display 2...');
+            
+            // Request webcam access with optimal settings for conference
+            this.webcamStream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    width: { ideal: 640, max: 1280 },
+                    height: { ideal: 480, max: 720 },
+                    frameRate: { ideal: 30, max: 60 }
+                },
+                audio: false
+            });
+            
+            this.webcamInitialized = true;
+            console.log('Webcam initialized successfully');
+            
+            // Apply webcam to any existing video element
+            this.attachWebcamToVideoElement();
+            
+        } catch (error) {
+            console.error('Webcam initialization failed:', error);
+            this.webcamEnabled = false;
+            
+            // Show user-friendly error in webcam area
+            setTimeout(() => this.showWebcamError(error.message), 500);
+        }
+    }
+
+    /**
+     * Attach webcam stream to video element
+     */
+    attachWebcamToVideoElement() {
+        if (!this.webcamStream) return;
+        
+        const videoElement = document.getElementById('live-webcam-feed');
+        if (videoElement) {
+            videoElement.srcObject = this.webcamStream;
+            videoElement.onloadedmetadata = () => {
+                videoElement.play().catch(e => console.log('Autoplay prevented:', e));
+            };
+            console.log('Webcam stream attached to video element');
+        }
+    }
+
+    /**
+     * Generate webcam HTML for Display 2 - OPTIMIZED FOR VERTICAL SCREENS
+     */
+    generateWebcamHTML() {
+        if (!this.webcamEnabled || !this.isDisplay2) {
+            return '';
+        }
+
+        return `
+            <div class="webcam-container">
+                <div class="webcam-header">
+                    <span class="webcam-title">Live from Conference Hall</span>
+                    <span class="webcam-status">● LIVE</span>
+                </div>
+                <video 
+                    id="live-webcam-feed" 
+                    class="webcam-feed" 
+                    autoplay 
+                    muted 
+                    playsinline>
+                    <div class="webcam-fallback">
+                        <p>Camera not available</p>
+                    </div>
+                </video>
+            </div>
+        `;
+    }
+
+    /**
+     * Show webcam error state
+     */
+    showWebcamError(errorMessage) {
+        const webcamContainer = document.querySelector('.webcam-container');
+        if (webcamContainer) {
+            webcamContainer.innerHTML = `
+                <div class="webcam-header">
+                    <span class="webcam-title">Conference Hall</span>
+                    <span class="webcam-status">● CONNECTION ERROR</span>
+                </div>
+                <div class="webcam-error">
+                    <p>Camera not available</p>
+                    <p class="error-details">${errorMessage}</p>
+                </div>
+            `;
+        }
     }
 
     /**
@@ -58,12 +157,10 @@ class ConferenceView {
                 if (modelDay !== this.currentDay) {
                     console.log(`View day sync: ${this.currentDay} -> ${modelDay}`);
                     this.currentDay = modelDay;
-                    
-                    // Update the header if it exists
                     this.updateDayInHeader(modelDay);
                 }
             }
-        }, 30000); // Every 30 seconds
+        }, 30000);
         
         // Also sync immediately after a short delay
         setTimeout(() => {
@@ -75,7 +172,7 @@ class ConferenceView {
                     this.updateDayInHeader(modelDay);
                 }
             }
-        }, 2000); // After 2 seconds
+        }, 2000);
     }
 
     /**
@@ -90,191 +187,7 @@ class ConferenceView {
     }
 
     /**
-     * Initialize HLS.js support for cross-browser HLS streaming - NEW
-     */
-    initializeHLS() {
-        if (typeof Hls !== 'undefined' && Hls.isSupported()) {
-            this.hlsSupported = true;
-            console.log('HLS.js is supported - ready for live streaming');
-        } else {
-            this.hlsSupported = false;
-            console.log('HLS.js not supported - falling back to native video support');
-        }
-    }
-
-    /**
-     * Set the camera stream URL - NEW
-     * @param {string} url - The streaming URL (HLS .m3u8, RTMP, or HTTP stream)
-     */
-    setCameraStream(url) {
-        this.cameraStreamUrl = url;
-        console.log('Camera stream URL set to:', url);
-        
-        // If camera is currently active, update the stream
-        if (this.showCameraFeed) {
-            this.setupCameraStream();
-        }
-    }
-
-    /**
-     * Set camera position on Display 2 - NEW
-     * @param {string} position - 'top', 'bottom', 'left', 'right'
-     */
-    setCameraPosition(position) {
-        this.cameraPosition = position;
-        console.log('Camera position set to:', position);
-    }
-
-    /**
-     * Toggle camera feed on/off - NEW
-     * @param {boolean} show - Whether to show camera feed
-     */
-    toggleCameraFeed(show = !this.showCameraFeed) {
-        this.showCameraFeed = show;
-        console.log('Camera feed:', show ? 'enabled' : 'disabled');
-        
-        if (show && this.cameraStreamUrl) {
-            this.setupCameraStream();
-        }
-    }
-
-    /**
-     * Setup the camera stream with HLS support - NEW
-     */
-    setupCameraStream() {
-        const cameraElement = document.querySelector('.camera-feed');
-        if (!cameraElement || !this.cameraStreamUrl) return;
-
-        // Show loading state
-        this.showCameraLoading(true);
-
-        // Check if it's an HLS stream (.m3u8)
-        if (this.cameraStreamUrl.includes('.m3u8')) {
-            this.setupHLSStream(cameraElement);
-        } else {
-            // Regular video stream
-            cameraElement.src = this.cameraStreamUrl;
-            cameraElement.load();
-        }
-
-        // Handle video events
-        cameraElement.onloadstart = () => {
-            console.log('Camera stream loading started');
-        };
-
-        cameraElement.oncanplay = () => {
-            console.log('Camera stream ready to play');
-            this.showCameraLoading(false);
-            cameraElement.play().catch(e => console.log('Auto-play prevented:', e));
-        };
-
-        cameraElement.onerror = (e) => {
-            console.error('Camera stream error:', e);
-            this.showCameraError();
-        };
-    }
-
-    /**
-     * Setup HLS stream using HLS.js - NEW
-     */
-    setupHLSStream(videoElement) {
-        if (this.hlsSupported) {
-            // Use HLS.js
-            if (this.hlsPlayer) {
-                this.hlsPlayer.destroy();
-            }
-            
-            this.hlsPlayer = new Hls();
-            this.hlsPlayer.loadSource(this.cameraStreamUrl);
-            this.hlsPlayer.attachMedia(videoElement);
-            
-            this.hlsPlayer.on(Hls.Events.MANIFEST_PARSED, () => {
-                console.log('HLS manifest parsed successfully');
-                this.showCameraLoading(false);
-                videoElement.play().catch(e => console.log('Auto-play prevented:', e));
-            });
-
-            this.hlsPlayer.on(Hls.Events.ERROR, (event, data) => {
-                console.error('HLS error:', data);
-                this.showCameraError();
-            });
-        } else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
-            // Native HLS support (Safari)
-            videoElement.src = this.cameraStreamUrl;
-        } else {
-            console.error('HLS not supported in this browser');
-            this.showCameraError();
-        }
-    }
-
-    /**
-     * Show camera loading state - NEW
-     */
-    showCameraLoading(show) {
-        const cameraContainer = document.querySelector('.camera-container');
-        if (cameraContainer) {
-            if (show) {
-                cameraContainer.innerHTML = `
-                    <div class="camera-header">
-                        <span class="camera-title">Conference Hall</span>
-                        <span class="camera-status">● CONNECTING</span>
-                    </div>
-                    <div class="camera-feed camera-placeholder">
-                        <div class="camera-loading">
-                            <div class="loading-spinner"></div>
-                            <p>Connecting to live stream...</p>
-                        </div>
-                    </div>
-                `;
-            }
-        }
-    }
-
-    /**
-     * Show camera error state - NEW
-     */
-    showCameraError() {
-        const cameraContainer = document.querySelector('.camera-container');
-        if (cameraContainer) {
-            cameraContainer.innerHTML = `
-                <div class="camera-header">
-                    <span class="camera-title">Conference Hall</span>
-                    <span class="camera-status">● CONNECTION ERROR</span>
-                </div>
-                <div class="camera-feed camera-placeholder">
-                    <div class="camera-loading">
-                        <p>⚠️ Stream not available</p>
-                        <p style="font-size: 0.8em; opacity: 0.7;">Check camera connection</p>
-                    </div>
-                </div>
-            `;
-        }
-    }
-
-    /**
-     * Generate camera HTML based on current settings - NEW
-     */
-    generateCameraHTML() {
-        return `
-            <div class="camera-container camera-${this.cameraPosition}">
-                <div class="camera-header">
-                    <span class="camera-title">Conference Hall</span>
-                    <span class="camera-status">● LIVE</span>
-                </div>
-                <video class="camera-feed" 
-                       autoplay 
-                       muted 
-                       playsinline
-                       poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect width='100' height='100' fill='%23000'/%3E%3C/svg%3E">
-                    <p>Your browser doesn't support HTML5 video.</p>
-                </video>
-            </div>
-        `;
-    }
-
-    /**
      * Set the current conference day
-     * @param {string} day Day name like 'Inauguration', 'Day 1', 'Day 2'
      */
     setCurrentDay(day) {
         this.currentDay = day;
@@ -282,8 +195,6 @@ class ConferenceView {
 
     /**
      * Add custom logo image
-     * @param {string} logoUrl URL to the logo image
-     * @param {string} altText Alt text for the logo
      */
     setLogo(logoUrl, altText = 'Conference Logo') {
         this.logoUrl = logoUrl;
@@ -292,29 +203,23 @@ class ConferenceView {
 
     /**
      * Get logo HTML - uses PNG logo
-     * @returns {string} HTML for logo section
      */
     getLogoHtml() {
-        // Use the PNG logo file (make sure it's in your NITC-Agenda folder)
         return `<img src="nitc-logo.png" alt="NITC 2025 Logo">`;
     }
 
     /**
-     * Render the complete agenda list on Screen 1 (following new design)
-     * @param {Array} agendaData Array of agenda items
-     * @param {number} currentIndex Currently active event index (-1 if none)
+     * Render the complete agenda list on Screen 1
      */
     renderAgendaList(agendaData, currentIndex) {
-        // Only render if we're on Display 1
         if (!this.isDisplay1 || !this.agendaList) {
             return;
         }
 
         try {
-            // Clear existing content
             this.agendaList.innerHTML = '';
             
-            // Create header section with logo and title
+            // Create header section
             const headerSection = document.createElement('div');
             headerSection.className = 'agenda-header';
             headerSection.innerHTML = `
@@ -328,10 +233,9 @@ class ConferenceView {
             `;
             this.agendaList.appendChild(headerSection);
             
-            // Find current event
+            // Current event
             const currentEvent = currentIndex >= 0 ? agendaData[currentIndex] : null;
             
-            // If there's a current event, show it prominently at the top
             if (currentEvent) {
                 const currentEventCard = document.createElement('div');
                 currentEventCard.className = 'current-event-card';
@@ -340,7 +244,6 @@ class ConferenceView {
                     <div class="title">${currentEvent.title}</div>
                 `;
                 
-                // Add click handler for testing
                 currentEventCard.addEventListener('click', () => {
                     if (this.onItemClick) {
                         this.onItemClick(currentIndex);
@@ -350,11 +253,10 @@ class ConferenceView {
                 this.agendaList.appendChild(currentEventCard);
             }
             
-            // Create upcoming events section
+            // Upcoming events
             const upcomingSection = document.createElement('div');
             upcomingSection.className = 'upcoming-events';
             
-            // Add upcoming events (only future events, no past events)
             let hasUpcomingEvents = false;
             for (let i = currentIndex + 1; i < agendaData.length; i++) {
                 const item = agendaData[i];
@@ -365,7 +267,6 @@ class ConferenceView {
                     <div class="title">${item.title}</div>
                 `;
                 
-                // Add click handler for testing
                 upcomingEvent.addEventListener('click', () => {
                     if (this.onItemClick) {
                         this.onItemClick(i);
@@ -376,7 +277,6 @@ class ConferenceView {
                 hasUpcomingEvents = true;
             }
             
-            // If no upcoming events, show completion message
             if (!hasUpcomingEvents) {
                 const completionMessage = document.createElement('div');
                 completionMessage.className = 'upcoming-event';
@@ -404,52 +304,31 @@ class ConferenceView {
     }
 
     /**
-     * Update the current item display on Screen 2 - MODIFIED TO INCLUDE CAMERA
-     * @param {Object|null} currentEvent Current event object or null
-     * @param {string} status Conference status: 'waiting', 'active', 'completed'
-     * @param {Object|null} nextEvent Next upcoming event
-     * @param {number} timeUntilNext Minutes until next event
+     * Update the current item display on Screen 2 - WITH WEBCAM INTEGRATION
      */
     renderCurrentEvent(currentEvent, status, nextEvent, timeUntilNext) {
-        // Only render if we're on Display 2
         if (!this.isDisplay2 || !this.currentDetail) {
             return;
         }
 
         try {
-            // Clear existing content
             this.currentDetail.innerHTML = '';
 
-            let cameraHtml = '';
-            
-            // Add camera feed HTML based on position and if enabled - NEW CAMERA FUNCTIONALITY
-            if (this.showCameraFeed && this.cameraStreamUrl) {
-                cameraHtml = this.generateCameraHTML();
-            }
-
-            // Generate layout based on camera position
-            const layoutClass = (this.cameraPosition === 'left' || this.cameraPosition === 'right') ? 
-                               'event-layout-horizontal' : '';
+            // Generate webcam HTML
+            const webcamHtml = this.generateWebcamHTML();
             
             if (currentEvent && status === 'active') {
-                // We have an active current event - display it WITH CAMERA
+                // Active event with webcam
                 this.currentDetail.innerHTML = `
-                    <div class="${layoutClass}">
-                        ${this.cameraPosition === 'top' ? cameraHtml : ''}
-                        ${this.cameraPosition === 'left' ? cameraHtml : ''}
-                        
-                        <div class="event-content">
-                            <div class="current-time">${currentEvent.displayTime}</div>
-                            <div class="current-title">${currentEvent.title}</div>
-                            <div class="current-description">${currentEvent.description}</div>
-                        </div>
-                        
-                        ${this.cameraPosition === 'right' ? cameraHtml : ''}
-                        ${this.cameraPosition === 'bottom' ? cameraHtml : ''}
+                    <div class="event-content">
+                        <div class="current-time">${currentEvent.displayTime}</div>
+                        <div class="current-title">${currentEvent.title}</div>
+                        <div class="current-description">${currentEvent.description}</div>
                     </div>
+                    ${webcamHtml}
                 `;
             } else if (status === 'waiting') {
-                // Conference hasn't started yet
+                // Conference waiting with webcam
                 let nextEventHtml = '';
                 if (nextEvent) {
                     const timeText = timeUntilNext > 0 ? 
@@ -473,83 +352,48 @@ class ConferenceView {
                 }
                 
                 this.currentDetail.innerHTML = `
-                    <div class="${layoutClass}">
-                        ${this.cameraPosition === 'top' ? cameraHtml : ''}
-                        ${this.cameraPosition === 'left' ? cameraHtml : ''}
-                        
-                        <div class="event-content">
-                            <div class="no-current-event">
-                                <h2>Conference Starts Soon...</h2>
-                                <p>Please take your seats and prepare for an amazing experience</p>
-                                ${nextEventHtml}
-                                <div class="conference-info">
-                                    <h4>Conference Schedule</h4>
-                                    <p>📅 Today's sessions run from 12:00 PM to 5:00 PM</p>
-                                    <p>🎯 Join us for cutting-edge insights and networking</p>
-                                    <p>📱 Follow live updates on our social media</p>
-                                </div>
-                            </div>
+                    <div class="event-content">
+                        <div class="no-current-event">
+                            <h2>Conference Starts Soon...</h2>
+                            <p>Please take your seats and prepare for an amazing experience</p>
+                            ${nextEventHtml}
                         </div>
-                        
-                        ${this.cameraPosition === 'right' ? cameraHtml : ''}
-                        ${this.cameraPosition === 'bottom' ? cameraHtml : ''}
                     </div>
+                    ${webcamHtml}
                 `;
             } else if (status === 'completed') {
-                // Conference has ended
+                // Conference completed with webcam
                 this.currentDetail.innerHTML = `
-                    <div class="${layoutClass}">
-                        ${this.cameraPosition === 'top' ? cameraHtml : ''}
-                        ${this.cameraPosition === 'left' ? cameraHtml : ''}
-                        
-                        <div class="event-content">
-                            <div class="no-current-event">
-                                <h2>Conference Has Concluded</h2>
-                                <p>Thank you for your participation!</p>
-                                <div class="conference-info">
-                                    <h4>Thank You!</h4>
-                                    <p>🎉 We hope you enjoyed today's sessions</p>
-                                    <p>📧 Follow-up materials will be sent via email</p>
-                                    <p>🤝 Stay connected with our community</p>
-                                    <p>📅 See you at our next event!</p>
-                                </div>
+                    <div class="event-content">
+                        <div class="no-current-event">
+                            <h2>Conference Has Concluded</h2>
+                            <p>Thank you for your participation!</p>
+                            <div class="conference-info">
+                                <h4>Thank You!</h4>
+                                <p>We hope you enjoyed today's sessions</p>
+                                <p>Follow-up materials will be sent via email</p>
+                                <p>Stay connected with our community</p>
+                                <p>See you at our next event!</p>
                             </div>
                         </div>
-                        
-                        ${this.cameraPosition === 'right' ? cameraHtml : ''}
-                        ${this.cameraPosition === 'bottom' ? cameraHtml : ''}
                     </div>
+                    ${webcamHtml}
                 `;
             } else {
-                // Default waiting state
+                // Default state with webcam
                 this.currentDetail.innerHTML = `
-                    <div class="${layoutClass}">
-                        ${this.cameraPosition === 'top' ? cameraHtml : ''}
-                        ${this.cameraPosition === 'left' ? cameraHtml : ''}
-                        
-                        <div class="event-content">
-                            <div class="no-current-event">
-                                <h2>NITC 2025 Conference</h2>
-                                <p>Waiting for event information...</p>
-                                <div class="conference-info">
-                                    <h4>System Status</h4>
-                                    <p>📺 Display 2 - Event Details</p>
-                                    <p>🔄 Syncing with Display 1...</p>
-                                    <p>⏰ Real-time updates enabled</p>
-                                </div>
-                            </div>
+                    <div class="event-content">
+                        <div class="no-current-event">
+                            <h2>NITC 2025 Conference</h2>
+                            <p>Waiting for event information...</p>
                         </div>
-                        
-                        ${this.cameraPosition === 'right' ? cameraHtml : ''}
-                        ${this.cameraPosition === 'bottom' ? cameraHtml : ''}
                     </div>
+                    ${webcamHtml}
                 `;
             }
 
-            // Setup camera stream if camera container exists
-            if (this.showCameraFeed && this.cameraStreamUrl) {
-                setTimeout(() => this.setupCameraStream(), 100);
-            }
+            // Attach webcam stream after DOM update
+            setTimeout(() => this.attachWebcamToVideoElement(), 100);
             
         } catch (error) {
             console.error('Error rendering current event:', error);
@@ -560,8 +404,8 @@ class ConferenceView {
                         <p>Failed to render event details</p>
                         <div class="conference-info">
                             <h4>Error Details</h4>
-                            <p>🔄 Please refresh the page</p>
-                            <p>📞 Contact technical support</p>
+                            <p>Please refresh the page</p>
+                            <p>Contact technical support</p>
                             <p style="font-family: monospace; font-size: 0.8em; margin-top: 10px;">
                                 ${error.message}
                             </p>
@@ -574,22 +418,16 @@ class ConferenceView {
 
     /**
      * Update control button states
-     * @param {number} currentIndex Current event index
-     * @param {number} totalEvents Total number of events
-     * @param {boolean} isAutoMode Whether auto mode is active (always false for real-time)
      */
     updateControls(currentIndex, totalEvents, isAutoMode) {
-        // Only update controls on Display 1
         if (!this.isDisplay1) {
             return;
         }
 
         try {
-            // In real-time mode, disable manual controls but keep for testing
             if (this.prevBtn) this.prevBtn.disabled = currentIndex <= 0;
             if (this.nextBtn) this.nextBtn.disabled = currentIndex >= totalEvents - 1;
             
-            // Auto mode is disabled in real-time system
             if (this.autoBtn) {
                 this.autoBtn.disabled = true;
                 this.autoBtn.textContent = 'Real-Time Mode';
@@ -615,10 +453,8 @@ class ConferenceView {
 
     /**
      * Update debug panel information
-     * @param {Object} debugInfo Debug information object
      */
     updateDebugPanel(debugInfo) {
-        // Only update debug panel on Display 1
         if (!this.isDisplay1) {
             return;
         }
@@ -654,7 +490,6 @@ class ConferenceView {
 
     /**
      * Set event handlers
-     * @param {Object} handlers Object containing event handler functions
      */
     setEventHandlers(handlers) {
         this.onPrevious = handlers.onPrevious;
@@ -662,7 +497,6 @@ class ConferenceView {
         this.onAutoToggle = handlers.onAutoToggle;
         this.onItemClick = handlers.onItemClick;
         
-        // Bind button events (only on Display 1)
         if (this.isDisplay1) {
             if (this.prevBtn) this.prevBtn.addEventListener('click', this.onPrevious);
             if (this.nextBtn) this.nextBtn.addEventListener('click', this.onNext);
@@ -704,7 +538,6 @@ class ConferenceView {
 
     /**
      * Show error state
-     * @param {string} errorMessage Error message to display
      */
     showError(errorMessage) {
         try {
@@ -715,9 +548,9 @@ class ConferenceView {
                         <p>${errorMessage}</p>
                         <div class="conference-info">
                             <h4>Troubleshooting</h4>
-                            <p>🔄 Please refresh the page</p>
-                            <p>🔍 Check your internet connection</p>
-                            <p>📞 Contact technical support if issue persists</p>
+                            <p>Please refresh the page</p>
+                            <p>Check your internet connection</p>
+                            <p>Contact technical support if issue persists</p>
                         </div>
                     </div>
                 `;
@@ -730,9 +563,9 @@ class ConferenceView {
                         <p>${errorMessage}</p>
                         <div style="margin-top: 20px;">
                             <h4>Troubleshooting</h4>
-                            <p>🔄 Please refresh the page</p>
-                            <p>🔍 Check your internet connection</p>
-                            <p>📞 Contact technical support if issue persists</p>
+                            <p>Please refresh the page</p>
+                            <p>Check your internet connection</p>
+                            <p>Contact technical support if issue persists</p>
                         </div>
                     </div>
                 `;
@@ -744,37 +577,28 @@ class ConferenceView {
 
     /**
      * Update the conference day dynamically
-     * @param {string} day New day to display
      */
     updateConferenceDay(day) {
         this.setCurrentDay(day);
-        // Find and update the day element if it exists
         const dayElement = document.querySelector('.event-day');
         if (dayElement) {
             dayElement.textContent = day;
         }
     }
+
+    /**
+     * Cleanup webcam resources - call this when closing the app
+     */
+    cleanup() {
+        if (this.webcamStream) {
+            this.webcamStream.getTracks().forEach(track => track.stop());
+            this.webcamStream = null;
+            console.log('Webcam resources cleaned up');
+        }
+    }
 }
 
-// Create global shortcuts for easy console testing - NEW CAMERA FUNCTIONS
-window.setCameraStream = function(url) {
-    if (window.conferenceApp && window.conferenceApp.view) {
-        window.conferenceApp.view.setCameraStream(url);
-    }
-};
-
-window.setCameraPosition = function(position) {
-    if (window.conferenceApp && window.conferenceApp.view) {
-        window.conferenceApp.view.setCameraPosition(position);
-    }
-};
-
-window.toggleCamera = function(show) {
-    if (window.conferenceApp && window.conferenceApp.view) {
-        window.conferenceApp.view.toggleCameraFeed(show);
-    }
-};
-
+// Global shortcuts for console testing
 window.hideButtons = function() {
     if (window.conferenceApp && window.conferenceApp.view) {
         window.conferenceApp.view.hideControls();
@@ -787,5 +611,5 @@ window.showButtons = function() {
     }
 };
 
-console.log('ConferenceView loaded with live camera feed integration');
-console.log('Global shortcuts available: setCameraStream(), setCameraPosition(), toggleCamera(), hideButtons(), showButtons()');
+console.log('ConferenceView loaded with production-ready webcam integration');
+console.log('Global shortcuts available: hideButtons(), showButtons()');
