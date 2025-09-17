@@ -50,7 +50,7 @@ class ConferenceView {
     }
 
     /**
-     * Initialize webcam for Display 2 - PRODUCTION READY
+     * Initialize webcam for Display 2 - PRODUCTION READY WITH LOGITECH DETECTION
      */
     async initializeWebcam() {
         if (!this.isDisplay2 || this.webcamInitialized) return;
@@ -58,15 +58,38 @@ class ConferenceView {
         try {
             console.log('Initializing webcam for Display 2...');
             
-            // Request webcam access with optimal settings for conference
-            this.webcamStream = await navigator.mediaDevices.getUserMedia({
+            // First, get all available video devices
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const videoDevices = devices.filter(device => device.kind === 'videoinput');
+            
+            console.log('Available video devices:', videoDevices.map(d => d.label));
+            
+            // Try to find Logitech camera first
+            const logitechCamera = videoDevices.find(device => 
+                device.label.toLowerCase().includes('logitech') ||
+                device.label.toLowerCase().includes('webcam') ||
+                device.label.toLowerCase().includes('usb')
+            );
+            
+            let constraints = {
                 video: {
-                    width: { ideal: 640, max: 1280 },
-                    height: { ideal: 480, max: 720 },
+                    width: { ideal: 1280, max: 1920 },
+                    height: { ideal: 720, max: 1080 },
                     frameRate: { ideal: 30, max: 60 }
                 },
                 audio: false
-            });
+            };
+            
+            // If Logitech camera found, specify it
+            if (logitechCamera) {
+                constraints.video.deviceId = { exact: logitechCamera.deviceId };
+                console.log('Using Logitech camera:', logitechCamera.label);
+            } else {
+                console.log('Logitech camera not found, using default camera');
+            }
+            
+            // Request webcam access
+            this.webcamStream = await navigator.mediaDevices.getUserMedia(constraints);
             
             this.webcamInitialized = true;
             console.log('Webcam initialized successfully');
