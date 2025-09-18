@@ -326,42 +326,50 @@ class ConferenceView {
     }
 
     /**
-     * Set initial camera state based on current time
+     * Set initial camera state based on current time and day's first event
      */
     setInitialCameraState() {
-        const now = new Date();
-        const currentHour = now.getHours();
-        const currentMinute = now.getMinutes();
+        const model = window.conferenceApp?.model;
+        if (!model) return;
         
-        // Event starts at 11:00 AM for Inauguration
-        const eventStarted = (currentHour > 11) || (currentHour === 11 && currentMinute >= 0);
+        const agenda = model.getAgendaData();
+        if (!agenda || agenda.length === 0) return;
+        
+        const currentTime = model.getCurrentRealTime();
+        const currentMinutes = model.timeToMinutes(currentTime);
+        const firstEventMinutes = model.timeToMinutes(agenda[0].time);
+        
+        const eventStarted = currentMinutes >= firstEventMinutes;
         
         if (eventStarted) {
             this.webcamEnabled = true;
             this.showBroadcastMessage = false;
-            console.log('Initial state: Event started, camera enabled');
+            console.log(`Initial state: Event started (${currentTime} >= ${agenda[0].time}), camera enabled`);
         } else {
             this.webcamEnabled = false;
             this.showBroadcastMessage = true;
-            console.log('Initial state: Before event, camera disabled');
+            console.log(`Initial state: Before event (${currentTime} < ${agenda[0].time}), camera disabled`);
         }
     }
 
     /**
-     * Check timing and update camera state automatically
+     * Check timing and update camera state automatically - DYNAMIC FOR ANY DAY
      */
     checkEventStatusForCamera() {
         if (!this.isDisplay2) return;
         
-        const now = new Date();
-        const currentHour = now.getHours();
-        const currentMinute = now.getMinutes();
-        const timeString = `${currentHour}:${currentMinute.toString().padStart(2, '0')}`;
+        const model = window.conferenceApp?.model;
+        if (!model) return;
         
-        // Event starts at 11:00 AM
-        const eventStarted = (currentHour > 11) || (currentHour === 11 && currentMinute >= 0);
+        const agenda = model.getAgendaData();
+        if (!agenda || agenda.length === 0) return;
         
-        console.log(`Time check: ${timeString} - Event started: ${eventStarted}, Camera: ${this.webcamEnabled}`);
+        const currentTime = model.getCurrentRealTime();
+        const currentMinutes = model.timeToMinutes(currentTime);
+        const firstEventMinutes = model.timeToMinutes(agenda[0].time);
+        const eventStarted = currentMinutes >= firstEventMinutes;
+        
+        console.log(`Time check: ${currentTime} vs ${agenda[0].time} - Event started: ${eventStarted}, Camera: ${this.webcamEnabled}`);
         
         if (eventStarted && !this.webcamEnabled) {
             console.log('Enabling camera - event started');
@@ -386,18 +394,17 @@ class ConferenceView {
     }
 
     /**
-     * Generate QR code HTML - SHOWS BEFORE 11:00 AM ONLY
+     * Generate QR code HTML - FORCE SHOW WHEN CAMERA DISABLED
      */
     generateQRCodeHTML() {
-        if (!this.isDisplay2) return '';
+        if (!this.isDisplay2) {
+            console.log('QR Debug: Not Display 2');
+            return '';
+        }
         
-        const now = new Date();
-        const currentHour = now.getHours();
-        const currentMinute = now.getMinutes();
-        const eventStarted = (currentHour > 11) || (currentHour === 11 && currentMinute >= 0);
-        
-        // Only show QR code before 11:00 AM
-        if (!eventStarted) {
+        // If camera is disabled, show QR code regardless of timing
+        if (!this.webcamEnabled) {
+            console.log('QR Debug: Camera disabled - showing QR code');
             return `
                 <div class="qr-code-container">
                     <div class="qr-code-header">
@@ -418,7 +425,8 @@ class ConferenceView {
             `;
         }
         
-        return ''; // No QR code during event
+        console.log('QR Debug: Camera enabled - hiding QR code');
+        return ''; // No QR code when camera is on
     }
 
     /**

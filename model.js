@@ -22,85 +22,85 @@ class ConferenceModel {
         this.allAgendaData = {
             'Inauguration': [
                 {
-                    time: "11:00", // 11:00 AM
-                    displayTime: "11:00 AM",
+                    time: "12:00", // 12:00 PM (Noon)
+                    displayTime: "12:00 PM",
                     title: "Arrival of the Chief Guest & the Guest of Honour",
                     description: "Welcome our distinguished Chief Guest and Guest of Honour as they arrive for the inauguration ceremony. Please take your seats as we prepare to begin this momentous conference.",
                     duration: 20
                 },
                 {
-                    time: "11:20",
-                    displayTime: "11:20 AM",
+                    time: "12:20",
+                    displayTime: "12:20 PM",
                     title: "Welcome Address by Mr. Heshan Karunaratne",
                     description: "Opening remarks and welcome address by Mr. Heshan Karunaratne, President of CSSL. Setting the tone for the conference and introducing key participants and objectives.",
                     duration: 10
                 },
                 {
-                    time: "11:30",
-                    displayTime: "11:30 AM",
+                    time: "12:30",
+                    displayTime: "12:30 PM",
                     title: "CSSL National ICT Awards 2025 - Session 1",
                     description: "First session of the prestigious CSSL National ICT Awards ceremony, recognizing outstanding achievements and innovations in the field of information and communication technology.",
                     duration: 15
                 },
                 {
-                    time: "11:45",
-                    displayTime: "11:45 AM",
+                    time: "12:45",
+                    displayTime: "12:45 PM",
                     title: "Address by the Chief Guest",
                     description: "Keynote address by our distinguished Chief Guest, sharing insights on the future of technology and its impact on society and business transformation.",
                     duration: 10
                 },
                 {
-                    time: "11:55",
-                    displayTime: "11:55 AM",
+                    time: "12:55",
+                    displayTime: "12:55 PM",
                     title: "Address by the Guest of Honor",
                     description: "Inspiring address by our Guest of Honor, highlighting the importance of innovation and technological advancement in driving economic growth and social development.",
                     duration: 15
                 },
                 {
-                    time: "12:10",
-                    displayTime: "12:10 PM",
+                    time: "13:10",
+                    displayTime: "1:10 PM",
                     title: "Keynote Address By Mr. Sandun Hapugoda",
                     description: "Strategic keynote presentation by Mr. Sandun Hapugoda, Country Manager - Sri Lanka and Maldives Mastercards, focusing on digital payment innovations and financial technology trends.",
                     duration: 20
                 },
                 {
-                    time: "12:30",
-                    displayTime: "12:30 PM",
+                    time: "13:30",
+                    displayTime: "1:30 PM",
                     title: "CSSL National ICT Awards 2025 - Session 2",
                     description: "Second session of the national ICT awards ceremony, continuing the recognition of exceptional contributions to the technology sector and digital innovation landscape.",
                     duration: 15
                 },
                 {
-                    time: "12:45",
-                    displayTime: "12:45 PM",
+                    time: "13:45",
+                    displayTime: "1:45 PM",
                     title: "Keynote Address by Mr. Lasantha Bogoda",
                     description: "Industry insights presentation by Mr. Lasantha Bogoda, Director/CEO of DMS Software Technologies (Pvt) Ltd, covering enterprise software solutions and digital transformation strategies.",
                     duration: 10
                 },
                 {
-                    time: "12:55",
-                    displayTime: "12:55 PM",
+                    time: "13:55",
+                    displayTime: "1:55 PM",
                     title: "Keynote Address by Mr. Shanaka de Silva",
                     description: "Strategic business presentation by Mr. Shanaka de Silva, Group Finance Director at South Asian Technologies Group, discussing technology investment and growth opportunities in the region.",
                     duration: 20
                 },
                 {
-                    time: "13:15",
-                    displayTime: "1:15 PM",
+                    time: "14:15",
+                    displayTime: "2:15 PM",
                     title: "Recognition of Sponsors NITC 2025",
                     description: "Special acknowledgment and appreciation ceremony for all sponsors and partners who made NITC 2025 possible. Recognition of their valuable contributions to the conference success.",
                     duration: 20
                 },
                 {
-                    time: "13:35",
-                    displayTime: "1:35 PM",
+                    time: "14:35",
+                    displayTime: "2:35 PM",
                     title: "Vote of Thanks by Dr. Amal Illesinghe",
                     description: "Closing remarks and heartfelt gratitude expressed by Dr. Amal Illesinghe, Conference Chair - NITC 2025, thanking all participants, speakers, sponsors, and organizers for making this inauguration a success.",
                     duration: 15
                 },
                 {
-                    time: "13:50",
-                    displayTime: "1:50 PM",
+                    time: "14:50",
+                    displayTime: "2:50 PM",
                     title: "Inauguration Conclusion",
                     description: "Official end of the inauguration ceremony. Thank you for your active participation. We look forward to seeing you tomorrow for Day 1 sessions starting at 8:15 AM!",
                     duration: 0
