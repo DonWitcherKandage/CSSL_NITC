@@ -23,12 +23,15 @@ class ConferenceView {
         this.debugMode = document.getElementById('debugMode');
         this.debugStatus = document.getElementById('debugStatus');
         
-        // Webcam settings for production use
-        this.webcamEnabled = true; // ENABLE CAMERA IMMEDIATELY
+        // Webcam settings for production use - AUTOMATIC TIMING CONTROL
+        this.webcamEnabled = false; // Start disabled
         this.webcamStream = null;
         this.webcamVideoElement = null;
         this.webcamInitialized = false;
-        this.showBroadcastMessage = false; // DISABLE BROADCAST MESSAGE
+        this.showBroadcastMessage = true; // Show broadcast message initially
+        
+        // Set initial state based on current time
+        this.setInitialCameraState();
         
         // Pre-event highlight system - SIMPLIFIED
         this.preEventMode = false;
@@ -53,10 +56,9 @@ class ConferenceView {
         // Initialize webcam for Display 2 after a short delay
         if (this.isDisplay2) {
             setTimeout(() => this.initializeWebcam(), 1000);
-            // Check for camera activation every 5 seconds (more frequent)
+            // Check immediately and then every 5 seconds
+            setTimeout(() => this.checkEventStatusForCamera(), 1000);
             setInterval(() => this.checkEventStatusForCamera(), 5000);
-            // Also check immediately after 3 seconds
-            setTimeout(() => this.checkEventStatusForCamera(), 3000);
         }
         
         // FORCE START PREVIEW MODE FOR TESTING - Remove this line after testing
@@ -324,11 +326,99 @@ class ConferenceView {
     }
 
     /**
-     * Generate QR code HTML - DISABLED DURING EVENTS
+     * Set initial camera state based on current time
+     */
+    setInitialCameraState() {
+        const now = new Date();
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
+        
+        // Event starts at 11:00 AM for Inauguration
+        const eventStarted = (currentHour > 11) || (currentHour === 11 && currentMinute >= 0);
+        
+        if (eventStarted) {
+            this.webcamEnabled = true;
+            this.showBroadcastMessage = false;
+            console.log('Initial state: Event started, camera enabled');
+        } else {
+            this.webcamEnabled = false;
+            this.showBroadcastMessage = true;
+            console.log('Initial state: Before event, camera disabled');
+        }
+    }
+
+    /**
+     * Check timing and update camera state automatically
+     */
+    checkEventStatusForCamera() {
+        if (!this.isDisplay2) return;
+        
+        const now = new Date();
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
+        const timeString = `${currentHour}:${currentMinute.toString().padStart(2, '0')}`;
+        
+        // Event starts at 11:00 AM
+        const eventStarted = (currentHour > 11) || (currentHour === 11 && currentMinute >= 0);
+        
+        console.log(`Time check: ${timeString} - Event started: ${eventStarted}, Camera: ${this.webcamEnabled}`);
+        
+        if (eventStarted && !this.webcamEnabled) {
+            console.log('Enabling camera - event started');
+            this.webcamEnabled = true;
+            this.showBroadcastMessage = false;
+            this.updateDisplayNow();
+        } else if (!eventStarted && this.webcamEnabled) {
+            console.log('Disabling camera - before event');
+            this.webcamEnabled = false;
+            this.showBroadcastMessage = true;
+            this.updateDisplayNow();
+        }
+    }
+
+    /**
+     * Force display update immediately
+     */
+    updateDisplayNow() {
+        if (window.conferenceApp?.controller) {
+            window.conferenceApp.controller.updateDisplay();
+        }
+    }
+
+    /**
+     * Generate QR code HTML - SHOWS BEFORE 11:00 AM ONLY
      */
     generateQRCodeHTML() {
-        // No QR code during events - only show before conference starts
-        return '';
+        if (!this.isDisplay2) return '';
+        
+        const now = new Date();
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
+        const eventStarted = (currentHour > 11) || (currentHour === 11 && currentMinute >= 0);
+        
+        // Only show QR code before 11:00 AM
+        if (!eventStarted) {
+            return `
+                <div class="qr-code-container">
+                    <div class="qr-code-header">
+                        <h3>For More Event Details</h3>
+                    </div>
+                    <div class="qr-code-content">
+                        <div class="qr-code">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&format=png&data=https://nitc.lk/%23schedule" 
+                                 alt="QR Code for NITC Schedule">
+                        </div>
+                        <div class="qr-code-text">
+                            <p><strong>Scan to visit:</strong></p>
+                            <p class="website-url">nitc.lk/#schedule</p>
+                            <p class="qr-instruction">Scan with your phone camera for complete event schedule and details</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        return ''; // No QR code during event
     }
 
     /**
@@ -369,56 +459,54 @@ class ConferenceView {
     }
 
     /**
-     * Check if event has started and automatically enable camera - FIXED VERSION
+     * Check if event has started and automatically enable camera - IMMEDIATE FIX
      */
     checkEventStatusForCamera() {
         if (!this.isDisplay2) return;
         
-        // More reliable check - get status directly from model
-        if (!window.conferenceApp?.model) {
-            console.log('Model not available for camera check');
-            return;
+        // Get current time directly
+        const now = new Date();
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
+        const currentTimeMinutes = currentHour * 60 + currentMinute;
+        
+        // Event starts at 9:00 AM = 540 minutes since midnight
+        const eventStartMinutes = 9 * 60; // 540 minutes
+        
+        const eventStarted = currentTimeMinutes >= eventStartMinutes;
+        
+        console.log(`DIRECT TIME CHECK: ${currentHour}:${currentMinute.toString().padStart(2, '0')} (${currentTimeMinutes}min) vs 9:00 AM (${eventStartMinutes}min) - Started: ${eventStarted}`);
+        
+        // BEFORE 9:00 AM: Show QR code, disable camera
+        if (!eventStarted) {
+            if (this.webcamEnabled) {
+                console.log('BEFORE EVENT: Disabling camera, showing QR and broadcast message');
+                this.webcamEnabled = false;
+                this.showBroadcastMessage = true;
+                this.forceDisplayUpdate();
+            }
         }
         
-        const model = window.conferenceApp.model;
-        const currentTime = model.getCurrentRealTime();
-        const agenda = model.getAgendaData();
-        const status = model.getConferenceStatus();
-        
-        console.log(`Camera check: Time=${currentTime}, Status=${status}, CameraEnabled=${this.webcamEnabled}`);
-        
-        if (!currentTime || agenda.length === 0) {
-            console.log('No time or agenda data available');
-            return;
+        // AT/AFTER 9:00 AM: Show camera, hide QR
+        if (eventStarted) {
+            if (!this.webcamEnabled) {
+                console.log('EVENT STARTED: Enabling camera, hiding QR and broadcast message');
+                this.webcamEnabled = true;
+                this.showBroadcastMessage = false;
+                this.forceDisplayUpdate();
+            }
         }
-        
-        // Get the real-time event result to see if we're in active mode
-        const realTimeResult = model.findCurrentRealTimeEvent();
-        
-        // Enable camera if:
-        // 1. Conference status is 'active' OR
-        // 2. We're at or past the first event time AND camera is not enabled
-        const currentMinutes = model.timeToMinutes(currentTime);
-        const firstEventMinutes = model.timeToMinutes(agenda[0].time);
-        const eventStarted = currentMinutes >= firstEventMinutes;
-        
-        if ((status === 'active' || eventStarted) && !this.webcamEnabled) {
-            console.log(`🎥 ENABLING CAMERA: Event started (Status: ${status}, EventStarted: ${eventStarted})`);
-            this.webcamEnabled = true;
-            this.showBroadcastMessage = false;
-            
-            // Force re-render of Display 2 to show camera
+    }
+
+    /**
+     * Force display update
+     */
+    forceDisplayUpdate() {
+        if (window.conferenceApp?.controller) {
             setTimeout(() => {
-                if (window.conferenceApp?.controller) {
-                    window.conferenceApp.controller.updateDisplay();
-                }
+                window.conferenceApp.controller.updateDisplay();
+                console.log('Display updated - Camera:', this.webcamEnabled, 'Broadcast:', this.showBroadcastMessage);
             }, 100);
-        }
-        // Disable camera if we're before event start
-        else if (!eventStarted && this.webcamEnabled) {
-            console.log(`📺 DISABLING CAMERA: Before event start`);
-            this.webcamEnabled = false;
-            this.showBroadcastMessage = true;
         }
     }
 
