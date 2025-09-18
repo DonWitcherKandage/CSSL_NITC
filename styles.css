@@ -961,6 +961,39 @@ body {
     }
 }
 
+/* Pre-event highlight animation */
+.highlight-preview {
+    animation: highlightPulse 3s ease-in-out infinite;
+    transform: scale(1.02);
+    box-shadow: 0 0 20px rgba(52, 152, 219, 0.6);
+    border-left: 4px solid #3498db;
+    background: linear-gradient(135deg, rgba(52, 152, 219, 0.1) 0%, rgba(46, 204, 113, 0.1) 100%);
+    z-index: 10;
+    position: relative;
+    transition: all 0.5s ease;
+}
+
+@keyframes highlightPulse {
+    0%, 100% { 
+        box-shadow: 0 0 20px rgba(52, 152, 219, 0.6);
+        border-left-color: #3498db;
+    }
+    50% { 
+        box-shadow: 0 0 30px rgba(52, 152, 219, 0.9);
+        border-left-color: #2ecc71;
+    }
+}
+
+.highlight-preview .time {
+    color: #3498db !important;
+    font-weight: bold;
+}
+
+.highlight-preview .title {
+    color: #2ecc71 !important;
+    font-weight: 600;
+}
+
 /* Enhanced styling for professional appearance - REMOVED GREEN GLOW */
 
 /* Make sure the webcam doesn't interfere with event content */
@@ -982,4 +1015,79 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: center;
+}
+
+/* QR Code Container Styling */
+.qr-code-container {
+    width: 90%;
+    max-width: 500px;
+    margin: 30px auto;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+
+.qr-code-header h3 {
+    color: #081A30;
+    margin: 0 0 20px 0;
+    font-size: 1.4em;
+    font-weight: 600;
+}
+
+.qr-code-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 25px;
+    flex-wrap: wrap;
+}
+
+.qr-code img {
+    border: 2px solid #081A30;
+    border-radius: 8px;
+    background: white;
+    padding: 10px;
+}
+
+.qr-code-text {
+    flex: 1;
+    min-width: 200px;
+    text-align: left;
+}
+
+.qr-code-text p {
+    color: #081A30;
+    margin: 5px 0;
+    line-height: 1.4;
+}
+
+.website-url {
+    font-family: monospace;
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #2c3e50;
+    background: rgba(52, 152, 219, 0.1);
+    padding: 5px 10px;
+    border-radius: 5px;
+    margin: 10px 0;
+}
+
+.qr-instruction {
+    font-size: 0.9em;
+    color: #7f8c8d;
+    font-style: italic;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .qr-code-content {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .qr-code-text {
+        text-align: center;
+    }
 }

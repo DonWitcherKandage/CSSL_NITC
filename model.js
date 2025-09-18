@@ -7,241 +7,353 @@
  */
 class ConferenceModel {
     constructor() {
-        // Conference dates (modify these to match your actual conference dates)
+        // Conference dates (updated to match current date)
         this.conferenceDates = {
-            'Inauguration': '2025-09-15', // Yesterday's date
-            'Day 1': '2025-09-16',        // Today's date  
-            'Day 2': '2025-09-17'         // Tomorrow's date
+            'Inauguration': '2025-09-18', // Today's date (Thursday)
+            'Day 1': '2025-09-19',        // Tomorrow (Friday)
+            'Day 2': '2025-09-20'         // Day after tomorrow (Saturday)
         };
         
         // Automatically detect current day based on real date
         this.currentDay = this.detectCurrentDay();
-        console.log(`📅 Automatically detected conference day: ${this.currentDay}`);
+        console.log(`Conference day automatically detected: ${this.currentDay}`);
         
         // Multi-day agenda data
         this.allAgendaData = {
             'Inauguration': [
                 {
-                    time: "12:00", // 24-hour format for accurate time matching
-                    displayTime: "12:00 PM", // Display format for users
+                    time: "08:00", // 8:00 AM
+                    displayTime: "8:00 AM",
                     title: "Arrival of the Chief Guest & the Guest of Honour",
-                    description: "Welcome our distinguished Chief Guest and Guest of Honour. Please take your seats as we prepare to begin this momentous conference.",
-                    duration: 20 // Duration in minutes
+                    description: "Welcome our distinguished Chief Guest and Guest of Honour as they arrive for the inauguration ceremony. Please take your seats as we prepare to begin this momentous conference.",
+                    duration: 20
                 },
                 {
-                    time: "12:20",
-                    displayTime: "12:20 PM",
+                    time: "08:20",
+                    displayTime: "8:20 AM",
                     title: "Welcome Address by Mr. Heshan Karunaratne",
-                    description: "Opening remarks and welcome address by Mr. Heshan Karunaratne, President of CSSL. Setting the tone for today's discussions and introducing key participants.",
-                    duration: 25
+                    description: "Opening remarks and welcome address by Mr. Heshan Karunaratne, President of CSSL. Setting the tone for the conference and introducing key participants and objectives.",
+                    duration: 10
                 },
                 {
-                    time: "12:45",
-                    displayTime: "12:45 PM",
-                    title: "Keynote Speech - Future of Technology",
-                    description: "An inspiring keynote presentation exploring emerging technologies, digital transformation trends, and their profound impact on society and business innovation.",
-                    duration: 45
-                },
-                {
-                    time: "13:30",
-                    displayTime: "1:30 PM",
-                    title: "Panel Discussion: Digital Innovation",
-                    description: "Interactive panel featuring industry leaders discussing digital transformation strategies, innovation frameworks, and best practices for modern businesses.",
-                    duration: 45
-                },
-                {
-                    time: "14:15",
-                    displayTime: "2:15 PM",
-                    title: "Networking Break & Refreshments",
-                    description: "Light refreshments will be served in the lobby area. Perfect opportunity to network with fellow attendees, speakers, and industry professionals.",
-                    duration: 30
-                },
-                {
-                    time: "14:45",
-                    displayTime: "2:45 PM",
-                    title: "Technical Workshop: AI Applications",
-                    description: "Hands-on workshop demonstrating practical applications of artificial intelligence in modern business environments. Bring your laptops for interactive sessions.",
-                    duration: 45
-                },
-                {
-                    time: "15:30",
-                    displayTime: "3:30 PM",
-                    title: "Startup Pitch Session",
-                    description: "Emerging startups present their innovative solutions and cutting-edge technologies to a panel of investors and industry experts. Witness the future of tech innovation.",
-                    duration: 45
-                },
-                {
-                    time: "16:15",
-                    displayTime: "4:15 PM",
-                    title: "Awards Ceremony",
-                    description: "Recognition of outstanding achievements in technology and innovation. Presentation of awards to deserving recipients who have made significant contributions to the industry.",
-                    duration: 30
-                },
-                {
-                    time: "16:45",
-                    displayTime: "4:45 PM",
-                    title: "Closing Remarks & Thank You",
-                    description: "Final thoughts and key takeaways from today's conference. Acknowledgment of sponsors, speakers, and participants. Summary of important insights and next steps.",
+                    time: "08:30",
+                    displayTime: "8:30 AM",
+                    title: "CSSL National ICT Awards 2025 - Session 1",
+                    description: "First session of the prestigious CSSL National ICT Awards ceremony, recognizing outstanding achievements and innovations in the field of information and communication technology.",
                     duration: 15
                 },
                 {
-                    time: "23:30",
-                    displayTime: "11:30 PM",
+                    time: "08:45",
+                    displayTime: "8:45 AM",
+                    title: "Address by the Chief Guest",
+                    description: "Keynote address by our distinguished Chief Guest, sharing insights on the future of technology and its impact on society and business transformation.",
+                    duration: 10
+                },
+                {
+                    time: "08:55",
+                    displayTime: "8:55 AM",
+                    title: "Address by the Guest of Honor",
+                    description: "Inspiring address by our Guest of Honor, highlighting the importance of innovation and technological advancement in driving economic growth and social development.",
+                    duration: 15
+                },
+                {
+                    time: "09:10",
+                    displayTime: "9:10 AM",
+                    title: "Keynote Address By Mr. Sandun Hapugoda",
+                    description: "Strategic keynote presentation by Mr. Sandun Hapugoda, Country Manager - Sri Lanka and Maldives Mastercards, focusing on digital payment innovations and financial technology trends.",
+                    duration: 20
+                },
+                {
+                    time: "09:30",
+                    displayTime: "9:30 AM",
+                    title: "CSSL National ICT Awards 2025 - Session 2",
+                    description: "Second session of the national ICT awards ceremony, continuing the recognition of exceptional contributions to the technology sector and digital innovation landscape.",
+                    duration: 15
+                },
+                {
+                    time: "09:45",
+                    displayTime: "9:45 AM",
+                    title: "Keynote Address by Mr. Lasantha Bogoda",
+                    description: "Industry insights presentation by Mr. Lasantha Bogoda, Director/CEO of DMS Software Technologies (Pvt) Ltd, covering enterprise software solutions and digital transformation strategies.",
+                    duration: 10
+                },
+                {
+                    time: "09:55",
+                    displayTime: "9:55 AM",
+                    title: "Keynote Address by Mr. Shanaka de Silva",
+                    description: "Strategic business presentation by Mr. Shanaka de Silva, Group Finance Director at South Asian Technologies Group, discussing technology investment and growth opportunities in the region.",
+                    duration: 20
+                },
+                {
+                    time: "10:15",
+                    displayTime: "10:15 AM",
+                    title: "Recognition of Sponsors NITC 2025",
+                    description: "Special acknowledgment and appreciation ceremony for all sponsors and partners who made NITC 2025 possible. Recognition of their valuable contributions to the conference success.",
+                    duration: 20
+                },
+                {
+                    time: "10:35",
+                    displayTime: "10:35 AM",
+                    title: "Vote of Thanks by Dr. Amal Illesinghe",
+                    description: "Closing remarks and heartfelt gratitude expressed by Dr. Amal Illesinghe, Conference Chair - NITC 2025, thanking all participants, speakers, sponsors, and organizers for making this inauguration a success.",
+                    duration: 15
+                },
+                {
+                    time: "10:50",
+                    displayTime: "10:50 AM",
                     title: "Inauguration Conclusion",
-                    description: "Official end of the inauguration ceremony. Thank you for your active participation. See you tomorrow for Day 1 sessions!",
+                    description: "Official end of the inauguration ceremony. Thank you for your active participation. We look forward to seeing you tomorrow for Day 1 sessions starting at 8:15 AM!",
                     duration: 0
                 }
             ],
 
             'Day 1': [
                 {
+                    time: "08:15",
+                    displayTime: "8:15 AM",
+                    title: "Registration",
+                    description: "Participant registration and check-in. Collect your conference materials, name tags, and networking kit for Day 1 sessions.",
+                    duration: 45
+                },
+                {
                     time: "09:00",
                     displayTime: "9:00 AM",
-                    title: "Registration & Morning Coffee",
-                    description: "Participant registration and networking over coffee. Collect your conference materials and connect with fellow attendees before the day begins.",
-                    duration: 30
+                    title: "Guest Speech: Hon. Eranga Weeraratne",
+                    description: "Opening guest speech by the Honorable Eranga Weeraratne, setting the tone for Day 1 discussions on digital transformation and innovation.",
+                    duration: 20
                 },
                 {
-                    time: "09:30",
-                    displayTime: "9:30 AM",
-                    title: "Day 1 Opening Session",
-                    description: "Welcome to Day 1 of NITC 2025. Overview of today's agenda, introduction to speakers, and setting expectations for an exciting day of learning and innovation.",
-                    duration: 30
+                    time: "09:20",
+                    displayTime: "9:20 AM",
+                    title: "Keynote 1",
+                    description: "First keynote presentation exploring cutting-edge technology trends and their impact on modern business and society.",
+                    duration: 25
                 },
                 {
-                    time: "10:00",
-                    displayTime: "10:00 AM",
-                    title: "Blockchain & Cryptocurrency Trends",
-                    description: "Deep dive into the latest developments in blockchain technology and cryptocurrency markets. Understanding the implications for businesses and society.",
-                    duration: 45
+                    time: "09:45",
+                    displayTime: "9:45 AM",
+                    title: "Panel Discussion 1: E-Government 5.0: Towards Human-Centric, Integrated and Proactive Public Services",
+                    description: "Expert panel discussing the evolution of e-government services, focusing on human-centric design, integration, and proactive public service delivery.",
+                    duration: 60
                 },
                 {
                     time: "10:45",
                     displayTime: "10:45 AM",
-                    title: "Coffee Break & Networking",
-                    description: "Short break with coffee and light snacks. Perfect time to discuss the blockchain session and network with other participants.",
-                    duration: 15
+                    title: "Morning Tea",
+                    description: "Networking break with tea, coffee, and light refreshments. Connect with fellow participants and speakers.",
+                    duration: 35
                 },
                 {
-                    time: "11:00",
-                    displayTime: "11:00 AM",
-                    title: "Cloud Computing & DevOps Best Practices",
-                    description: "Modern approaches to cloud infrastructure, containerization, and DevOps workflows. Learn from industry experts about scalable and efficient deployment strategies.",
-                    duration: 60
+                    time: "11:20",
+                    displayTime: "11:20 AM",
+                    title: "Keynote 2",
+                    description: "Second keynote presentation focusing on emerging technologies and digital innovation strategies.",
+                    duration: 25
                 },
                 {
-                    time: "12:00",
-                    displayTime: "12:00 PM",
-                    title: "Lunch Break",
-                    description: "Buffet lunch with networking opportunities. Enjoy delicious food while connecting with speakers and fellow attendees from various industries.",
-                    duration: 60
+                    time: "11:45",
+                    displayTime: "11:45 AM",
+                    title: "Keynote 3",
+                    description: "Third keynote session exploring advanced technological solutions and their practical applications.",
+                    duration: 25
+                },
+                {
+                    time: "12:10",
+                    displayTime: "12:10 PM",
+                    title: "Keynote 4: Dr. Yasas V. Abeywickrama",
+                    description: "Keynote presentation by Dr. Yasas V. Abeywickrama, Chief Operating Officer at Doerscircle - Singapore, sharing insights on operational excellence and technology leadership.",
+                    duration: 25
+                },
+                {
+                    time: "12:35",
+                    displayTime: "12:35 PM",
+                    title: "Guest Speech: Mr. Sumudu Rathnayake",
+                    description: "Special guest speech by Mr. Sumudu Rathnayake discussing industry perspectives and technological advancements.",
+                    duration: 25
                 },
                 {
                     time: "13:00",
                     displayTime: "1:00 PM",
-                    title: "Cybersecurity in the Digital Age",
-                    description: "Critical security challenges facing organizations today. Learn about threat detection, prevention strategies, and building resilient security frameworks.",
-                    duration: 45
+                    title: "Lunch",
+                    description: "Buffet lunch with networking opportunities. Enjoy delicious food while connecting with speakers and fellow attendees.",
+                    duration: 60
                 },
                 {
-                    time: "13:45",
-                    displayTime: "1:45 PM",
-                    title: "Interactive Q&A Session",
-                    description: "Open floor discussion with all Day 1 speakers. Ask questions, share insights, and engage in meaningful conversations about today's topics.",
-                    duration: 30
+                    time: "14:00",
+                    displayTime: "2:00 PM",
+                    title: "FinTech",
+                    description: "Comprehensive session on Financial Technology innovations, digital payments, blockchain applications, and the future of financial services.",
+                    duration: 75
                 },
                 {
-                    time: "14:15",
-                    displayTime: "2:15 PM",
-                    title: "Hands-on Workshop: Modern Web Development",
-                    description: "Practical coding workshop covering latest web technologies, frameworks, and development methodologies. Bring your laptops for hands-on experience.",
-                    duration: 90
+                    time: "15:15",
+                    displayTime: "3:15 PM",
+                    title: "Tea",
+                    description: "Afternoon tea break with networking opportunities. Discuss the FinTech session and prepare for upcoming presentations.",
+                    duration: 20
                 },
                 {
-                    time: "20.00",
-                    displayTime: "8.00 PM",
-                    title: "Day 1 Closing & Day 2 Preview",
-                    description: "Wrap-up of Day 1 highlights, key takeaways, and exciting preview of tomorrow's Day 2 sessions. Thank you for an amazing first day!",
-                    duration: 15
+                    time: "15:35",
+                    displayTime: "3:35 PM",
+                    title: "EduTech",
+                    description: "Educational Technology session covering digital learning platforms, e-learning innovations, and the transformation of education through technology.",
+                    duration: 25
+                },
+                {
+                    time: "16:00",
+                    displayTime: "4:00 PM",
+                    title: "TravelTech",
+                    description: "Travel Technology innovations including booking platforms, digital tourism solutions, and smart travel experiences.",
+                    duration: 25
+                },
+                {
+                    time: "16:25",
+                    displayTime: "4:25 PM",
+                    title: "Cybersecurity",
+                    description: "Critical cybersecurity session covering threat landscape, security frameworks, and protection strategies for modern organizations.",
+                    duration: 25
+                },
+                {
+                    time: "16:50",
+                    displayTime: "4:50 PM",
+                    title: "Raffle Draw",
+                    description: "Exciting raffle draw session with prizes for conference participants. Thank you for your active participation in Day 1!",
+                    duration: 10
+                },
+                {
+                    time: "17:00",
+                    displayTime: "5:00 PM",
+                    title: "Day 1 Conclusion",
+                    description: "Official end of Day 1. Thank you for an amazing day of learning and networking. See you tomorrow for Day 2 starting at 8:30 AM!",
+                    duration: 0
                 }
             ],
 
             'Day 2': [
                 {
-                    time: "09:00",
-                    displayTime: "9:00 AM",
-                    title: "Day 2 Welcome & Recap",
-                    description: "Welcome back to NITC 2025! Quick recap of Day 1 highlights and introduction to today's advanced sessions and workshops.",
+                    time: "08:30",
+                    displayTime: "8:30 AM",
+                    title: "Registration",
+                    description: "Day 2 registration and check-in. Welcome back to NITC 2025! Collect your Day 2 materials and prepare for advanced sessions.",
                     duration: 30
                 },
                 {
-                    time: "09:30",
-                    displayTime: "9:30 AM",
-                    title: "Machine Learning & Data Science",
-                    description: "Advanced techniques in machine learning, data analysis, and predictive modeling. Real-world applications and case studies from leading organizations.",
+                    time: "09:00",
+                    displayTime: "9:00 AM",
+                    title: "Guest Speech: Dr. Hans Wijesuriya",
+                    description: "Opening guest speech by Dr. Hans Wijesuriya, Chief Advisor to the President of Sri Lanka on Digital Economy & Chairman, ICT Agency of Sri Lanka.",
+                    duration: 20
+                },
+                {
+                    time: "09:20",
+                    displayTime: "9:20 AM",
+                    title: "Keynote 5",
+                    description: "Fifth keynote presentation exploring advanced technology concepts and their implementation in various sectors.",
+                    duration: 25
+                },
+                {
+                    time: "09:45",
+                    displayTime: "9:45 AM",
+                    title: "Keynote 6",
+                    description: "Sixth keynote session focusing on innovation strategies and technological disruption in modern industries.",
+                    duration: 25
+                },
+                {
+                    time: "10:10",
+                    displayTime: "10:10 AM",
+                    title: "Keynote 7",
+                    description: "Seventh keynote presentation covering cutting-edge research and development in technology sectors.",
+                    duration: 25
+                },
+                {
+                    time: "10:35",
+                    displayTime: "10:35 AM",
+                    title: "Morning Tea",
+                    description: "Mid-morning refreshment break with networking opportunities. Connect with Day 2 speakers and participants.",
+                    duration: 25
+                },
+                {
+                    time: "11:00",
+                    displayTime: "11:00 AM",
+                    title: "Keynote 8",
+                    description: "Eighth keynote session exploring emerging technologies and their potential impact on future business models.",
+                    duration: 25
+                },
+                {
+                    time: "11:25",
+                    displayTime: "11:25 AM",
+                    title: "Panel Discussion 2: Business Automation and Agentic AI",
+                    description: "Expert panel discussing the role of artificial intelligence in business automation, agentic AI systems, and their transformative impact on organizational efficiency.",
                     duration: 60
                 },
                 {
-                    time: "10:30",
-                    displayTime: "10:30 AM",
-                    title: "Coffee Break",
-                    description: "Refreshment break with coffee, tea, and networking opportunities. Discuss the ML session and prepare for the next presentation.",
-                    duration: 15
-                },
-                {
-                    time: "10:45",
-                    displayTime: "10:45 AM",
-                    title: "IoT & Smart Cities Initiative",
-                    description: "Internet of Things applications in building smart cities. Explore sensor networks, data collection, and urban planning technologies for the future.",
-                    duration: 45
-                },
-                {
-                    time: "11:30",
-                    displayTime: "11:30 AM",
-                    title: "Quantum Computing Fundamentals",
-                    description: "Introduction to quantum computing principles, current state of the technology, and potential applications that could revolutionize computing.",
-                    duration: 45
-                },
-                {
-                    time: "12:15",
-                    displayTime: "12:15 PM",
-                    title: "Lunch & Networking Session",
-                    description: "Extended lunch break with structured networking activities. Meet industry leaders, potential collaborators, and like-minded professionals.",
+                    time: "12:25",
+                    displayTime: "12:25 PM",
+                    title: "Lunch",
+                    description: "Extended lunch break with structured networking activities. Meet industry leaders and potential collaborators.",
                     duration: 75
                 },
                 {
-                    time: "13:30",
-                    displayTime: "1:30 PM",
-                    title: "Entrepreneurship & Innovation Panel",
-                    description: "Panel discussion with successful entrepreneurs and innovators. Learn about startup journeys, funding strategies, and scaling technology businesses.",
-                    duration: 60
+                    time: "13:40",
+                    displayTime: "1:40 PM",
+                    title: "InfoSec",
+                    description: "Information Security session covering advanced security protocols, data protection strategies, and enterprise security frameworks.",
+                    duration: 50
                 },
                 {
                     time: "14:30",
                     displayTime: "2:30 PM",
-                    title: "Future of Work & Remote Technologies",
-                    description: "How technology is reshaping the workplace. Remote work tools, collaboration platforms, and the evolution of professional environments.",
-                    duration: 45
+                    title: "Big Data Analytics",
+                    description: "Comprehensive session on Big Data technologies, analytics platforms, machine learning applications, and data-driven decision making.",
+                    duration: 25
                 },
                 {
-                    time: "15:15",
-                    displayTime: "3:15 PM",
-                    title: "Final Networking & Feedback Session",
-                    description: "Last chance to network with all participants. Share feedback about the conference and exchange contact information with new connections.",
+                    time: "14:55",
+                    displayTime: "2:55 PM",
+                    title: "Tea",
+                    description: "Afternoon tea break with networking opportunities. Discuss the data analytics session and connect with fellow participants.",
+                    duration: 35
+                },
+                {
+                    time: "15:30",
+                    displayTime: "3:30 PM",
+                    title: "Track Sessions",
+                    description: "Specialized track sessions covering various technology domains and industry-specific applications.",
+                    duration: 25
+                },
+                {
+                    time: "15:55",
+                    displayTime: "3:55 PM",
+                    title: "Digital Transport",
+                    description: "Transportation Technology session exploring smart mobility solutions, digital logistics, and the future of connected transportation systems.",
+                    duration: 25
+                },
+                {
+                    time: "16:20",
+                    displayTime: "4:20 PM",
+                    title: "eHealth",
+                    description: "Electronic Health solutions covering telemedicine, health informatics, digital health platforms, and healthcare technology innovations.",
                     duration: 30
                 },
                 {
-                    time: "15:45",
-                    displayTime: "3:45 PM",
-                    title: "Conference Grand Finale",
-                    description: "Official closing ceremony of NITC 2025. Thank you messages, final announcements, and celebration of two incredible days of learning and innovation.",
-                    duration: 15
+                    time: "16:50",
+                    displayTime: "4:50 PM",
+                    title: "Raffle Draw",
+                    description: "Day 2 raffle draw with exciting prizes for conference participants. Celebration of two successful days of learning and networking.",
+                    duration: 10
                 },
                 {
-                    time: "16:00",
-                    displayTime: "4:00 PM",
-                    title: "NITC 2025 Conclusion",
-                    description: "Thank you for being part of NITC 2025! Safe travels to all participants. Stay connected and we look forward to seeing you at future events.",
+                    time: "17:00",
+                    displayTime: "5:00 PM",
+                    title: "Digital Investment Summit",
+                    description: "Special summit session on digital investment opportunities, funding strategies for tech startups, and investment trends in the digital economy.",
+                    duration: 30
+                },
+                {
+                    time: "17:30",
+                    displayTime: "5:30 PM",
+                    title: "NITC 2025 Grand Finale",
+                    description: "Official closing ceremony of NITC 2025. Thank you messages, final announcements, and celebration of two incredible days of innovation and learning. Safe travels to all participants!",
                     duration: 0
                 }
             ]
@@ -264,13 +376,13 @@ class ConferenceModel {
     detectCurrentDay() {
         const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
         
-        console.log(`📅 Today's date: ${today}`);
-        console.log(`📋 Conference dates:`, this.conferenceDates);
+        console.log(`Today's date: ${today}`);
+        console.log(`Conference dates:`, this.conferenceDates);
         
         // Check if today matches any conference date
         for (const [dayName, date] of Object.entries(this.conferenceDates)) {
             if (date === today) {
-                console.log(`✅ Found matching day: ${dayName} for date ${today}`);
+                console.log(`Found matching day: ${dayName} for date ${today}`);
                 return dayName;
             }
         }
@@ -281,26 +393,26 @@ class ConferenceModel {
         // Check if today is after Day 2
         const day2Time = new Date(this.conferenceDates['Day 2']).getTime();
         if (todayTime > day2Time) {
-            console.log(`📅 Today is after Day 2, showing Day 2 content`);
+            console.log(`Today is after Day 2, showing Day 2 content`);
             return 'Day 2';
         }
         
         // Check if today is after Day 1
         const day1Time = new Date(this.conferenceDates['Day 1']).getTime();
         if (todayTime > day1Time) {
-            console.log(`📅 Today is after Day 1, showing Day 1 content`);
+            console.log(`Today is after Day 1, showing Day 1 content`);
             return 'Day 1';
         }
         
         // Check if today is after Inauguration
         const inaugTime = new Date(this.conferenceDates['Inauguration']).getTime();
         if (todayTime > inaugTime) {
-            console.log(`📅 Today is after Inauguration, showing Inauguration content`);
+            console.log(`Today is after Inauguration, showing Inauguration content`);
             return 'Inauguration';
         }
         
         // Default to Inauguration if before conference starts
-        console.log(`📅 Before conference starts, defaulting to Inauguration`);
+        console.log(`Before conference starts, defaulting to Inauguration`);
         return 'Inauguration';
     }
 
@@ -312,7 +424,7 @@ class ConferenceModel {
         setInterval(() => {
             const detectedDay = this.detectCurrentDay();
             if (detectedDay !== this.currentDay) {
-                console.log(`🔄 Day change detected: ${this.currentDay} → ${detectedDay}`);
+                console.log(`Day change detected: ${this.currentDay} → ${detectedDay}`);
                 this.currentDay = detectedDay;
                 this.currentEventIndex = -1; // Reset event index
                 this.conferenceStatus = 'waiting'; // Reset status
@@ -331,7 +443,7 @@ class ConferenceModel {
      */
     updateConferenceDates(dates) {
         this.conferenceDates = { ...this.conferenceDates, ...dates };
-        console.log('📅 Conference dates updated:', this.conferenceDates);
+        console.log('Conference dates updated:', this.conferenceDates);
         
         // Re-detect current day
         const newDay = this.detectCurrentDay();

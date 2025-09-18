@@ -24,10 +24,17 @@ class ConferenceView {
         this.debugStatus = document.getElementById('debugStatus');
         
         // Webcam settings for production use
-        this.webcamEnabled = true;
+        this.webcamEnabled = false; // DISABLED until event starts
         this.webcamStream = null;
         this.webcamVideoElement = null;
         this.webcamInitialized = false;
+        this.showBroadcastMessage = true; // Show "broadcast starts soon" message
+        
+        // Pre-event highlight system - SIMPLIFIED
+        this.preEventMode = false;
+        this.highlightInterval = null;
+        this.currentHighlightIndex = 0;
+        this.highlightDuration = 15000; // 15 seconds per event
         
         // Current day for the conference
         this.currentDay = 'Inauguration';
@@ -47,6 +54,126 @@ class ConferenceView {
         if (this.isDisplay2) {
             setTimeout(() => this.initializeWebcam(), 1000);
         }
+        
+        // FORCE START PREVIEW MODE FOR TESTING - Remove this line after testing
+        if (this.isDisplay1) {
+            setTimeout(() => {
+                console.log('FORCE STARTING PREVIEW MODE FOR TESTING');
+                this.startPreEventHighlights();
+            }, 3000);
+        }
+    }
+
+    /**
+     * Start pre-event highlight mode - WORKING VERSION
+     */
+    startPreEventHighlights() {
+        if (!this.isDisplay1) return;
+        
+        console.log('=== STARTING PRE-EVENT HIGHLIGHT MODE ===');
+        this.preEventMode = true;
+        this.currentHighlightIndex = 0;
+        
+        // Clear any existing interval
+        if (this.highlightInterval) {
+            clearInterval(this.highlightInterval);
+        }
+        
+        // Start highlighting immediately
+        this.doHighlight();
+        
+        // Set up interval to continue highlighting
+        this.highlightInterval = setInterval(() => {
+            this.doHighlight();
+        }, this.highlightDuration);
+    }
+
+    /**
+     * Do the actual highlighting - SIMPLE WHITE BACKGROUND
+     */
+    doHighlight() {
+        console.log('--- Starting highlight cycle ---');
+        
+        // Get agenda data
+        const agenda = window.conferenceApp?.model?.getAgendaData() || [];
+        if (agenda.length === 0) {
+            console.log('No agenda data available');
+            return;
+        }
+        
+        // Clear all previous highlights
+        const allEvents = document.querySelectorAll('.current-event-card, .upcoming-event');
+        allEvents.forEach(element => {
+            element.style.transform = '';
+            element.style.boxShadow = '';
+            element.style.border = '';
+            element.style.background = '';
+            element.style.color = '';
+            element.style.padding = '';
+            element.style.height = '';
+        });
+        
+        // Find target element
+        let targetElement = null;
+        
+        // Check if we have a current event card first
+        const currentCard = document.querySelector('.current-event-card');
+        const upcomingEvents = document.querySelectorAll('.upcoming-event');
+        
+        if (this.currentHighlightIndex === 0 && currentCard) {
+            targetElement = currentCard;
+        } else {
+            const upcomingIndex = currentCard ? this.currentHighlightIndex - 1 : this.currentHighlightIndex;
+            if (upcomingIndex >= 0 && upcomingIndex < upcomingEvents.length) {
+                targetElement = upcomingEvents[upcomingIndex];
+            }
+        }
+        
+        // Apply highlight if we found an element
+        if (targetElement) {
+            console.log(`Highlighting event ${this.currentHighlightIndex + 1}/${agenda.length}: ${agenda[this.currentHighlightIndex]?.title}`);
+            
+            // Apply simple white background highlight
+            targetElement.style.background = 'white';
+            targetElement.style.color = '#081A30';
+            targetElement.style.padding = '25px 30px'; // Slightly more padding for height
+            targetElement.style.borderRadius = '10px';
+            targetElement.style.transition = 'all 0.3s ease';
+            
+            // Make text elements dark
+            const timeElement = targetElement.querySelector('.time');
+            const titleElement = targetElement.querySelector('.title');
+            if (timeElement) timeElement.style.color = '#081A30';
+            if (titleElement) titleElement.style.color = '#081A30';
+            
+        } else {
+            console.log(`Could not find element for index ${this.currentHighlightIndex}`);
+        }
+        
+        // Move to next event
+        this.currentHighlightIndex = (this.currentHighlightIndex + 1) % agenda.length;
+    }
+
+    /**
+     * Stop pre-event highlight mode
+     */
+    stopPreEventHighlights() {
+        console.log('=== STOPPING PRE-EVENT HIGHLIGHT MODE ===');
+        this.preEventMode = false;
+        
+        if (this.highlightInterval) {
+            clearInterval(this.highlightInterval);
+            this.highlightInterval = null;
+        }
+        
+        // Clear all highlights
+        const allEvents = document.querySelectorAll('.current-event-card, .upcoming-event');
+        allEvents.forEach(element => {
+            element.style.transform = '';
+            element.style.boxShadow = '';
+            element.style.border = '';
+            element.style.background = '';
+        });
     }
 
     /**
@@ -123,31 +250,54 @@ class ConferenceView {
     }
 
     /**
-     * Generate webcam HTML for Display 2 - OPTIMIZED FOR VERTICAL SCREENS
+     * Generate webcam HTML for Display 2 - WITH BROADCAST MESSAGE
      */
     generateWebcamHTML() {
-        if (!this.webcamEnabled || !this.isDisplay2) {
+        if (!this.isDisplay2) {
             return '';
         }
 
-        return `
-            <div class="webcam-container">
-                <div class="webcam-header">
-                    <span class="webcam-title">Live from Conference Hall</span>
-                    <span class="webcam-status">● LIVE</span>
-                </div>
-                <video 
-                    id="live-webcam-feed" 
-                    class="webcam-feed" 
-                    autoplay 
-                    muted 
-                    playsinline>
-                    <div class="webcam-fallback">
-                        <p>Camera not available</p>
+        // Show broadcast message instead of camera when disabled
+        if (!this.webcamEnabled && this.showBroadcastMessage) {
+            return `
+                <div class="webcam-container">
+                    <div class="webcam-header">
+                        <span class="webcam-title">Conference Hall</span>
+                        <span class="webcam-status">● STANDBY</span>
                     </div>
-                </video>
-            </div>
-        `;
+                    <div class="broadcast-message">
+                        <div class="broadcast-icon">📡</div>
+                        <h3>Live Broadcast Will Start Soon</h3>
+                        <p>Online streaming will begin when the event starts</p>
+                        <div class="broadcast-time">Please stand by...</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Show camera if enabled
+        if (this.webcamEnabled) {
+            return `
+                <div class="webcam-container">
+                    <div class="webcam-header">
+                        <span class="webcam-title">Live from Conference Hall</span>
+                        <span class="webcam-status">● LIVE</span>
+                    </div>
+                    <video 
+                        id="live-webcam-feed" 
+                        class="webcam-feed" 
+                        autoplay 
+                        muted 
+                        playsinline>
+                        <div class="webcam-fallback">
+                            <p>Camera not available</p>
+                        </div>
+                    </video>
+                </div>
+            `;
+        }
+
+        return '';
     }
 
     /**
@@ -167,6 +317,77 @@ class ConferenceView {
                 </div>
             `;
         }
+    }
+
+    /**
+     * Generate QR code HTML for website link - FIXED VERSION
+     */
+    generateQRCodeHTML() {
+        if (!this.isDisplay2) {
+            return '';
+        }
+
+        return `
+            <div class="qr-code-container">
+                <div class="qr-code-header">
+                    <h3>For More Event Details</h3>
+                </div>
+                <div class="qr-code-content">
+                    <div class="qr-code">
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&format=png&data=https://nitc.lk/%23schedule" 
+                             alt="QR Code for NITC Schedule"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+                             style="display: block;">
+                        <div style="display: none; padding: 20px; border: 2px solid #081A30; border-radius: 8px; background: #f8f9fa;">
+                            <p style="margin: 0; color: #081A30; font-weight: bold;">QR Code</p>
+                            <p style="margin: 5px 0 0 0; font-size: 0.9em; color: #6c757d;">nitc.lk/#schedule</p>
+                        </div>
+                    </div>
+                    <div class="qr-code-text">
+                        <p><strong>Scan to visit:</strong></p>
+                        <p class="website-url">nitc.lk/#schedule</p>
+                        <p class="qr-instruction">Scan with your phone camera for complete event schedule and details</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * Enable webcam feed (for when event starts)
+     */
+    enableWebcam() {
+        this.webcamEnabled = true;
+        this.showBroadcastMessage = false;
+        console.log('Webcam enabled - starting live feed');
+        
+        // Re-render current event to show camera
+        if (this.isDisplay2) {
+            // Trigger a re-render by updating the display
+            setTimeout(() => {
+                const currentDetail = document.getElementById('currentDetail');
+                if (currentDetail && currentDetail.innerHTML.includes('broadcast-message')) {
+                    // Force a refresh of the display
+                    window.location.reload();
+                }
+            }, 100);
+        }
+    }
+
+    /**
+     * Disable webcam feed (show broadcast message)
+     */
+    disableWebcam() {
+        this.webcamEnabled = false;
+        this.showBroadcastMessage = true;
+        
+        // Stop any existing stream
+        if (this.webcamStream) {
+            this.webcamStream.getTracks().forEach(track => track.stop());
+            this.webcamStream = null;
+        }
+        
+        console.log('Webcam disabled - showing broadcast message');
     }
 
     /**
@@ -337,21 +558,23 @@ class ConferenceView {
         try {
             this.currentDetail.innerHTML = '';
 
-            // Generate webcam HTML
+            // Generate webcam HTML and QR code
             const webcamHtml = this.generateWebcamHTML();
+            const qrCodeHtml = this.generateQRCodeHTML();
             
             if (currentEvent && status === 'active') {
-                // Active event with webcam
+                // Active event with webcam and QR code
                 this.currentDetail.innerHTML = `
                     <div class="event-content">
                         <div class="current-time">${currentEvent.displayTime}</div>
                         <div class="current-title">${currentEvent.title}</div>
                         <div class="current-description">${currentEvent.description}</div>
                     </div>
+                    ${qrCodeHtml}
                     ${webcamHtml}
                 `;
             } else if (status === 'waiting') {
-                // Conference waiting with webcam
+                // Conference waiting with webcam and QR code
                 let nextEventHtml = '';
                 if (nextEvent) {
                     const timeText = timeUntilNext > 0 ? 
@@ -382,10 +605,11 @@ class ConferenceView {
                             ${nextEventHtml}
                         </div>
                     </div>
+                    ${qrCodeHtml}
                     ${webcamHtml}
                 `;
             } else if (status === 'completed') {
-                // Conference completed with webcam
+                // Conference completed with webcam and QR code
                 this.currentDetail.innerHTML = `
                     <div class="event-content">
                         <div class="no-current-event">
@@ -400,10 +624,11 @@ class ConferenceView {
                             </div>
                         </div>
                     </div>
+                    ${qrCodeHtml}
                     ${webcamHtml}
                 `;
             } else {
-                // Default state with webcam
+                // Default state with webcam and QR code
                 this.currentDetail.innerHTML = `
                     <div class="event-content">
                         <div class="no-current-event">
@@ -411,6 +636,7 @@ class ConferenceView {
                             <p>Waiting for event information...</p>
                         </div>
                     </div>
+                    ${qrCodeHtml}
                     ${webcamHtml}
                 `;
             }
@@ -618,10 +844,16 @@ class ConferenceView {
             this.webcamStream = null;
             console.log('Webcam resources cleaned up');
         }
+        
+        // Clean up highlight interval
+        if (this.highlightInterval) {
+            clearInterval(this.highlightInterval);
+            this.highlightInterval = null;
+        }
     }
 }
 
-// Global shortcuts for console testing
+// Global shortcuts for console testing and camera control
 window.hideButtons = function() {
     if (window.conferenceApp && window.conferenceApp.view) {
         window.conferenceApp.view.hideControls();
@@ -634,5 +866,30 @@ window.showButtons = function() {
     }
 };
 
-console.log('ConferenceView loaded with production-ready webcam integration');
-console.log('Global shortcuts available: hideButtons(), showButtons()');
+window.enableCamera = function() {
+    if (window.conferenceApp && window.conferenceApp.view) {
+        window.conferenceApp.view.enableWebcam();
+    }
+};
+
+window.disableCamera = function() {
+    if (window.conferenceApp && window.conferenceApp.view) {
+        window.conferenceApp.view.disableWebcam();
+    }
+};
+
+window.startPreviewMode = function() {
+    if (window.conferenceApp && window.conferenceApp.view) {
+        window.conferenceApp.view.startPreEventHighlights();
+    }
+};
+
+window.stopPreviewMode = function() {
+    if (window.conferenceApp && window.conferenceApp.view) {
+        window.conferenceApp.view.stopPreEventHighlights();
+    }
+};
+
+console.log('ConferenceView loaded with pre-event highlight system');
+console.log('Preview mode will auto-start in 3 seconds for testing');
+console.log('Global shortcuts: startPreviewMode(), stopPreviewMode(), enableCamera(), disableCamera()');
