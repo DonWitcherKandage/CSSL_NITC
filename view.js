@@ -33,11 +33,11 @@ class ConferenceView {
         // Set initial state based on current time
         this.setInitialCameraState();
         
-        // Pre-event highlight system - SIMPLIFIED
+        // Pre-event highlight system - REMOVED FOR PRODUCTION
         this.preEventMode = false;
         this.highlightInterval = null;
         this.currentHighlightIndex = 0;
-        this.highlightDuration = 15000; // 15 seconds per event
+        this.highlightDuration = 15000; // Keep for separate preview file
         
         // Current day for the conference
         this.currentDay = 'Inauguration';
@@ -61,13 +61,13 @@ class ConferenceView {
             setInterval(() => this.checkEventStatusForCamera(), 5000);
         }
         
-        // FORCE START PREVIEW MODE FOR TESTING - Remove this line after testing
-        if (this.isDisplay1) {
-            setTimeout(() => {
-                console.log('FORCE STARTING PREVIEW MODE FOR TESTING');
-                this.startPreEventHighlights();
-            }, 3000);
-        }
+        // REMOVE PRE-EVENT HIGHLIGHTING FROM PRODUCTION
+        // if (this.isDisplay1) {
+        //     setTimeout(() => {
+        //         console.log('FORCE STARTING PREVIEW MODE FOR TESTING');
+        //         this.startPreEventHighlights();
+        //     }, 3000);
+        // }
     }
 
     /**
