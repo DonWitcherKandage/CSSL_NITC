@@ -45,7 +45,7 @@
             font-weight: 600 !important;
         }
 
-        /* Preview mode indicator - removed orange */
+        /* Preview mode indicator */
         .preview-indicator {
             position: absolute;
             top: 80px;
@@ -111,10 +111,10 @@
     <script src="view.js"></script>
     <script src="controller.js"></script>
     
-    <!-- Preview Mode Script - Copy of app-display1.js with preview modifications -->
+    <!-- Preview Mode Script - Pure Sequential Highlighting -->
     <script>
 /* ============================================================================
-   PREVIEW MODE APPLICATION - IDENTICAL TO DISPLAY1 WITH HIGHLIGHTING
+   PREVIEW MODE APPLICATION - PURE SEQUENTIAL HIGHLIGHTING OF ALL AGENDA ITEMS
    ============================================================================ */
 
 // Global controller instance
@@ -227,12 +227,63 @@ async function initializeParticles() {
 }
 
 /**
+ * Force all events to render as a simple list (ignore current/upcoming logic)
+ */
+function forceAllEventsAsSimpleList() {
+    if (!conferenceApp || !conferenceApp.model) return;
+    
+    const agenda = conferenceApp.model.getAgendaData();
+    const agendaContainer = document.getElementById('agendaList');
+    
+    if (!agendaContainer || agenda.length === 0) return;
+    
+    // Clear existing content
+    agendaContainer.innerHTML = '';
+    
+    // Create header section
+    const headerSection = document.createElement('div');
+    headerSection.className = 'agenda-header';
+    headerSection.innerHTML = `
+        <div class="conference-logo">
+            <img src="nitc-logo.png" alt="NITC 2025 Logo">
+        </div>
+        <div class="event-title-section">
+            <div class="event-title">EVENT<br>SCHEDULE</div>
+            <div class="event-day">${conferenceApp.view.currentDay}</div>
+        </div>
+    `;
+    agendaContainer.appendChild(headerSection);
+    
+    // Create upcoming events section with ALL agenda items
+    const upcomingSection = document.createElement('div');
+    upcomingSection.className = 'upcoming-events';
+    
+    // Add ALL agenda items as upcoming events (no current event card)
+    agenda.forEach((item, index) => {
+        const eventElement = document.createElement('div');
+        eventElement.className = 'upcoming-event';
+        eventElement.innerHTML = `
+            <div class="time">${item.displayTime}</div>
+            <div class="title">${item.title}</div>
+        `;
+        upcomingSection.appendChild(eventElement);
+    });
+    
+    agendaContainer.appendChild(upcomingSection);
+    
+    console.log(`Rendered ${agenda.length} events as simple list for preview`);
+}
+
+/**
  * Start preview highlighting
  */
 function startPreviewHighlighting() {
-    console.log('Starting preview highlighting mode');
+    console.log('Starting preview highlighting mode - pure sequential');
     
-    // Start immediately
+    // Force simple list rendering first
+    forceAllEventsAsSimpleList();
+    
+    // Start highlighting immediately
     doHighlight();
     
     // Continue every 12 seconds
@@ -240,7 +291,7 @@ function startPreviewHighlighting() {
 }
 
 /**
- * Perform the highlighting
+ * Perform the highlighting - PURE SEQUENTIAL ON ALL AGENDA ITEMS
  */
 function doHighlight() {
     if (!conferenceApp || !conferenceApp.model) return;
@@ -248,30 +299,21 @@ function doHighlight() {
     const agenda = conferenceApp.model.getAgendaData();
     if (agenda.length === 0) return;
     
+    // Ensure we have the simple list rendered
+    forceAllEventsAsSimpleList();
+    
     // Clear all previous highlights
-    const allEvents = document.querySelectorAll('.current-event-card, .upcoming-event');
+    const allEvents = document.querySelectorAll('.upcoming-event');
     allEvents.forEach(element => {
         element.classList.remove('preview-highlight');
     });
     
-    // Find target element
-    let targetElement = null;
-    const currentCard = document.querySelector('.current-event-card');
-    const upcomingEvents = document.querySelectorAll('.upcoming-event');
-    
-    if (currentHighlightIndex === 0 && currentCard) {
-        targetElement = currentCard;
-    } else {
-        const upcomingIndex = currentCard ? currentHighlightIndex - 1 : currentHighlightIndex;
-        if (upcomingIndex >= 0 && upcomingIndex < upcomingEvents.length) {
-            targetElement = upcomingEvents[upcomingIndex];
-        }
-    }
-    
-    // Apply highlight
-    if (targetElement) {
-        targetElement.classList.add('preview-highlight');
-        console.log(`Highlighting event ${currentHighlightIndex + 1}/${agenda.length}: ${agenda[currentHighlightIndex]?.title}`);
+    // Highlight the current index directly
+    if (allEvents[currentHighlightIndex]) {
+        allEvents[currentHighlightIndex].classList.add('preview-highlight');
+        
+        const targetItem = agenda[currentHighlightIndex];
+        console.log(`Highlighting ${currentHighlightIndex + 1}/${agenda.length}: ${targetItem.displayTime} - ${targetItem.title}`);
     }
     
     // Move to next event
@@ -305,9 +347,9 @@ function initializeConferenceApp() {
         // Log system information
         console.log('Location: Sri Lanka (UTC+5:30)');
         console.log('Schedule: 12:00 PM - 6:00 PM');
-        console.log('Mode: Preview Mode with Auto-Highlighting');
+        console.log('Mode: Preview Mode with Pure Sequential Highlighting');
         console.log('Design: NITC 2025 Conference Theme with Slow-Motion Particles');
-        console.log('Display: Preview - Agenda List with Highlighting');
+        console.log('Display: Preview - All Agenda Items Sequential');
         console.log('================================================');
         
         // Log available controls
@@ -348,8 +390,8 @@ function setupCrossDisplaySync() {
         if (conferenceApp) {
             const status = conferenceApp.getSystemStatus();
             localStorage.setItem('nitc2025_sync', JSON.stringify({
-                currentEventIndex: status.currentEvent ? conferenceApp.model.getCurrentEventIndex() : -1,
-                conferenceStatus: status.conferenceStatus,
+                currentEventIndex: -1, // Override - no current event in preview
+                conferenceStatus: 'preview',
                 currentTime: status.currentTime,
                 timestamp: Date.now()
             }));
@@ -374,19 +416,11 @@ function logAvailableControls() {
     console.log('stopPreview()         - Stop preview highlighting');
     console.log('startPreview()        - Start preview highlighting');
     console.log('');
-    console.log('Keyboard Shortcuts:');
-    console.log('H                     - Toggle control buttons');
-    console.log('D                     - Toggle debug panel');
-    console.log('R                     - Reset to real-time mode');
-    console.log('');
     console.log('System Information:');
-    console.log('- System automatically tracks real Sri Lankan time');
-    console.log('- Events change based on actual conference schedule');
-    console.log('- Manual overrides reset to real-time after 30 seconds');
-    console.log('- Debug panel shows current status and timing');
-    console.log('- Custom PNG logo support (place nitc-logo.png in folder)');
-    console.log('- Slow-motion particles effect enabled');
-    console.log('- Preview highlighting active - 12 seconds per event');
+    console.log('- Pure sequential highlighting of ALL agenda items');
+    console.log('- Ignores real-time current/upcoming logic');
+    console.log('- Each event highlighted for 12 seconds');
+    console.log('- Continuous loop through entire agenda');
     console.log('=====================================\n');
 }
 
@@ -403,7 +437,6 @@ function hideButtons() {
         }
         
         console.log('Production mode activated - controls hidden');
-        console.log('Clean display ready for conference presentation');
     } else {
         console.log('System not ready yet. Please wait for initialization.');
     }
@@ -455,7 +488,7 @@ function stopPreview() {
     }
     
     // Clear all highlights
-    const allEvents = document.querySelectorAll('.current-event-card, .upcoming-event');
+    const allEvents = document.querySelectorAll('.upcoming-event');
     allEvents.forEach(element => {
         element.classList.remove('preview-highlight');
     });
@@ -481,12 +514,9 @@ function getStatus() {
         console.log('NITC 2025 Conference System Status - Preview Mode:');
         console.log('====================================');
         console.log(`Current Time: ${status.currentTime} (Sri Lankan)`);
-        console.log(`Conference Status: ${status.conferenceStatus}`);
-        console.log(`Current Event: ${status.currentEvent ? status.currentEvent.title : 'None'}`);
-        console.log(`Next Event: ${status.nextEvent ? status.nextEvent.title : 'None'}`);
-        console.log(`Time Until Next: ${status.timeUntilNext > 0 ? status.timeUntilNext + ' minutes' : 'N/A'}`);
-        console.log(`System Running: ${status.isRunning ? 'Yes' : 'No'}`);
+        console.log(`Conference Status: Preview Mode`);
         console.log(`Preview Active: ${previewInterval ? 'Yes' : 'No'}`);
+        console.log(`Current Highlight Index: ${currentHighlightIndex}`);
         console.log('====================================');
         return status;
     } else {
@@ -542,6 +572,11 @@ function setDay(dayName) {
     if (conferenceApp) {
         conferenceApp.view.updateConferenceDay(dayName);
         console.log(`Conference day updated to: ${dayName}`);
+        
+        // Restart preview with new day
+        setTimeout(() => {
+            startPreviewHighlighting();
+        }, 500);
     } else {
         console.log('System not ready yet. Please wait for initialization.');
     }
@@ -592,12 +627,10 @@ setInterval(() => {
 setTimeout(() => {
     if (conferenceApp) {
         console.log('NITC 2025 Conference Preview Display is ready!');
-        console.log('Type getStatus() to see current status');
-        console.log('Type hideButtons() for production mode');
-        console.log('Type setDay("Day 1") to change conference day');
-        console.log('Type hideParticles() to disable particle effects');
+        console.log('Pure sequential highlighting active - ALL agenda items');
+        console.log('No current event distinction - just agenda[0], agenda[1], agenda[2]...');
         console.log('Type stopPreview() to stop highlighting');
-        console.log('System is highlighting each event for 12 seconds automatically');
+        console.log('Type setDay("Day 1") to change day and restart preview');
     }
 }, 5000);
     </script>

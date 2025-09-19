@@ -183,7 +183,7 @@ class ConferenceView {
     }
 
     /**
-     * Initialize webcam for Display 2 - PRODUCTION READY WITH LOGITECH DETECTION
+     * Initialize webcam for Display 2 - FIXED VERSION (NO STUTTERING)
      */
     async initializeWebcam() {
         if (!this.isDisplay2 || this.webcamInitialized) return;
@@ -204,11 +204,12 @@ class ConferenceView {
                 device.label.toLowerCase().includes('usb')
             );
             
+            // FIXED CONSTRAINTS - Lower settings to prevent stuttering
             let constraints = {
                 video: {
-                    width: { ideal: 1280, max: 1920 },
-                    height: { ideal: 720, max: 1080 },
-                    frameRate: { ideal: 30, max: 60 }
+                    width: { ideal: 640, max: 1280 },
+                    height: { ideal: 480, max: 720 },
+                    frameRate: { ideal: 15, max: 30 }
                 },
                 audio: false
             };
@@ -353,7 +354,7 @@ class ConferenceView {
     }
 
     /**
-     * Check timing and update camera state automatically - DYNAMIC FOR ANY DAY
+     * Check timing and update camera state automatically - FIXED VERSION (NO REFRESH LOOPS)
      */
     checkEventStatusForCamera() {
         if (!this.isDisplay2) return;
@@ -385,7 +386,7 @@ class ConferenceView {
     }
 
     /**
-     * Force display update immediately
+     * Force display update immediately - FIXED VERSION (NO REFRESH LOOPS)
      */
     updateDisplayNow() {
         if (window.conferenceApp?.controller) {
@@ -444,7 +445,7 @@ class ConferenceView {
                 const currentDetail = document.getElementById('currentDetail');
                 if (currentDetail && currentDetail.innerHTML.includes('broadcast-message')) {
                     // Force a refresh of the display
-                    window.location.reload();
+                    this.updateDisplayNow();
                 }
             }, 100);
         }
@@ -467,47 +468,7 @@ class ConferenceView {
     }
 
     /**
-     * Check if event has started and automatically enable camera - IMMEDIATE FIX
-     */
-    checkEventStatusForCamera() {
-        if (!this.isDisplay2) return;
-        
-        // Get current time directly
-        const now = new Date();
-        const currentHour = now.getHours();
-        const currentMinute = now.getMinutes();
-        const currentTimeMinutes = currentHour * 60 + currentMinute;
-        
-        // Event starts at 9:00 AM = 540 minutes since midnight
-        const eventStartMinutes = 9 * 60; // 540 minutes
-        
-        const eventStarted = currentTimeMinutes >= eventStartMinutes;
-        
-        console.log(`DIRECT TIME CHECK: ${currentHour}:${currentMinute.toString().padStart(2, '0')} (${currentTimeMinutes}min) vs 9:00 AM (${eventStartMinutes}min) - Started: ${eventStarted}`);
-        
-        // BEFORE 9:00 AM: Show QR code, disable camera
-        if (!eventStarted) {
-            if (this.webcamEnabled) {
-                console.log('BEFORE EVENT: Disabling camera, showing QR and broadcast message');
-                this.webcamEnabled = false;
-                this.showBroadcastMessage = true;
-                this.forceDisplayUpdate();
-            }
-        }
-        
-        // AT/AFTER 9:00 AM: Show camera, hide QR
-        if (eventStarted) {
-            if (!this.webcamEnabled) {
-                console.log('EVENT STARTED: Enabling camera, hiding QR and broadcast message');
-                this.webcamEnabled = true;
-                this.showBroadcastMessage = false;
-                this.forceDisplayUpdate();
-            }
-        }
-    }
-
-    /**
-     * Force display update
+     * Force display update - FIXED VERSION (NO REFRESH LOOPS)
      */
     forceDisplayUpdate() {
         if (window.conferenceApp?.controller) {

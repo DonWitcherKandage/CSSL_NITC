@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NITC 2025 - Modern Display 2 (Event Details)</title>
+    <link rel="stylesheet" href="styles-modern.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <meta name="description" content="NITC 2025 Conference - Real-time event details display with modern design">
+    <meta name="keywords" content="NITC 2025, conference, event details, technology, Sri Lanka">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="background-animation"></div>
+    
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Single Screen - Display 2 (Event Details) -->
+        <div class="screen screen-2">
+            <!-- Status Bar -->
+            <div class="status-bar">
+                <div class="status-indicators">
+                    <div class="status-badge">
+                        <div class="status-dot"></div>
+                        <span>LIVE</span>
+                    </div>
+                </div>
+                
+                <div class="digital-clock" id="digitalClock">
+                    00:00:00
+                </div>
+            </div>
+
+            <!-- Main Event Display Area -->
+            <div class="event-display">
+                <!-- Active Event Showcase -->
+                <div class="event-showcase fade-in" id="eventShowcase">
+                    <div class="showcase-time" id="showcaseTime">12:00 PM</div>
+                    <div class="showcase-title" id="showcaseTitle">
+                        Arrival of the Chief Guest & the Guest of Honour
+                    </div>
+                    <div class="showcase-description" id="showcaseDescription">
+                        Welcome our distinguished Chief Guest and Guest of Honour as they arrive for the inauguration ceremony. Please take your seats as we prepare to begin this momentous conference that will showcase the latest innovations in technology and digital transformation.
+                    </div>
+                    <div class="showcase-speaker" id="showcaseSpeaker">
+                        Speaker: Conference Organizers
+                    </div>
+                    
+                    <!-- Next Event Preview -->
+                    <div class="next-event-preview" id="nextEventPreview">
+                        <div class="next-event-title">Next Event</div>
+                        <div class="next-event-content">
+                            <div>Welcome Address by Mr. Heshan Karunaratne</div>
+                            <div class="next-event-time">12:20 PM</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Waiting State -->
+                <div class="waiting-state" id="waitingState" style="display: none;">
+                    <div class="waiting-title">Conference Starts Soon</div>
+                    <div class="waiting-subtitle">Please take your seats and prepare for an amazing experience</div>
+                    <div class="next-event-preview">
+                        <div class="next-event-title">First Event</div>
+                        <div class="next-event-content">
+                            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">
+                                Arrival of the Chief Guest & the Guest of Honour
+                            </div>
+                            <div class="next-event-time">12:00 PM</div>
+                            <div style="color: var(--accent-blue); font-weight: bold; margin-top: 1rem;">
+                                Starting soon...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Widgets Container -->
+            <div class="widgets-container">
+                <!-- Event Progress Widget -->
+                <div class="widget">
+                    <div class="widget-title">Event Progress</div>
+                    <div class="widget-content" id="progressWidget">1 / 12</div>
+                </div>
+                
+                <!-- Time Until Next Widget -->
+                <div class="widget">
+                    <div class="widget-title">Time Until Next</div>
+                    <div class="widget-content" id="timeUntilWidget">20 min</div>
+                </div>
+                
+                <!-- Conference Day Widget -->
+                <div class="widget">
+                    <div class="widget-title">Conference Day</div>
+                    <div class="widget-content" id="dayWidget">Inauguration</div>
+                </div>
+                
+                <!-- Weather Widget -->
+                <div class="widget weather-widget">
+                    <div class="weather-icon">☀️</div>
+                    <div>
+                        <div class="widget-title">Colombo</div>
+                        <div class="widget-content">28°C</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Indicators -->
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-dot active"></div>
+                <div class="progress-dot"></div>
+                <div class="progress-dot"></div>
+                <div class="progress-dot"></div>
+                <div class="progress-dot"></div>
+                <div class="progress-dot"></div>
+                <div class="progress-dot"></div>
+                <div class="progress-dot"></div>
+                <div class="progress-dot"></div>
+                <div class="progress-dot"></div>
+                <div class="progress-dot"></div>
+                <div class="progress-dot"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Event Type Indicator -->
+    <div id="eventTypeIndicator" class="event-type-indicator">
+        <div class="type-badge" id="typeBadge">KEYNOTE</div>
+    </div>
+
+    <!-- Conference System Scripts -->
+    <script src="model-modern.js"></script>
+    <script src="view-modern.js"></script>
+    <script src="controller-modern.js"></script>
+    
+    <!-- Display 2 Initialization Script -->
+    <script>
+        /* ============================================================================
+           DISPLAY 2 INITIALIZATION - EVENT DETAILS SCREEN
+           ============================================================================ */
+
+        // Global application instance
+        let conferenceApp = null;
+
+        /**
+         * Initialize Display 2 application
+         */
+        async function initializeDisplay2() {
+            try {
+                console.log('Initializing NITC 2025 Modern Display 2 (Event Details Screen)...');
+                console.log('==============================================');
+                
+                // Create the conference application
+                conferenceApp = new ModernConferenceController();
+                
+                // Wait for initialization to complete
+                await new Promise(resolve => {
+                    const checkInit = setInterval(() => {
+                        if (conferenceApp.state.isRunning) {
+                            clearInterval(checkInit);
+                            resolve();
+                        }
+                    }, 100);
+                });
+                
+                // Set up display-specific features
+                setupDisplay2Features();
+                
+                // Initialize widgets
+                initializeWidgets();
+                
+                console.log('Display 2 initialized successfully');
+                console.log('- Real-time event details display active');
+                console.log('- Interactive widgets enabled');
+                console.log('- Cross-display sync receiving updates');
+                console.log('- Smooth animations and transitions ready');
+                console.log('==============================================');
+                
+                // Log available commands
+                setTimeout(() => {
+                    logDisplay2Commands();
+                }, 2000);
+                
+            } catch (error) {
+                console.error('Failed to initialize Display 2:', error);
+                showInitializationError(error);
+            }
+        }
+
+        /**
+         * Set up Display 2 specific features
+         */
+        function setupDisplay2Features() {
+            // Enhanced view class for Display 2
+            if (conferenceApp && conferenceApp.view) {
+                // Override renderCurrentEvent to include event type display
+                const originalRenderCurrentEvent = conferenceApp.view.renderCurrentEvent.bind(conferenceApp.view);
+                
+                conferenceApp.view.renderCurrentEvent = function(currentEvent, status, nextEvent, timeUntilNext) {
+                    // Call original method
+                    originalRenderCurrentEvent(currentEvent, status, nextEvent, timeUntilNext);
+                    
+                    // Update event type indicator
+                    updateEventTypeIndicator(currentEvent);
+                    
+                    // Update widgets
+                    updateDisplay2Widgets(currentEvent, status, nextEvent, timeUntilNext);
+                };
+            }
+            
+            // Add smooth scrolling and interactions
+            setupInteractiveElements();
+            
+            // Initialize floating animations
+            setupFloatingAnimations();
+        }
+
+        /**
+         * Update event type indicator
+         */
+        function updateEventTypeIndicator(currentEvent) {
+            const indicator = document.getElementById('eventTypeIndicator');
+            const badge = document.getElementById('typeBadge');
+            
+            if (currentEvent && indicator && badge) {
+                const eventType = currentEvent.type || 'session';
+                const typeColors = {
+                    'keynote': '#3b82f6',
+                    'ceremony': '#22c55e',
+                    'awards': '#f59e0b',
+                    'address': '#8b5cf6',
+                    'panel': '#06b6d4',
+                    'break': '#6b7280',
+                    'closing': '#ef4444',
+                    'session': '#64748b'
+                };
+                
+                badge.textContent = eventType.toUpperCase();
+                badge.style.backgroundColor = typeColors[eventType] || typeColors['session'];
+                indicator.style.display = 'block';
+                
+                // Add entrance animation
+                indicator.style.transform = 'scale(0.8)';
+                indicator.style.opacity = '0';
+                
+                setTimeout(() => {
+                    indicator.style.transform = 'scale(1)';
+                    indicator.style.opacity = '1';
+                }, 100);
+                
+            } else if (indicator) {
+                indicator.style.display = 'none';
+            }
+        }
+
+        /**
+         * Update Display 2 specific widgets
+         */
+        function updateDisplay2Widgets(currentEvent, status, nextEvent, timeUntilNext) {
+            // Update progress widget
+            const progressWidget = document.getElementById('progressWidget');
+            if (progressWidget && conferenceApp) {
+                const agenda = conferenceApp.model.getAgendaData();
+                const currentIndex = conferenceApp.model.getCurrentEventIndex();
+                const progress = `${Math.max(0, currentIndex) + 1} / ${agenda.length}`;
+                
+                if (progressWidget.textContent !== progress) {
+                    progressWidget.style.transform = 'scale(0.9)';
+                    setTimeout(() => {
+                        progressWidget.textContent = progress;
+                        progressWidget.style.transform = 'scale(1)';
+                    }, 150);
+                }
+            }
+
+            // Update time until next widget
+            const timeUntilWidget = document.getElementById('timeUntilWidget');
+            if (timeUntilWidget) {
+                let timeText = 'Complete';
+                if (timeUntilNext > 0) {
+                    timeText = `${timeUntilNext} min`;
+                } else if (nextEvent) {
+                    timeText = 'Now';
+                }
+                
+                if (timeUntilWidget.textContent !== timeText) {
+                    timeUntilWidget.style.transform = 'scale(0.9)';
+                    setTimeout(() => {
+                        timeUntilWidget.textContent = timeText;
+                        timeUntilWidget.style.transform = 'scale(1)';
+                    }, 150);
+                }
+            }
+
+            // Update day widget
+            const dayWidget = document.getElementById('dayWidget');
+            if (dayWidget && conferenceApp) {
+                const currentDay = conferenceApp.model.getCurrentDay();
+                if (dayWidget.textContent !== currentDay) {
+                    dayWidget.style.transform = 'scale(0.9)';
+                    setTimeout(() => {
+                        dayWidget.textContent = currentDay;
+                        dayWidget.style.transform = 'scale(1)';
+                    }, 150);
+                }
+            }
+        }
+
+        /**
+         * Initialize widget animations and interactions
+         */
+        function initializeWidgets() {
+            const widgets = document.querySelectorAll('.widget');
+            
+            widgets.forEach((widget, index) => {
+                // Stagger entrance animations
+                widget.style.opacity = '0';
+                widget.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    widget.style.transition = 'all 0.6s ease';
+                    widget.style.opacity = '1';
+                    widget.style.transform = 'translateY(0)';
+                }, index * 200);
+                
+                // Add hover effects
+                widget.addEventListener('mouseenter', () => {
+                    widget.style.transform = 'translateY(-4px) scale(1.02)';
+                });
+                
+                widget.addEventListener('mouseleave', () => {
+                    widget.style.transform = 'translateY(0) scale(1)';
+                });
+            });
+            
+            // Update weather widget with animation
+            updateWeatherWidget();
+        }
+
+        /**
+         * Set up interactive elements
+         */
+        function setupInteractiveElements() {
+            // Add click effects to showcase elements
+            const showcase = document.getElementById('eventShowcase');
+            if (showcase) {
+                showcase.addEventListener('click', () => {
+                    // Subtle click feedback
+                    showcase.style.transform = 'scale(0.98)';
+                    setTimeout(() => {
+                        showcase.style.transform = 'scale(1)';
+                    }, 150);
+                });
+            }
+            
+            // Add ripple effect to progress dots
+            const progressDots = document.querySelectorAll('.progress-dot');
+            progressDots.forEach(dot => {
+                dot.addEventListener('click', (e) => {
+                    createRippleEffect(e, dot);
+                });
+            });
+        }
+
+        /**
+         * Create ripple effect
+         */
+        function createRippleEffect(event, element) {
+            const ripple = document.createElement('div');
+            const rect = element.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            const x = event.clientX - rect.left - size / 2;
+            const y = event.clientY - rect.top - size / 2;
+            
+            ripple.style.cssText = `
+                position: absolute;
+                width: ${size}px;
+                height: ${size}px;
+                left: ${x}px;
+                top: ${y}px;
+                background: rgba(6, 182, 212, 0.5);
+                border-radius: 50%;
+                transform: scale(0);
+                animation: ripple 0.6s linear;
+                pointer-events: none;
+            `;
+            
+            // Add ripple animation keyframes if not already added
+            if (!document.querySelector('#ripple-style')) {
+                const style = document.createElement('style');
+                style.id = 'ripple-style';
+                style.textContent = `
+                    @keyframes ripple {
+                        to {
+                            transform: scale(2);
+                            opacity: 0;
+                        }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            element.style.position = 'relative';
+            element.style.overflow = 'hidden';
+            element.appendChild(ripple);
+            
+            setTimeout(() => {
+                ripple.remove();
+            }, 600);
+        }
+
+        /**
+         * Set up floating animations for background elements
+         */
+        function setupFloatingAnimations() {
+            // Add floating animation to widgets
+            const widgets = document.querySelectorAll('.widget');
+            widgets.forEach((widget, index) => {
+                const delay = index * 0.5;
+                widget.style.animationDelay = `${delay}s`;
+                widget.classList.add('floating-widget');
+            });
+        }
+
+        /**
+         * Update weather widget with current conditions
+         */
+        function updateWeatherWidget() {
+            // Simulate weather update (in production, this would fetch real data)
+            const weatherWidget = document.querySelector('.weather-widget .widget-content');
+            const weatherIcon = document.querySelector('.weather-icon');
+            
+            if (weatherWidget && weatherIcon) {
+                const conditions = [
+                    { icon: '☀️', temp: '28°C' },
+                    { icon: '⛅', temp: '26°C' },
+                    { icon: '🌤️', temp: '29°C' }
+                ];
+                
+                const currentCondition = conditions[Math.floor(Math.random() * conditions.length)];
+                
+                setTimeout(() => {
+                    weatherIcon.textContent = currentCondition.icon;
+                    weatherWidget.textContent = currentCondition.temp;
+                }, 1000);
+            }
+        }
+
+        /**
+         * Show initialization error
+         */
+        function showInitializationError(error) {
+            const eventDisplay = document.querySelector('.event-display');
+            if (eventDisplay) {
+                eventDisplay.innerHTML = `
+                    <div class="waiting-state">
+                        <div class="waiting-title">Initialization Error</div>
+                        <div class="waiting-subtitle">Failed to start NITC 2025 Display System</div>
+                        <div class="next-event-preview">
+                            <div class="next-event-content">
+                                <div style="color: var(--accent-blue); margin-bottom: 1rem;">
+                                    Error: ${error.message}
+                                </div>
+                                <div>Please refresh the page</div>
+                                <div style="margin-top: 0.5rem;">Check browser console for details</div>
+                                <div style="margin-top: 0.5rem;">Contact technical support if issue persists</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        /**
+         * Log Display 2 specific commands
+         */
+        function logDisplay2Commands() {
+            console.log('\n=== DISPLAY 2 COMMANDS ===');
+            console.log('getEventDetails()    - Get current event details');
+            console.log('updateWeather()      - Refresh weather widget');
+            console.log('triggerAnimation()   - Test showcase animation');
+            console.log('getWidgetStatus()    - Check widget states');
+            console.log('');
+            console.log('=== DISPLAY 2 FEATURES ===');
+            console.log('- Event type indicators');
+            console.log('- Interactive widgets');
+            console.log('- Smooth transitions');
+            console.log('- Weather updates');
+            console.log('- Progress tracking');
+            console.log('- Cross-display sync receiving');
+            console.log('========================\n');
+        }
+
+        /**
+         * Display 2 specific helper functions
+         */
+        window.getEventDetails = function() {
+            if (conferenceApp) {
+                const currentEvent = conferenceApp.model.getCurrentEvent();
+                if (currentEvent) {
+                    console.log('Current Event Details:');
+                    console.log('----------------------');
+                    console.log(`Title: ${currentEvent.title}`);
+                    console.log(`Time: ${currentEvent.displayTime}`);
+                    console.log(`Duration: ${currentEvent.duration} minutes`);
+                    console.log(`Speaker: ${currentEvent.speaker || 'Not specified'}`);
+                    console.log(`Type: ${currentEvent.type || 'session'}`);
+                    console.log(`Description: ${currentEvent.description}`);
+                    return currentEvent;
+                } else {
+                    console.log('No current event active');
+                    return null;
+                }
+            }
+            return null;
+        };
+
+        window.updateWeather = function() {
+            updateWeatherWidget();
+            console.log('Weather widget updated');
+        };
+
+        window.triggerAnimation = function() {
+            const showcase = document.getElementById('eventShowcase');
+            if (showcase) {
+                showcase.classList.add('slide-in-right');
+                setTimeout(() => {
+                    showcase.classList.remove('slide-in-right');
+                }, 600);
+                console.log('Showcase animation triggered');
+            }
+        };
+
+        window.getWidgetStatus = function() {
+            const widgets = document.querySelectorAll('.widget');
+            const status = Array.from(widgets).map((widget, index) => {
+                const title = widget.querySelector('.widget-title')?.textContent || `Widget ${index + 1}`;
+                const content = widget.querySelector('.widget-content')?.textContent || 'No content';
+                return { title, content };
+            });
+            
+            console.log('Widget Status:');
+            console.table(status);
+            return status;
+        };
+
+        // Global exposure for debugging
+        window.conferenceApp = null;
+        Object.defineProperty(window, 'conferenceApp', {
+            get: () => conferenceApp,
+            enumerable: true
+        });
+
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeDisplay2);
+        } else {
+            initializeDisplay2();
+        }
+
+        // Handle page errors gracefully
+        window.addEventListener('error', (event) => {
+            console.error('Display 2 Error:', event.error);
+            
+            // Show user-friendly error if system hasn't initialized
+            if (!conferenceApp) {
+                showInitializationError(event.error);
+            }
+        });
+
+        // Handle page unload
+        window.addEventListener('beforeunload', () => {
+            if (conferenceApp) {
+                conferenceApp.cleanup();
+            }
+        });
+
+        console.log('Display 2 script loaded - waiting for DOM ready...');
+    </script>
+
+    <!-- Additional Styles for Display 2 -->
+    <style>
+        /* Display 2 specific overrides */
+        .main-container {
+            display: block;
+        }
+        
+        .screen-2 {
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        /* Event Type Indicator */
+        .event-type-indicator {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+        
+        .type-badge {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            box-shadow: var(--shadow-medium);
+            border: 1px solid var(--glass-border);
+        }
+        
+        /* Enhanced widgets styling */
+        .widgets-container {
+            position: fixed;
+            top: 120px;
+            right: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            z-index: 10;
+        }
+        
+        .widget {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1.25rem;
+            min-width: 200px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .widget:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: var(--shadow-heavy);
+        }
+        
+        .widget-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-gray);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.75rem;
+        }
+        
+        .widget-content {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-white);
+            transition: all 0.3s ease;
+        }
+        
+        .weather-widget {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .weather-icon {
+            font-size: 2.5rem;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        /* Floating animation for widgets */
+        .floating-widget {
+            animation: widgetFloat 6s ease-in-out infinite;
+        }
+        
+        @keyframes widgetFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+        
+        /* Enhanced showcase speaker styling */
+        .showcase-speaker {
+            font-size: 1.125rem;
+            color: var(--accent-blue);
+            margin-top: 1.5rem;
+            font-weight: 600;
+            font-style: italic;
+            opacity: 0.9;
+        }
+        
+        /* Progress container positioning for Display 2 */
+        .progress-container {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        /* Responsive adjustments for Display 2 */
+        @media (max-width: 1200px) {
+            .widgets-container {
+                top: 100px;
+                right: 1rem;
+            }
+            
+            .widget {
+                min-width: 180px;
+                padding: 1rem;
+            }
+            
+            .showcase-time {
+                font-size: 4rem;
+            }
+            
+            .showcase-title {
+                font-size: 2.5rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .widgets-container {
+                display: none;
+            }
+            
+            .event-type-indicator {
+                top: 15px;
+                left: 15px;
+            }
+            
+            .type-badge {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.75rem;
+            }
+            
+            .showcase-time {
+                font-size: 3rem;
+            }
+            
+            .showcase-title {
+                font-size: 2rem;
+            }
+            
+            .showcase-description {
+                font-size: 1.125rem;
+            }
+            
+            .event-display {
+                padding: 2rem 1rem;
+            }
+        }
+    </style>
+</body>
+</html>
