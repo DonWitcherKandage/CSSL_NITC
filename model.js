@@ -109,8 +109,8 @@ class ConferenceModel {
 
             'Day 1': [
                 {
-                    time: "08:15",
-                    displayTime: "8:15 AM",
+                    time: "03:00",
+                    displayTime: "3:00 AM",
                     title: "Registration",
                     description: "Participant registration and check-in. Collect your conference materials, name tags, and networking kit for Day 1 sessions.",
                     duration: 45
@@ -231,8 +231,8 @@ class ConferenceModel {
 
             'Day 2': [
                 {
-                    time: "08:30",
-                    displayTime: "8:30 AM",
+                    time: "11:00",
+                    displayTime: "11:00 AM",
                     title: "Registration",
                     description: "Day 2 registration and check-in. Welcome back to NITC 2025! Collect your Day 2 materials and prepare for advanced sessions.",
                     duration: 30

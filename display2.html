@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NITC 2025 Conference Display - Screen 2</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.4.10/hls.min.js"></script>
     <style>
         /* Override for single screen display */
         .container { 
@@ -24,6 +23,61 @@
         }
         .debug-panel { 
             display: none !important; 
+        }
+
+        /* Additional CSS for RTMP streaming */
+        .webcam-feed {
+            transform: translateZ(0);
+            backface-visibility: hidden;
+            -webkit-transform: translateZ(0);
+            -webkit-backface-visibility: hidden;
+        }
+
+        /* Broadcast message styling */
+        .broadcast-message {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 300px;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .broadcast-icon {
+            font-size: 3em;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+
+        .broadcast-message h3 {
+            margin: 0 0 15px 0;
+            font-size: 1.5em;
+            color: #ecf0f1;
+        }
+
+        .broadcast-message p {
+            margin: 0 0 10px 0;
+            color: #bdc3c7;
+        }
+
+        .broadcast-time {
+            color: #3498db;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        @keyframes pulse {
+            0%, 100% { 
+                opacity: 1; 
+                transform: scale(1); 
+            }
+            50% { 
+                opacity: 0.7; 
+                transform: scale(1.1); 
+            }
         }
     </style>
 </head>
@@ -45,7 +99,8 @@
 
     <!-- tsParticles Core Library -->
     <script src="https://unpkg.com/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
-    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+
     <!-- Conference System Scripts -->
     <script src="model.js"></script>
     <script src="view.js"></script>
