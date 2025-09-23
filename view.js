@@ -1,14 +1,10 @@
 /* ============================================================================
-   VIEW - PRESENTATION LAYER (MVC Architecture) - SOCKET.IO CAMERA INTEGRATION
+   VIEW - PRESENTATION LAYER - Complete Fixed Version
    ============================================================================ */
 
-/**
- * ConferenceView - Manages all UI updates and rendering with Socket.IO camera streaming
- * This preserves ALL your existing functionality and adds camera support
- */
 class ConferenceView {
     constructor() {
-        // Cache DOM elements for performance (PRESERVED FROM ORIGINAL)
+        // Cache DOM elements (PRESERVED FROM ORIGINAL)
         this.agendaList = document.getElementById('agendaList');
         this.currentDetail = document.getElementById('currentDetail');
         this.currentClock = document.getElementById('currentClock');
@@ -28,12 +24,15 @@ class ConferenceView {
         this.isDisplay1 = !!this.agendaList && !this.currentDetail;
         this.isDisplay2 = !!this.currentDetail;
         
-        // Socket.IO camera configuration (NEW)
+        // Socket.IO camera configuration
         this.socket = null;
         this.cameraConnected = false;
-        this.cameraEnabled = true;
+        this.cameraStreamingActive = false;
+        this.showCameraSection = false;
         this.videoElement = null;
-        this.serverUrl = 'http://localhost:3001'; // CHANGE THIS to your server's IP
+        this.serverUrl = 'http://localhost:3001';
+        this.connectionAttempts = 0;
+        this.maxConnectionAttempts = 3;
         
         // Pre-event highlight system (PRESERVED FROM ORIGINAL)
         this.preEventMode = false;
@@ -43,14 +42,12 @@ class ConferenceView {
         
         // Current day for the conference (PRESERVED FROM ORIGINAL)
         this.currentDay = 'Inauguration';
-        this.logoUrl = null;
-        this.logoAltText = 'Conference Logo';
         
         console.log(`View initialized for ${this.isDisplay1 ? 'Display 1 (Agenda)' : 'Display 2 (Details)'}`);
         
-        // Initialize Socket.IO camera ONLY for Display 2 (NEW)
+        // Initialize Socket.IO camera ONLY for Display 2
         if (this.isDisplay2) {
-            console.log('Display 2 detected - initializing Socket.IO camera connection...');
+            console.log('Display 2 detected - attempting camera connection...');
             setTimeout(() => {
                 this.initializeSocketCamera();
             }, 1000);
@@ -61,55 +58,73 @@ class ConferenceView {
     }
 
     /**
-     * Initialize Socket.IO connection for camera streaming (NEW)
+     * Initialize Socket.IO with better error handling
      */
     initializeSocketCamera() {
-        if (!this.isDisplay2) {
-            console.log('Skipping Socket.IO init - not Display 2');
+        if (!this.isDisplay2 || this.connectionAttempts >= this.maxConnectionAttempts) {
+            if (this.connectionAttempts >= this.maxConnectionAttempts) {
+                console.log('Camera server not available - proceeding without camera');
+                this.showCameraSection = false;
+                this.updateDisplayWithoutCamera();
+            }
             return;
         }
 
+        this.connectionAttempts++;
+
         try {
-            console.log('Connecting to camera server at:', this.serverUrl);
+            console.log(`Attempting camera connection (${this.connectionAttempts}/${this.maxConnectionAttempts})`);
             
             // Check if Socket.IO is available
             if (typeof io === 'undefined') {
-                console.error('Socket.IO library not loaded. Please add the Socket.IO script to your HTML.');
-                this.updateCameraStatus('library_missing', 'Socket.IO library not found');
+                console.error('Socket.IO library not loaded');
+                this.showCameraSection = false;
+                this.updateDisplayWithoutCamera();
                 return;
             }
             
             // Initialize Socket.IO connection
             this.socket = io(this.serverUrl, {
                 transports: ['websocket', 'polling'],
-                timeout: 5000,
-                reconnection: true,
-                reconnectionAttempts: 5,
-                reconnectionDelay: 2000
+                timeout: 3000,
+                reconnection: false,
+                forceNew: true
             });
 
             // Connection successful
             this.socket.on('connect', () => {
-                console.log('Socket.IO connected to camera server');
+                console.log('Camera server connected successfully');
                 this.cameraConnected = true;
+                this.showCameraSection = true;
+                this.connectionAttempts = 0;
                 this.updateCameraStatus('connected');
-                
-                // Request camera stream
                 this.socket.emit('request-stream');
+                this.updateDisplayWithCamera();
             });
 
             // Connection failed
             this.socket.on('connect_error', (error) => {
-                console.error('Socket.IO connection failed:', error);
+                console.log(`Camera connection failed (attempt ${this.connectionAttempts})`);
                 this.cameraConnected = false;
-                this.updateCameraStatus('connection_failed', 'Cannot connect to camera server');
+                
+                if (this.connectionAttempts < this.maxConnectionAttempts) {
+                    setTimeout(() => {
+                        this.initializeSocketCamera();
+                    }, 2000);
+                } else {
+                    console.log('Camera server not available - proceeding without camera');
+                    this.showCameraSection = false;
+                    this.updateDisplayWithoutCamera();
+                }
             });
 
             // Disconnected
             this.socket.on('disconnect', (reason) => {
-                console.log('Socket.IO disconnected:', reason);
+                console.log('Camera disconnected:', reason);
                 this.cameraConnected = false;
-                this.updateCameraStatus('disconnected', 'Connection lost');
+                this.cameraStreamingActive = false;
+                this.showCameraSection = false;
+                this.updateDisplayWithoutCamera();
             });
 
             // Receive video frames
@@ -119,31 +134,53 @@ class ConferenceView {
 
             // Camera status updates
             this.socket.on('camera-status', (status) => {
-                console.log('Camera status update:', status);
-                this.updateCameraStatus(status.state, status.message);
+                this.handleCameraStatusUpdate(status);
             });
 
-            // Stream started
+            // Stream events
             this.socket.on('stream-started', () => {
                 console.log('Camera stream started');
+                this.cameraStreamingActive = true;
                 this.updateCameraStatus('streaming');
             });
 
-            // Stream stopped
             this.socket.on('stream-stopped', () => {
                 console.log('Camera stream stopped');
+                this.cameraStreamingActive = false;
                 this.updateCameraStatus('stopped');
             });
 
         } catch (error) {
-            console.error('Failed to initialize Socket.IO camera:', error);
-            this.cameraConnected = false;
-            this.updateCameraStatus('initialization_failed', error.message);
+            console.error('Failed to initialize camera:', error);
+            this.showCameraSection = false;
+            this.updateDisplayWithoutCamera();
         }
     }
 
     /**
-     * Display received video frame from Socket.IO (NEW)
+     * Handle camera status updates
+     */
+    handleCameraStatusUpdate(status) {
+        console.log('Camera status:', status);
+        
+        if (status.state === 'disconnected') {
+            this.cameraConnected = false;
+            this.cameraStreamingActive = false;
+            this.showCameraSection = false;
+            this.updateDisplayWithoutCamera();
+        } else if (status.state === 'connected') {
+            this.cameraConnected = true;
+            this.showCameraSection = true;
+            this.updateCameraStatus('connected');
+            this.updateDisplayWithCamera();
+        } else if (status.state === 'streaming') {
+            this.cameraStreamingActive = true;
+            this.updateCameraStatus('streaming');
+        }
+    }
+
+    /**
+     * Display received video frame
      */
     displayVideoFrame(frameData) {
         if (!this.videoElement) {
@@ -152,7 +189,6 @@ class ConferenceView {
 
         if (this.videoElement && frameData) {
             try {
-                // frameData should be base64 encoded image
                 if (typeof frameData === 'string') {
                     this.videoElement.src = `data:image/jpeg;base64,${frameData}`;
                 } else if (frameData.data) {
@@ -165,58 +201,37 @@ class ConferenceView {
     }
 
     /**
-     * Update camera connection status (NEW)
+     * Update camera status indicator
      */
-    updateCameraStatus(status, message = '') {
+    updateCameraStatus(status) {
         const statusElement = document.querySelector('.camera-status');
         
         if (statusElement) {
             switch (status) {
                 case 'connected':
-                    statusElement.textContent = '● CONNECTED';
+                    statusElement.textContent = '● READY';
                     statusElement.style.color = '#f39c12';
                     break;
                 case 'streaming':
                     statusElement.textContent = '● LIVE';
                     statusElement.style.color = '#00ff00';
                     break;
-                case 'disconnected':
-                    statusElement.textContent = '● DISCONNECTED';
-                    statusElement.style.color = '#e74c3c';
-                    break;
-                case 'connection_failed':
-                case 'initialization_failed':
-                    statusElement.textContent = '● CONNECTION FAILED';
-                    statusElement.style.color = '#e74c3c';
-                    break;
-                case 'library_missing':
-                    statusElement.textContent = '● LIBRARY ERROR';
-                    statusElement.style.color = '#e74c3c';
-                    break;
                 case 'stopped':
                     statusElement.textContent = '● STANDBY';
                     statusElement.style.color = '#f39c12';
                     break;
                 default:
-                    statusElement.textContent = '● UNKNOWN';
+                    statusElement.textContent = '● CONNECTING';
                     statusElement.style.color = '#95a5a6';
-            }
-        }
-
-        // Update error message if provided
-        if (message) {
-            const errorElement = document.querySelector('.camera-error-message');
-            if (errorElement) {
-                errorElement.textContent = message;
             }
         }
     }
 
     /**
-     * Generate Socket.IO camera HTML for Display 2 (NEW)
+     * Generate camera HTML when available
      */
-    generateSocketCameraHTML() {
-        if (!this.isDisplay2 || !this.cameraEnabled) {
+    generateCameraHTML() {
+        if (!this.isDisplay2 || !this.showCameraSection) {
             return '';
         }
 
@@ -232,21 +247,51 @@ class ConferenceView {
                         class="webcam-feed" 
                         alt="Live camera feed"
                         style="object-fit: cover; width: 100%; height: 400px; background: #000;">
-                    <div class="camera-error-overlay" style="display: none;">
-                        <div class="error-content">
-                            <div class="error-icon">📷</div>
-                            <div class="error-text">Camera Unavailable</div>
-                            <div class="camera-error-message">Connecting...</div>
-                        </div>
-                    </div>
                 </div>
             </div>
         `;
     }
 
-    // ========================================================================
-    // ALL EXISTING METHODS PRESERVED EXACTLY AS THEY WERE
-    // ========================================================================
+    /**
+     * Generate "coming soon" message when camera not available
+     */
+    generateCameraComingSoonHTML() {
+        if (!this.isDisplay2) {
+            return '';
+        }
+
+        return `
+            <div class="camera-coming-soon">
+                <div class="coming-soon-content">
+                    <div class="coming-soon-icon">📡</div>
+                    <div class="coming-soon-title">Live Feed Will Be Available Soon</div>
+                    <div class="coming-soon-subtitle">Camera is being prepared for the conference</div>
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * Update display when camera is available
+     */
+    updateDisplayWithCamera() {
+        if (window.conferenceApp?.controller) {
+            setTimeout(() => {
+                window.conferenceApp.controller.updateDisplay();
+            }, 100);
+        }
+    }
+
+    /**
+     * Update display when camera is not available
+     */
+    updateDisplayWithoutCamera() {
+        if (window.conferenceApp?.controller) {
+            setTimeout(() => {
+                window.conferenceApp.controller.updateDisplay();
+            }, 100);
+        }
+    }
 
     /**
      * Start pre-event highlight mode (PRESERVED FROM ORIGINAL)
@@ -276,7 +321,6 @@ class ConferenceView {
         const agenda = window.conferenceApp?.model?.getAgendaData() || [];
         if (agenda.length === 0) return;
         
-        // Clear all highlights
         const allEvents = document.querySelectorAll('.current-event-card, .upcoming-event');
         allEvents.forEach(element => {
             element.style.transform = '';
@@ -287,7 +331,6 @@ class ConferenceView {
             element.style.padding = '';
         });
         
-        // Find target element to highlight
         let targetElement = null;
         const currentCard = document.querySelector('.current-event-card');
         const upcomingEvents = document.querySelectorAll('.upcoming-event');
@@ -301,7 +344,6 @@ class ConferenceView {
             }
         }
         
-        // Apply highlight styling
         if (targetElement) {
             targetElement.style.background = 'white';
             targetElement.style.color = '#081A30';
@@ -330,7 +372,6 @@ class ConferenceView {
             this.highlightInterval = null;
         }
         
-        // Clear all highlights
         const allEvents = document.querySelectorAll('.current-event-card, .upcoming-event');
         allEvents.forEach(element => {
             element.style.transform = '';
@@ -341,7 +382,7 @@ class ConferenceView {
     }
 
     /**
-     * Set up periodic day synchronization with model (PRESERVED FROM ORIGINAL)
+     * Set up periodic day synchronization (PRESERVED FROM ORIGINAL)
      */
     setupDaySync() {
         setInterval(() => {
@@ -367,9 +408,6 @@ class ConferenceView {
         }, 2000);
     }
 
-    /**
-     * Update the day text in the header (PRESERVED FROM ORIGINAL)
-     */
     updateDayInHeader(newDay) {
         const dayElement = document.querySelector('.event-day');
         if (dayElement && dayElement.textContent !== newDay) {
@@ -378,27 +416,19 @@ class ConferenceView {
         }
     }
 
-    /**
-     * Set the current conference day (PRESERVED FROM ORIGINAL)
-     */
     setCurrentDay(day) {
         this.currentDay = day;
     }
 
-    /**
-     * Get logo HTML (PRESERVED FROM ORIGINAL)
-     */
     getLogoHtml() {
         return `<img src="nitc-logo.png" alt="NITC 2025 Logo">`;
     }
 
     /**
-     * Render the complete agenda list on Screen 1 (PRESERVED FROM ORIGINAL)
+     * Render agenda list (PRESERVED FROM ORIGINAL)
      */
     renderAgendaList(agendaData, currentIndex) {
-        if (!this.isDisplay1 || !this.agendaList) {
-            return;
-        }
+        if (!this.isDisplay1 || !this.agendaList) return;
 
         try {
             this.agendaList.innerHTML = '';
@@ -472,31 +502,22 @@ class ConferenceView {
             
         } catch (error) {
             console.error('Error rendering agenda list:', error);
-            if (this.agendaList) {
-                this.agendaList.innerHTML = `
-                    <div style="color: white; text-align: center; padding: 50px;">
-                        <h2>Display Error</h2>
-                        <p>Failed to render agenda list</p>
-                        <p style="font-size: 0.8em; margin-top: 10px;">${error.message}</p>
-                    </div>
-                `;
-            }
         }
     }
 
     /**
-     * Update the current item display on Screen 2 - WITH SOCKET.IO CAMERA (UPDATED)
+     * Render current event with smart camera handling
      */
     renderCurrentEvent(currentEvent, status, nextEvent, timeUntilNext) {
-        if (!this.isDisplay2 || !this.currentDetail) {
-            return;
-        }
+        if (!this.isDisplay2 || !this.currentDetail) return;
 
         try {
             this.currentDetail.innerHTML = '';
 
-            // Generate Socket.IO camera HTML
-            const cameraHtml = this.generateSocketCameraHTML();
+            // Choose camera HTML based on connection status
+            const cameraHtml = this.showCameraSection ? 
+                this.generateCameraHTML() : 
+                this.generateCameraComingSoonHTML();
             
             if (currentEvent && status === 'active') {
                 this.currentDetail.innerHTML = `
@@ -511,8 +532,7 @@ class ConferenceView {
                 let nextEventHtml = '';
                 if (nextEvent) {
                     const timeText = timeUntilNext > 0 ? 
-                        `Starts in ${timeUntilNext} minutes` : 
-                        'Starting now';
+                        `Starts in ${timeUntilNext} minutes` : 'Starting now';
                     
                     nextEventHtml = `
                         <div class="next-event-preview">
@@ -569,39 +589,22 @@ class ConferenceView {
                 `;
             }
 
-            // Initialize camera connection after DOM update
-            setTimeout(() => {
-                this.videoElement = document.getElementById('socketio-camera-feed');
-                if (this.socket && this.socket.connected) {
-                    this.socket.emit('request-stream');
-                }
-            }, 100);
+            // Initialize camera connection after DOM update (only if camera section is shown)
+            if (this.showCameraSection) {
+                setTimeout(() => {
+                    this.videoElement = document.getElementById('socketio-camera-feed');
+                    if (this.socket && this.socket.connected) {
+                        this.socket.emit('request-stream');
+                    }
+                }, 100);
+            }
             
         } catch (error) {
             console.error('Error rendering current event:', error);
-            if (this.currentDetail) {
-                this.currentDetail.innerHTML = `
-                    <div class="no-current-event">
-                        <h2>Display Error</h2>
-                        <p>Failed to render event details</p>
-                        <div class="conference-info">
-                            <h4>Error Details</h4>
-                            <p>Please refresh the page</p>
-                            <p>Contact technical support</p>
-                            <p style="font-family: monospace; font-size: 0.8em; margin-top: 10px;">
-                                ${error.message}
-                            </p>
-                        </div>
-                    </div>
-                `;
-            }
         }
     }
 
-    /**
-     * ALL OTHER METHODS PRESERVED FROM ORIGINAL
-     */
-    
+    // All preserved methods
     updateControls(currentIndex, totalEvents, isAutoMode) {
         if (!this.isDisplay1) return;
         try {
@@ -734,11 +737,8 @@ class ConferenceView {
         }
     }
 
-    /**
-     * Restart Socket.IO camera connection (NEW)
-     */
     restartSocketCamera() {
-        console.log('Restarting Socket.IO camera connection...');
+        console.log('Restarting camera connection...');
         
         if (this.socket) {
             this.socket.disconnect();
@@ -746,25 +746,22 @@ class ConferenceView {
         }
         
         this.cameraConnected = false;
+        this.connectionAttempts = 0;
+        this.showCameraSection = true;
         
         setTimeout(() => {
             this.initializeSocketCamera();
         }, 1000);
     }
 
-    /**
-     * Cleanup resources (UPDATED)
-     */
     cleanup() {
         console.log('Cleaning up resources...');
         
-        // Disconnect Socket.IO
         if (this.socket) {
             this.socket.disconnect();
             this.socket = null;
         }
         
-        // Clear highlight interval
         if (this.highlightInterval) {
             clearInterval(this.highlightInterval);
             this.highlightInterval = null;
@@ -772,12 +769,10 @@ class ConferenceView {
         
         this.cameraConnected = false;
         this.videoElement = null;
-        
-        console.log('Cleanup completed');
     }
 }
 
-// Global functions for console testing and camera control (UPDATED)
+// Global functions
 window.hideButtons = function() {
     if (window.conferenceApp && window.conferenceApp.view) {
         window.conferenceApp.view.hideControls();
@@ -793,18 +788,19 @@ window.showButtons = function() {
 window.restartSocketCamera = function() {
     if (window.conferenceApp && window.conferenceApp.view) {
         window.conferenceApp.view.restartSocketCamera();
-        console.log('Socket.IO camera restart initiated from console');
+        console.log('Camera restart initiated from console');
     }
 };
 
 window.checkSocketCameraStatus = function() {
     if (window.conferenceApp && window.conferenceApp.view) {
         const view = window.conferenceApp.view;
-        console.log('Socket.IO Camera Status:');
+        console.log('Camera Status:');
         console.log('- Display 2:', view.isDisplay2);
-        console.log('- Camera Enabled:', view.cameraEnabled);
-        console.log('- Socket Connected:', view.cameraConnected);
-        console.log('- Socket Object:', !!view.socket);
+        console.log('- Camera Connected:', view.cameraConnected);
+        console.log('- Camera Streaming:', view.cameraStreamingActive);
+        console.log('- Show Camera Section:', view.showCameraSection);
+        console.log('- Connection Attempts:', view.connectionAttempts);
         console.log('- Server URL:', view.serverUrl);
     }
 };
@@ -821,5 +817,4 @@ window.stopPreviewMode = function() {
     }
 };
 
-console.log('ConferenceView loaded with Socket.IO camera support');
-console.log('Console commands: restartSocketCamera(), checkSocketCameraStatus(), startPreviewMode(), stopPreviewMode()');
+console.log('ConferenceView loaded with smart camera handling');

@@ -231,8 +231,8 @@ class ConferenceModel {
 
             'Day 2': [
                 {
-                    time: "11:00",
-                    displayTime: "11:00 AM",
+                    time: "00:00",
+                    displayTime: "12:00 AM",
                     title: "Registration",
                     description: "Day 2 registration and check-in. Welcome back to NITC 2025! Collect your Day 2 materials and prepare for advanced sessions.",
                     duration: 30
