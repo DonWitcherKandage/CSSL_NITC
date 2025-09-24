@@ -116,7 +116,7 @@ class ConferenceModel {
                     time: "18:15",
                     displayTime: "6:15 PM",
                     title: "IoT and Smart Systems",
-                    description: "Internet of Things implementation and smart system architectures.",
+                    description: "Internet of Things implementation and smart system architecture.",
                     duration: 75
                 },
                 {
