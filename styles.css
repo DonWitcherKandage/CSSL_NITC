@@ -819,10 +819,10 @@ body {
 }
 
 /* ============================================================================
-   WEBCAM FEED STYLES - FOR VERTICAL CONFERENCE DISPLAYS
+   UPDATED WEBCAM FEED STYLES FOR FLV STREAMING - CENTERED LAYOUT
    ============================================================================ */
 
-/* Webcam container positioned at bottom center of Display 2 */
+/* Enhanced webcam container for FLV stream with centered layout */
 .webcam-container {
     width: 80%;
     max-width: 600px;
@@ -831,9 +831,11 @@ body {
     border-radius: 12px;
     overflow: hidden;
     position: relative;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    z-index: 3;
 }
 
-/* Webcam header with title and live indicator */
+/* Webcam header with title and status */
 .webcam-header {
     background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
     padding: 12px 20px;
@@ -851,30 +853,31 @@ body {
 }
 
 .webcam-status {
-    color: #00ff00;
     font-size: 14px;
     font-weight: bold;
     text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
     animation: pulse 2s infinite;
+    transition: color 0.3s ease;
 }
 
-/* Live indicator animation */
 @keyframes pulse {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.6; }
 }
 
-/* Main video element */
+/* Updated webcam feed for FLV player */
 .webcam-feed {
     width: 100%;
     height: 360px;
     background: #000;
     object-fit: cover;
     display: block;
+    border: none;
+    outline: none;
 }
 
-/* Error state styling */
-.webcam-error {
+/* Loading state for webcam */
+.webcam-loading {
     width: 100%;
     height: 360px;
     background: #2c3e50;
@@ -882,83 +885,42 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    color: #e74c3c;
+    color: white;
     text-align: center;
     padding: 20px;
     box-sizing: border-box;
 }
 
-.webcam-error p {
-    margin: 10px 0;
-    font-size: 16px;
+.webcam-loading h3 {
+    margin: 15px 0 10px 0;
+    font-size: 18px;
     font-weight: 600;
+    color: #ecf0f1;
 }
 
-.webcam-error .error-details {
-    font-size: 12px;
-    color: #95a5a6;
-    font-weight: normal;
-    max-width: 80%;
-    word-wrap: break-word;
+.webcam-loading p {
+    margin: 5px 0;
+    font-size: 14px;
+    color: #bdc3c7;
+    line-height: 1.4;
 }
 
-/* Fallback styling for browsers without webcam support */
-.webcam-fallback {
-    width: 100%;
-    height: 360px;
-    background: #34495e;
+/* Enhanced current-detail container for centered layout */
+.screen-2 .current-detail {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    color: #bdc3c7;
-    font-size: 18px;
+    min-height: 100vh;
     text-align: center;
+    padding: 40px;
+    box-sizing: border-box;
 }
 
-/* Responsive adjustments for different screen sizes */
-@media (max-width: 1200px) {
-    .webcam-container {
-        width: 85%;
-        max-width: 500px;
-    }
-    
-    .webcam-feed {
-        height: 300px;
-    }
-    
-    .webcam-error,
-    .webcam-fallback {
-        height: 300px;
-    }
-}
-
-@media (max-width: 800px) {
-    .webcam-container {
-        width: 90%;
-        max-width: 400px;
-        margin: 30px auto 15px auto;
-    }
-    
-    .webcam-feed {
-        height: 240px;
-    }
-    
-    .webcam-error,
-    .webcam-fallback {
-        height: 240px;
-    }
-    
-    .webcam-header {
-        padding: 10px 15px;
-    }
-    
-    .webcam-title {
-        font-size: 14px;
-    }
-    
-    .webcam-status {
-        font-size: 12px;
-    }
+/* Conference content section - appears above webcam */
+.conference-content {
+    margin-bottom: 50px;
+    text-align: center;
 }
 
 /* Pre-event highlight animation */
@@ -993,8 +955,6 @@ body {
     color: #2ecc71 !important;
     font-weight: 600;
 }
-
-/* Enhanced styling for professional appearance - REMOVED GREEN GLOW */
 
 /* Make sure the webcam doesn't interfere with event content */
 .event-content {
@@ -1080,19 +1040,6 @@ body {
     font-style: italic;
 }
 
-/* Responsive adjustments */
-@media (max-width: 600px) {
-    .qr-code-content {
-        flex-direction: column;
-        gap: 15px;
-    }
-    
-    .qr-code-text {
-        text-align: center;
-    }
-}
-
-
 /* Camera Coming Soon Message Styles */
 .camera-coming-soon {
     width: 90%;
@@ -1131,13 +1078,91 @@ body {
     margin: 0;
 }
 
-@keyframes pulse {
-    0%, 100% { 
-        opacity: 1; 
-        transform: scale(1); 
+/* Responsive adjustments for webcam and QR sections */
+@media (max-width: 1200px) {
+    .webcam-container {
+        width: 85%;
+        max-width: 500px;
     }
-    50% { 
-        opacity: 0.7; 
-        transform: scale(1.05); 
+    
+    .webcam-feed {
+        height: 300px;
+    }
+    
+    .webcam-loading {
+        height: 300px;
+    }
+    
+    .current-time {
+        font-size: 3.5em;
+    }
+    
+    .current-title {
+        font-size: 2.2em;
+    }
+    
+    .current-description {
+        font-size: 1.3em;
+    }
+}
+
+@media (max-width: 800px) {
+    .screen-2 {
+        padding: 20px;
+    }
+    
+    .conference-content {
+        margin-bottom: 30px;
+    }
+    
+    .webcam-container {
+        width: 95%;
+        max-width: 400px;
+        margin: 20px auto 15px auto;
+    }
+    
+    .webcam-feed {
+        height: 240px;
+    }
+    
+    .webcam-loading {
+        height: 240px;
+    }
+    
+    .webcam-header {
+        padding: 10px 15px;
+    }
+    
+    .webcam-title {
+        font-size: 14px;
+    }
+    
+    .webcam-status {
+        font-size: 12px;
+    }
+    
+    .current-time {
+        font-size: 3em;
+    }
+    
+    .current-title {
+        font-size: 2em;
+    }
+    
+    .current-description {
+        font-size: 1.2em;
+        max-width: 90%;
+    }
+}
+
+/* Responsive adjustments for QR code */
+@media (max-width: 600px) {
+    .qr-code-content {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .qr-code-text {
+        text-align: center;
     }
 }

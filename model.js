@@ -7,340 +7,396 @@
  */
 class ConferenceModel {
     constructor() {
-        // Conference dates (updated to September 24-26, 2025)
+        // Conference dates (updated for NITC 2025)
         this.conferenceDates = {
-            'Day 1': '2025-09-24',        // September 24th
-            'Day 2': '2025-09-25',        // September 25th  
-            'Day 3': '2025-09-26'         // September 26th
+            'Inauguration': '2025-09-27',    // September 27th
+            'Day 1': '2025-09-28',           // September 28th
+            'Day 2': '2025-09-29'            // September 29th
         };
         
         // Automatically detect current day based on real date
         this.currentDay = this.detectCurrentDay();
         console.log(`Conference day automatically detected: ${this.currentDay}`);
         
-        // Multi-day agenda data (4:00 AM to 11:00 PM, 15 items per day)
+        // Real NITC 2025 agenda data
         this.allAgendaData = {
-            'Day 1': [
+            'Inauguration': [
                 {
-                    time: "04:00",
-                    displayTime: "4:00 AM",
-                    title: "Registration and Welcome",
-                    description: "Early morning registration and participant check-in. Collect your conference materials and networking kit for Day 1.",
+                    time: "17:00",
+                    displayTime: "5:00 PM",
+                    title: "Arrival of Guests Registration",
+                    description: "Guest arrival and registration. Sponsor videos presentation.",
                     duration: 60
                 },
                 {
-                    time: "05:00",
-                    displayTime: "5:00 AM",
-                    title: "Opening Ceremony",
-                    description: "Official opening ceremony with welcome address and conference overview.",
-                    duration: 45
+                    time: "18:00",
+                    displayTime: "6:00 PM",
+                    title: "Arrival of Chief Guest & Guest of Honour",
+                    description: "CSSL President welcomes Chief Guest & Guest of Honour. Introduction of CSSL Executive Council members. Traditional dancers escort dignitaries to the hall.",
+                    duration: 5
                 },
                 {
-                    time: "05:45",
-                    displayTime: "5:45 AM",
-                    title: "Keynote 1: Digital Transformation",
-                    description: "First keynote presentation exploring digital transformation trends and their impact on business.",
-                    duration: 60
+                    time: "18:05",
+                    displayTime: "6:05 PM",
+                    title: "National Anthem & Digital Lamp Lighting",
+                    description: "National Anthem followed by lighting of Digital Lamp (Digital Display showing NITC 2025) by Chief Guest. Video and light show presentation.",
+                    duration: 5
                 },
                 {
-                    time: "06:45",
-                    displayTime: "6:45 AM",
-                    title: "Panel Discussion: AI in Enterprise",
-                    description: "Expert panel discussing artificial intelligence implementation in enterprise environments.",
-                    duration: 75
+                    time: "18:10",
+                    displayTime: "6:10 PM",
+                    title: "Welcome Dance Performance",
+                    description: "Welcome dance by the dancing troupe. NITC 2025 Curtain Raiser will be shown.",
+                    duration: 10
                 },
                 {
-                    time: "08:00",
-                    displayTime: "8:00 AM",
-                    title: "Morning Break",
-                    description: "Coffee break and networking opportunity.",
-                    duration: 30
+                    time: "18:20",
+                    displayTime: "6:20 PM",
+                    title: "Welcome Address",
+                    description: "Welcome address by Mr. Heshan Karunaratne, President/Computer Society of Sri Lanka.",
+                    duration: 10
                 },
                 {
-                    time: "08:30",
-                    displayTime: "8:30 AM",
-                    title: "Cloud Computing Workshop",
-                    description: "Hands-on workshop covering cloud computing best practices and implementation strategies.",
-                    duration: 90
+                    time: "18:30",
+                    displayTime: "6:30 PM",
+                    title: "CSSL National ICT Awards 2024 - Part 1",
+                    description: "Chief Guest presents CSSL National ICT Awards: ICT Researcher of the Year, ICT Educator of the Year, Chief Information Officer of the Year, ICT Student Award - School Category.",
+                    duration: 15
                 },
                 {
-                    time: "10:00",
-                    displayTime: "10:00 AM",
-                    title: "Cybersecurity Essentials",
-                    description: "Critical cybersecurity session covering threat landscape and protection strategies.",
-                    duration: 60
+                    time: "18:45",
+                    displayTime: "6:45 PM",
+                    title: "Address by Chief Guest",
+                    description: "Address by Chief Guest - His Excellency Anura Kumara Dissanayake, The President of the Democratic Socialist Republic of Sri Lanka.",
+                    duration: 10
                 },
                 {
-                    time: "11:00",
-                    displayTime: "11:00 AM",
-                    title: "Data Analytics Deep Dive",
-                    description: "Comprehensive session on data analytics platforms and machine learning applications.",
-                    duration: 90
+                    time: "18:55",
+                    displayTime: "6:55 PM",
+                    title: "Keynote by Guest of Honor",
+                    description: "Keynote address by Guest of Honor Hon. Eranga Weeraratne, Deputy Minister of Digital Economy.",
+                    duration: 20
                 },
                 {
-                    time: "12:30",
-                    displayTime: "12:30 PM",
-                    title: "Lunch Break",
-                    description: "Buffet lunch with networking opportunities.",
-                    duration: 90
+                    time: "19:15",
+                    displayTime: "7:15 PM",
+                    title: "Strategic Partner Keynote",
+                    description: "Keynote address by Strategic Partner Mastercard - Mr. Sandun Hapugoda, Country Manager Mastercard. Strategic Partner's Corporate Video (30 sec).",
+                    duration: 10
                 },
                 {
-                    time: "14:00",
-                    displayTime: "2:00 PM",
-                    title: "Mobile Development Trends",
-                    description: "Latest trends in mobile application development and cross-platform solutions.",
-                    duration: 60
-                },
-                {
-                    time: "15:00",
-                    displayTime: "3:00 PM",
-                    title: "DevOps and Automation",
-                    description: "DevOps methodologies and automation tools for modern software development.",
-                    duration: 75
-                },
-                {
-                    time: "16:15",
-                    displayTime: "4:15 PM",
-                    title: "Afternoon Tea",
-                    description: "Tea break and networking session.",
-                    duration: 30
-                },
-                {
-                    time: "16:45",
-                    displayTime: "4:45 PM",
-                    title: "Blockchain and Cryptocurrency",
-                    description: "Understanding blockchain technology and its practical applications.",
-                    duration: 90
-                },
-                {
-                    time: "18:15",
-                    displayTime: "6:15 PM",
-                    title: "IoT and Smart Systems",
-                    description: "Internet of Things implementation and smart system architecture.",
-                    duration: 75
+                    time: "19:25",
+                    displayTime: "7:25 PM",
+                    title: "Dance Act 2",
+                    description: "Second dance performance.",
+                    duration: 5
                 },
                 {
                     time: "19:30",
                     displayTime: "7:30 PM",
-                    title: "Day 1 Networking Dinner",
-                    description: "Networking dinner with speakers and participants. Day 1 concludes at 11:00 PM.",
-                    duration: 210
+                    title: "CSSL ICT Awards 2024 Judges Recognition",
+                    description: "Recognition ceremony for CSSL ICT Awards 2024 judges with dignitaries on stage.",
+                    duration: 10
+                },
+                {
+                    time: "19:40",
+                    displayTime: "7:40 PM",
+                    title: "CSSL ICT Awards 2024 - Part 2",
+                    description: "Remaining awards: Best Founder Award, ICT Student Award - Postgraduate Category, ICT Student Award - Undergraduate Category, Emerging ICT Leader of the Year.",
+                    duration: 10
+                },
+                {
+                    time: "19:50",
+                    displayTime: "7:50 PM",
+                    title: "Diamond Sponsor Keynote - DMS",
+                    description: "Keynote Address by Diamond Sponsor DMS Software Technologies - Mr. Lasantha Bogoda, Director/CEO. Corporate Video (30 Sec).",
+                    duration: 5
+                },
+                {
+                    time: "19:55",
+                    displayTime: "7:55 PM",
+                    title: "Diamond Sponsor Keynote - SAT",
+                    description: "Keynote Address by Diamond Sponsor South Asian Technologies (SAT) - Mr. Feroze Kamardeen, Director SAT Group. Corporate Video (30 Sec).",
+                    duration: 5
+                },
+                {
+                    time: "20:00",
+                    displayTime: "8:00 PM",
+                    title: "Sponsor Recognition",
+                    description: "Sponsor Recognition of NITC 2024 with sponsors invited on stage one by one.",
+                    duration: 10
+                },
+                {
+                    time: "20:10",
+                    displayTime: "8:10 PM",
+                    title: "Final Dance Act",
+                    description: "Final dance performance.",
+                    duration: 5
+                },
+                {
+                    time: "20:15",
+                    displayTime: "8:15 PM",
+                    title: "Vote of Thanks",
+                    description: "Vote of Thanks by Conference Chair.",
+                    duration: 5
+                },
+                {
+                    time: "20:20",
+                    displayTime: "8:20 PM",
+                    title: "Fellowship & Cocktail",
+                    description: "Fellowship and cocktail session for all attendees.",
+                    duration: 160
+                }
+            ],
+
+            'Day 1': [
+                {
+                    time: "08:15",
+                    displayTime: "8:15 AM",
+                    title: "Registration",
+                    description: "Day 1 Conference registration and check-in.",
+                    duration: 45
+                },
+                {
+                    time: "09:00",
+                    displayTime: "9:00 AM",
+                    title: "Guest Speech",
+                    description: "Guest Speech by Hon Eranga Weeraratne, Deputy Minister of Digital Economy.",
+                    duration: 20
+                },
+                {
+                    time: "09:20",
+                    displayTime: "9:20 AM",
+                    title: "Keynote 1: Mastercard",
+                    description: "Keynote by Mr. Sandun Hapugoda, Country Manager - Sri Lanka & Maldives at Mastercard.",
+                    duration: 25
+                },
+                {
+                    time: "09:45",
+                    displayTime: "9:45 AM",
+                    title: "Panel Discussion 1: E-Government 5.0",
+                    description: "E-Government 5.0: Towards Human-Centric, Integrated, and Proactive Public Services. Panel: Mastercard, DMS, SAT, CryptoGen. Moderator: Mr. Niranjan De Silva, Past President of CSSL.",
+                    duration: 60
+                },
+                {
+                    time: "10:45",
+                    displayTime: "10:45 AM",
+                    title: "Morning Tea",
+                    description: "Morning tea break and networking.",
+                    duration: 35
+                },
+                {
+                    time: "11:20",
+                    displayTime: "11:20 AM",
+                    title: "Keynote 2: DMS",
+                    description: "Keynote by Mr. Yu Ka Chan, Director - Cloud Engineering ASEAN - Oracle Corporation.",
+                    duration: 25
+                },
+                {
+                    time: "11:45",
+                    displayTime: "11:45 AM",
+                    title: "Keynote 3: SAT",
+                    description: "Keynote by Mr. Sudhir Jampala, National Manager, OpenText.",
+                    duration: 25
+                },
+                {
+                    time: "12:10",
+                    displayTime: "12:10 PM",
+                    title: "Keynote 4: Taking SL Digital Businesses Global",
+                    description: "Dr. Yasas V. Abeywickrama, Chief Operating Officer, Doerscircle - Singapore. Topic: Taking SL Digital Businesses Global.",
+                    duration: 25
+                },
+                {
+                    time: "12:35",
+                    displayTime: "12:35 PM",
+                    title: "Digital Economy Insights",
+                    description: "Mr. Sumudu Rathnayake, Advisor - Digital Economy, Ministry of Digital Economy, Director RDA.",
+                    duration: 25
+                },
+                {
+                    time: "13:00",
+                    displayTime: "1:00 PM",
+                    title: "Lunch Break",
+                    description: "Lunch break and networking opportunity.",
+                    duration: 60
+                },
+                {
+                    time: "14:00",
+                    displayTime: "2:00 PM",
+                    title: "FinTech Session 1",
+                    description: "Mastercard - Mr. Shashi Madanayake, Director Account Management at Mastercard. Session Chair: Dr. Dharmasri Kumaratunge.",
+                    duration: 25
+                },
+                {
+                    time: "14:25",
+                    displayTime: "2:25 PM",
+                    title: "FinTech Session 2",
+                    description: "SAT - Mr. Karthik Kishore, Regional Director, Zscaler.",
+                    duration: 25
+                },
+                {
+                    time: "14:50",
+                    displayTime: "2:50 PM",
+                    title: "FinTech Session 3",
+                    description: "Aiken - Mr. Mahesh Patel, Director Products, Hitachi Payment Services (Pvt) Ltd.",
+                    duration: 25
+                },
+                {
+                    time: "15:15",
+                    displayTime: "3:15 PM",
+                    title: "Afternoon Tea",
+                    description: "Afternoon tea break.",
+                    duration: 20
+                },
+                {
+                    time: "15:35",
+                    displayTime: "3:35 PM",
+                    title: "EduTech Session",
+                    description: "Dr. Dayan Rajapakse, Managing Director @ ESU (ESOFT Uni). Topic: Ethical use of AI in teaching & learning. Session Chair: Mr. Conrard Dias.",
+                    duration: 25
+                },
+                {
+                    time: "16:00",
+                    displayTime: "4:00 PM",
+                    title: "TravelTech Session",
+                    description: "DMS - Mr. Aruna Basnayake, AGM Digital Engineering & Strategic Solutions, DMS Software Technologies. Topic: Transforming Travel Experience Through AI and Personalization.",
+                    duration: 25
+                },
+                {
+                    time: "16:25",
+                    displayTime: "4:25 PM",
+                    title: "Cybersecurity Session",
+                    description: "Fortinet - Mr. Sampath Wimalaweera, Principal Systems Engineer, Fortinet. Topic: Unified Threat Detection with a Turnkey SOC Platform.",
+                    duration: 25
+                },
+                {
+                    time: "16:50",
+                    displayTime: "4:50 PM",
+                    title: "Raffle Draw",
+                    description: "Day 1 Raffle Draw and closing.",
+                    duration: 10
                 }
             ],
 
             'Day 2': [
                 {
-                    time: "04:00",
-                    displayTime: "4:00 AM",
-                    title: "Day 2 Registration",
-                    description: "Day 2 participant check-in and material distribution.",
-                    duration: 60
-                },
-                {
-                    time: "05:00",
-                    displayTime: "5:00 AM",
-                    title: "Keynote 2: Future of Work",
-                    description: "Keynote on how technology is reshaping the future workplace and employment.",
-                    duration: 60
-                },
-                {
-                    time: "06:00",
-                    displayTime: "6:00 AM",
-                    title: "Machine Learning Workshop",
-                    description: "Practical machine learning workshop with hands-on exercises.",
-                    duration: 90
-                },
-                {
-                    time: "07:30",
-                    displayTime: "7:30 AM",
-                    title: "Digital Marketing Revolution",
-                    description: "How digital technologies are transforming marketing strategies.",
-                    duration: 75
-                },
-                {
-                    time: "08:45",
-                    displayTime: "8:45 AM",
-                    title: "Morning Break",
-                    description: "Coffee and networking break.",
+                    time: "08:30",
+                    displayTime: "8:30 AM",
+                    title: "Registration",
+                    description: "Day 2 Conference registration and check-in.",
                     duration: 30
                 },
                 {
-                    time: "09:15",
-                    displayTime: "9:15 AM",
-                    title: "Quantum Computing Introduction",
-                    description: "Introduction to quantum computing and its potential applications.",
-                    duration: 90
+                    time: "09:00",
+                    displayTime: "9:00 AM",
+                    title: "Guest Speech",
+                    description: "Guest Speech by Dr. Harshana Suriyapperuma, Secretary to the Ministry of Finance.",
+                    duration: 20
                 },
                 {
-                    time: "10:45",
-                    displayTime: "10:45 AM",
-                    title: "Green Technology Solutions",
-                    description: "Sustainable technology solutions for environmental challenges.",
-                    duration: 75
+                    time: "09:20",
+                    displayTime: "9:20 AM",
+                    title: "Keynote 5: Mastercard",
+                    description: "Keynote by Mr. Nachiket Limaye, Principal, Services Business Development.",
+                    duration: 25
                 },
                 {
-                    time: "12:00",
-                    displayTime: "12:00 PM",
-                    title: "E-Commerce Platforms",
-                    description: "Building and scaling modern e-commerce platforms.",
+                    time: "09:45",
+                    displayTime: "9:45 AM",
+                    title: "Keynote 6: SAT",
+                    description: "Keynote by Mr. Hari Krishnan, Technical Manager - Strategic Account Management, Manage Engine.",
+                    duration: 25
+                },
+                {
+                    time: "10:10",
+                    displayTime: "10:10 AM",
+                    title: "Keynote 7: DMS",
+                    description: "Mr. Rajan CS, Regional Manager, India Enterprise & Sri Lanka, Google. Topic: Leveraging AI for Business Transformation.",
+                    duration: 25
+                },
+                {
+                    time: "10:35",
+                    displayTime: "10:35 AM",
+                    title: "Morning Tea",
+                    description: "Morning tea break and networking.",
+                    duration: 25
+                },
+                {
+                    time: "11:00",
+                    displayTime: "11:00 AM",
+                    title: "Keynote: Huawei",
+                    description: "TBA - Huawei Representative Keynote.",
+                    duration: 25
+                },
+                {
+                    time: "11:25",
+                    displayTime: "11:25 AM",
+                    title: "Panel Discussion 2: Business Automation and Agentic AI",
+                    description: "Panel: Mastercard, DMS, SAT, Fortinet. Moderator: Dr. Romesh Ranawana, Group Chief Analytics & AI Officer, Dialog Axiata.",
                     duration: 60
                 },
                 {
-                    time: "13:00",
-                    displayTime: "1:00 PM",
+                    time: "12:25",
+                    displayTime: "12:25 PM",
                     title: "Lunch Break",
-                    description: "Extended lunch break with structured networking.",
-                    duration: 90
+                    description: "Extended lunch break and networking.",
+                    duration: 75
+                },
+                {
+                    time: "13:40",
+                    displayTime: "1:40 PM",
+                    title: "InfoSec Session 1",
+                    description: "Mastercard - Mr. Joseph McGuire, Principal, Innovation Consulting, Mastercard. Session Chair: Mr. Chrishanta Silva.",
+                    duration: 25
+                },
+                {
+                    time: "14:05",
+                    displayTime: "2:05 PM",
+                    title: "InfoSec Session 2",
+                    description: "Kaspersky - Mr. Mohnissh Manukulasuriya, Territory Channel Manager – AEC West, Kaspersky. Topic: Adopting a Cybersecurity Framework for Resilience with Kaspersky.",
+                    duration: 25
                 },
                 {
                     time: "14:30",
                     displayTime: "2:30 PM",
-                    title: "Virtual Reality Applications",
-                    description: "VR and AR applications in business and education.",
-                    duration: 75
+                    title: "Big Data Analytics",
+                    description: "DELL Technologies - Mr. Varuna Jayalath, Country General Manager, Sri Lanka and Maldives. Head of Telecom Sector, Asia Emerging Markets, DELL Technologies.",
+                    duration: 25
                 },
                 {
-                    time: "15:45",
-                    displayTime: "3:45 PM",
-                    title: "Software Architecture Patterns",
-                    description: "Modern software architecture patterns and microservices.",
-                    duration: 90
+                    time: "14:55",
+                    displayTime: "2:55 PM",
+                    title: "Afternoon Tea",
+                    description: "Afternoon tea break.",
+                    duration: 35
                 },
                 {
-                    time: "17:15",
-                    displayTime: "5:15 PM",
-                    title: "Afternoon Break",
-                    description: "Tea break and networking opportunity.",
-                    duration: 30
+                    time: "15:30",
+                    displayTime: "3:30 PM",
+                    title: "Digital Infrastructure",
+                    description: "CommScope - Mr. Ashok Srinivasan, Director, Technical Sales India & SAARC, CommScope. Topic: Trends and Technologies enabling the Digital Infrastructure. Session Chair: Mr. Chandana Weerasinghe.",
+                    duration: 25
                 },
                 {
-                    time: "17:45",
-                    displayTime: "5:45 PM",
-                    title: "Database Technologies",
-                    description: "NoSQL, NewSQL, and distributed database systems.",
-                    duration: 75
+                    time: "15:55",
+                    displayTime: "3:55 PM",
+                    title: "Digital Transport",
+                    description: "Speaker to be announced - Digital Transport session.",
+                    duration: 25
                 },
                 {
-                    time: "19:00",
-                    displayTime: "7:00 PM",
-                    title: "API Design and Integration",
-                    description: "RESTful API design, GraphQL, and system integration patterns.",
-                    duration: 90
+                    time: "16:20",
+                    displayTime: "4:20 PM",
+                    title: "eHealth",
+                    description: "Speaker to be announced - eHealth session.",
+                    duration: 25
                 },
                 {
-                    time: "20:30",
-                    displayTime: "8:30 PM",
-                    title: "Day 2 Social Event",
-                    description: "Evening social event and networking. Day 2 concludes at 11:00 PM.",
-                    duration: 150
-                }
-            ],
-
-            'Day 3': [
-                {
-                    time: "04:00",
-                    displayTime: "4:00 AM",
-                    title: "Final Day Registration",
-                    description: "Day 3 registration and final conference materials.",
-                    duration: 60
-                },
-                {
-                    time: "05:00",
-                    displayTime: "5:00 AM",
-                    title: "Keynote 3: Innovation Leadership",
-                    description: "Final keynote on leading innovation in technology organizations.",
-                    duration: 60
-                },
-                {
-                    time: "06:00",
-                    displayTime: "6:00 AM",
-                    title: "Startup Pitch Session",
-                    description: "Technology startup presentations and investor pitches.",
-                    duration: 90
-                },
-                {
-                    time: "07:30",
-                    displayTime: "7:30 AM",
-                    title: "Digital Health Technologies",
-                    description: "Healthcare technology innovations and digital health platforms.",
-                    duration: 75
-                },
-                {
-                    time: "08:45",
-                    displayTime: "8:45 AM",
-                    title: "Morning Break",
-                    description: "Final morning coffee break.",
-                    duration: 30
-                },
-                {
-                    time: "09:15",
-                    displayTime: "9:15 AM",
-                    title: "FinTech Innovations",
-                    description: "Financial technology innovations and digital payment systems.",
-                    duration: 90
-                },
-                {
-                    time: "10:45",
-                    displayTime: "10:45 AM",
-                    title: "Smart City Technologies",
-                    description: "Urban technology solutions and smart city infrastructure.",
-                    duration: 75
-                },
-                {
-                    time: "12:00",
-                    displayTime: "12:00 PM",
-                    title: "Education Technology",
-                    description: "EdTech platforms and digital learning innovations.",
-                    duration: 60
-                },
-                {
-                    time: "13:00",
-                    displayTime: "1:00 PM",
-                    title: "Final Lunch",
-                    description: "Final conference lunch with networking.",
-                    duration: 90
-                },
-                {
-                    time: "14:30",
-                    displayTime: "2:30 PM",
-                    title: "Technology Ethics Panel",
-                    description: "Panel discussion on ethics in technology development.",
-                    duration: 75
-                },
-                {
-                    time: "15:45",
-                    displayTime: "3:45 PM",
-                    title: "5G and Future Networks",
-                    description: "5G technology and next-generation network architectures.",
-                    duration: 90
-                },
-                {
-                    time: "17:15",
-                    displayTime: "5:15 PM",
-                    title: "Final Break",
-                    description: "Last networking break of the conference.",
-                    duration: 30
-                },
-                {
-                    time: "17:45",
-                    displayTime: "5:45 PM",
-                    title: "Technology Trends 2026",
-                    description: "Predictions and trends for technology in the coming year.",
-                    duration: 75
-                },
-                {
-                    time: "19:00",
-                    displayTime: "7:00 PM",
-                    title: "Awards Ceremony",
-                    description: "Recognition awards and achievement ceremony.",
-                    duration: 90
-                },
-                {
-                    time: "20:30",
-                    displayTime: "8:30 PM",
-                    title: "Closing Ceremony & Gala",
-                    description: "Official conference closing ceremony and farewell gala. Conference concludes at 11:00 PM.",
-                    duration: 150
+                    time: "16:45",
+                    displayTime: "4:45 PM",
+                    title: "Raffle Draw",
+                    description: "Day 2 Raffle Draw and conference closing.",
+                    duration: 15
                 }
             ]
         };
@@ -376,13 +432,6 @@ class ConferenceModel {
         // If no exact match, check if we're past certain dates
         const todayTime = new Date(today).getTime();
         
-        // Check if today is after Day 3
-        const day3Time = new Date(this.conferenceDates['Day 3']).getTime();
-        if (todayTime > day3Time) {
-            console.log(`Today is after Day 3, showing Day 3 content`);
-            return 'Day 3';
-        }
-        
         // Check if today is after Day 2
         const day2Time = new Date(this.conferenceDates['Day 2']).getTime();
         if (todayTime > day2Time) {
@@ -397,9 +446,16 @@ class ConferenceModel {
             return 'Day 1';
         }
         
-        // Default to Day 1 if before conference starts
-        console.log(`Before conference starts, defaulting to Day 1`);
-        return 'Day 1';
+        // Check if today is after Inauguration
+        const inaugurationTime = new Date(this.conferenceDates['Inauguration']).getTime();
+        if (todayTime > inaugurationTime) {
+            console.log(`Today is after Inauguration, showing Inauguration content`);
+            return 'Inauguration';
+        }
+        
+        // Default to Inauguration if before conference starts
+        console.log(`Before conference starts, defaulting to Inauguration`);
+        return 'Inauguration';
     }
 
     /**
@@ -462,7 +518,7 @@ class ConferenceModel {
 
     /**
      * Set current day (manual override)
-     * @param {string} dayName Day name ('Day 1', 'Day 2', 'Day 3')
+     * @param {string} dayName Day name ('Inauguration', 'Day 1', 'Day 2')
      * @returns {boolean} True if day was set successfully
      */
     setCurrentDay(dayName) {
@@ -726,5 +782,6 @@ window.updateConferenceDates = function(dates) {
     }
 };
 
-console.log('ConferenceModel loaded with automatic day detection');
+console.log('ConferenceModel loaded with NITC 2025 real agenda data');
+console.log('Conference dates: Inauguration (Sep 27), Day 1 (Sep 28), Day 2 (Sep 29)');
 console.log('Use updateConferenceDates() to change conference dates if needed');

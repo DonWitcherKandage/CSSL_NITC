@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NITC 2025 Conference Display - Screen 2</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="status-indicator">● LIVE</div>
+    <div class="clock" id="currentClock">00:00:00</div>
+
+    <div class="container">
+        <div id="screen2" class="screen screen-2">
+            <div id="tsparticles-right"></div>
+            <div id="currentDetail" class="current-detail">
+                
+                <!-- Camera Container using your existing CSS classes -->
+                <div class="webcam-container">
+                    <div class="webcam-header">
+                        <div class="webcam-title">Live From Conference Hall</div>
+                        <div class="webcam-status">● LIVE</div>
+                    </div>
+                    <img src="http://localhost:3001/camera/stream" 
+                         class="webcam-feed" 
+                         alt="Live Camera Feed"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                         onload="this.style.display='block'; this.nextElementSibling.style.display='none';">
+                    <div class="webcam-error" style="display: none;">
+                        <p>Camera Initializing...</p>
+                        <p class="error-details">Connecting to conference camera</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
+    <script src="model.js"></script>
+    <script src="view.js"></script>
+    <script src="controller.js"></script>
+    <script src="app-display2.js"></script>
+</body>
+</html>

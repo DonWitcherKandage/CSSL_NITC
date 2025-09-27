@@ -5,106 +5,195 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NITC 2025 Conference Display - Screen 2</title>
     <link rel="stylesheet" href="styles.css">
-    <style>
-        /* Override for single screen display */
-        .container { 
-            display: block; 
-        }
-        .screen-1 { 
-            display: none !important; 
-        }
-        .screen-2 { 
-            width: 100vw; 
-            height: 100vh; 
-            flex: none;
-        }
-        .controls { 
-            display: none !important; 
-        }
-        .debug-panel { 
-            display: none !important; 
-        }
-
-        /* Additional CSS for RTMP streaming */
-        .webcam-feed {
-            transform: translateZ(0);
-            backface-visibility: hidden;
-            -webkit-transform: translateZ(0);
-            -webkit-backface-visibility: hidden;
-        }
-
-        /* Broadcast message styling */
-        .broadcast-message {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 300px;
-            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-            color: white;
-            text-align: center;
-            padding: 20px;
-        }
-
-        .broadcast-icon {
-            font-size: 3em;
-            margin-bottom: 20px;
-            animation: pulse 2s infinite;
-        }
-
-        .broadcast-message h3 {
-            margin: 0 0 15px 0;
-            font-size: 1.5em;
-            color: #ecf0f1;
-        }
-
-        .broadcast-message p {
-            margin: 0 0 10px 0;
-            color: #bdc3c7;
-        }
-
-        .broadcast-time {
-            color: #3498db;
-            font-weight: bold;
-            font-size: 1.1em;
-        }
-
-        @keyframes pulse {
-            0%, 100% { 
-                opacity: 1; 
-                transform: scale(1); 
-            }
-            50% { 
-                opacity: 0.7; 
-                transform: scale(1.1); 
-            }
-        }
-    </style>
+    
+    <!-- FLV.js for RTMP/FLV playback -->
+    <script src="https://cdn.jsdelivr.net/npm/flv.js@1.6.2/dist/flv.min.js"></script>
+    
 </head>
 <body>
-    <!-- Live indicator showing system is running -->
     <div class="status-indicator">● LIVE</div>
-    
-    <!-- Current time clock -->
     <div class="clock" id="currentClock">00:00:00</div>
 
-    <!-- Main container holding screen 2 only -->
     <div class="container">
-        <!-- Screen 2: Current Item Details (Full Screen) with Particles -->
         <div id="screen2" class="screen screen-2">
             <div id="tsparticles-right"></div>
-            <div id="currentDetail" class="current-detail"></div>
+            <div id="currentDetail" class="current-detail">
+                
+                <!-- Conference Content Section -->
+                <div class="conference-content">
+                    <div class="current-time">12:00 PM</div>
+                    <div class="current-title">Education Technology</div>
+                    <div class="current-description">EdTech platforms and digital learning innovations.</div>
+                </div>
+
+                <!-- RTMP Camera Container -->
+                <div class="webcam-container">
+                    <div class="webcam-header">
+                        <div class="webcam-title">Live From Conference Hall</div>
+                        <div class="webcam-status" id="streamStatus">● CONNECTING</div>
+                    </div>
+                    
+                    <!-- Loading message before stream starts -->
+                    <div class="webcam-loading" id="loadingMessage">
+                        <div class="loading-spinner"></div>
+                        <h3>Preparing Camera Feed</h3>
+                        <p>Connecting to conference camera...</p>
+                    </div>
+                    
+                    <!-- Video element for FLV stream -->
+                    <video
+                        id="cameraVideo"
+                        class="webcam-feed"
+                        style="display: none;"
+                        muted
+                        autoplay>
+                    </video>
+                </div>
+
+            </div>
         </div>
     </div>
 
-    <!-- tsParticles Core Library -->
     <script src="https://unpkg.com/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
-
-    <!-- Conference System Scripts -->
     <script src="model.js"></script>
     <script src="view.js"></script>
     <script src="controller.js"></script>
     <script src="app-display2.js"></script>
+
+    <script>
+    // RTMP Stream Configuration
+    const streamUrl = 'http://localhost:8080/live/conference.flv';
+    const video = document.getElementById('cameraVideo');
+    const loadingMessage = document.getElementById('loadingMessage');
+    const streamStatus = document.getElementById('streamStatus');
+    
+    let flvPlayer = null;
+    let reconnectAttempts = 0;
+    const maxReconnectAttempts = 5;
+
+    function initializeStream() {
+        if (flvjs.isSupported()) {
+            console.log('FLV.js is supported, initializing stream...');
+            
+            // Create FLV player
+            flvPlayer = flvjs.createPlayer({
+                type: 'flv',
+                url: streamUrl,
+                isLive: true
+            }, {
+                enableWorker: false,
+                enableStashBuffer: false,
+                stashInitialSize: 128,
+                autoCleanupSourceBuffer: true
+            });
+
+            // Attach to video element
+            flvPlayer.attachMediaElement(video);
+            flvPlayer.load();
+
+            // Event handlers
+            flvPlayer.on(flvjs.Events.LOADING_COMPLETE, function() {
+                console.log('Stream loading complete');
+            });
+
+            flvPlayer.on(flvjs.Events.LOADED_METADATA, function() {
+                console.log('Stream metadata loaded');
+                hideLoadingShowVideo();
+                streamStatus.textContent = '● LIVE';
+                streamStatus.style.color = '#00ff00';
+            });
+
+            flvPlayer.on(flvjs.Events.ERROR, function(errorType, errorDetail) {
+                console.log('Stream error:', errorType, errorDetail);
+                handleStreamError();
+            });
+
+            // Start playing
+            flvPlayer.play().then(() => {
+                console.log('Stream started successfully');
+            }).catch((error) => {
+                console.log('Stream play failed:', error);
+                setTimeout(attemptReconnect, 2000);
+            });
+
+        } else {
+            console.log('FLV.js not supported');
+            showErrorMessage('Your browser does not support FLV playback');
+        }
+    }
+
+    function hideLoadingShowVideo() {
+        loadingMessage.style.display = 'none';
+        video.style.display = 'block';
+        reconnectAttempts = 0; // Reset on successful connection
+    }
+
+    function handleStreamError() {
+        video.style.display = 'none';
+        streamStatus.textContent = '● RECONNECTING';
+        streamStatus.style.color = '#ff9500';
+        
+        loadingMessage.innerHTML = 
+            '<div class="loading-spinner"></div>' +
+            '<h3>Connection Lost</h3>' +
+            '<p>Attempting to reconnect...</p>';
+        loadingMessage.style.display = 'flex';
+        
+        setTimeout(attemptReconnect, 3000);
+    }
+
+    function attemptReconnect() {
+        if (reconnectAttempts < maxReconnectAttempts) {
+            reconnectAttempts++;
+            console.log(`Reconnection attempt ${reconnectAttempts}/${maxReconnectAttempts}`);
+            
+            // Clean up existing player
+            if (flvPlayer) {
+                flvPlayer.destroy();
+                flvPlayer = null;
+            }
+            
+            // Reinitialize after a delay
+            setTimeout(initializeStream, 2000);
+        } else {
+            showErrorMessage('Unable to connect to camera feed. Please refresh the page.');
+        }
+    }
+
+    function showErrorMessage(message) {
+        streamStatus.textContent = '● OFFLINE';
+        streamStatus.style.color = '#ff0000';
+        
+        loadingMessage.innerHTML = 
+            '<div style="text-align: center;">' +
+            '<h3>Camera Feed Unavailable</h3>' +
+            '<p>' + message + '</p>' +
+            '<button onclick="location.reload()" style="margin-top: 15px; padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer;">Refresh Page</button>' +
+            '</div>';
+        loadingMessage.style.display = 'flex';
+        video.style.display = 'none';
+    }
+
+    // Initialize stream when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Page loaded, initializing camera stream...');
+        setTimeout(initializeStream, 1000); // Small delay to ensure everything is ready
+    });
+
+    // Handle page visibility changes
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            // Page is hidden, pause stream
+            if (flvPlayer) {
+                flvPlayer.pause();
+            }
+        } else {
+            // Page is visible, resume stream
+            if (flvPlayer) {
+                flvPlayer.play();
+            }
+        }
+    });
+    </script>
 </body>
 </html>
