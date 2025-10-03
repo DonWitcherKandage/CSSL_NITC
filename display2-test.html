@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NITC 2025 Conference Display - Screen 2 (Test Mode)</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="status-indicator">● LIVE - TEST MODE</div>
+    <div class="clock" id="currentClock">00:00:00</div>
+
+    <div class="container">
+        <div id="screen2" class="screen screen-2">
+            <div id="tsparticles-right"></div>
+            <div id="currentDetail" class="current-detail">
+                
+                <!-- Conference Content Section -->
+                <div class="conference-content">
+                    <div class="current-time">12:00 PM</div>
+                    <div class="current-title">Education Technology</div>
+                    <div class="current-description" style="text-align: center; max-width: 80%; margin: 0 auto;">EdTech platforms and digital learning innovations.</div>
+                </div>
+
+                <!-- Camera Container for Laptop Camera -->
+                <div class="webcam-container">
+                    <div class="webcam-header">
+                        <div class="webcam-title">Live From Laptop Camera (Test)</div>
+                        <div class="webcam-status" id="streamStatus">● CONNECTING</div>
+                    </div>
+                    
+                    <!-- Loading message before stream starts -->
+                    <div class="webcam-loading" id="loadingMessage">
+                        <div class="loading-spinner"></div>
+                        <h3>Preparing Camera Feed</h3>
+                        <p>Requesting laptop camera access...</p>
+                    </div>
+                    
+                    <!-- Video element for camera stream -->
+                    <video
+                        id="cameraVideo"
+                        class="webcam-feed"
+                        style="display: none;"
+                        muted
+                        autoplay
+                        playsinline>
+                    </video>
+                    
+                    <!-- Manual start button (always visible) -->
+                    <div id="manualStart" style="display: none; text-align: center; padding: 20px;">
+                        <button onclick="requestCameraAccess()" style="padding: 15px 30px; background: #3498db; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold;">
+                            📹 Start Camera
+                        </button>
+                        <p style="margin-top: 10px; color: #bdc3c7; font-size: 14px;">Click to start your laptop camera</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
+    <script src="model.js"></script>
+    <script src="view.js"></script>
+    <script src="controller.js"></script>
+    <script src="app-display2.js"></script>
+
+    <script>
+    // Direct browser camera access for laptop camera
+    const video = document.getElementById('cameraVideo');
+    const loadingMessage = document.getElementById('loadingMessage');
+    const streamStatus = document.getElementById('streamStatus');
+    let currentStream = null;
+
+    function updateStatus(message, isError = false) {
+        console.log('Status:', message);
+        if (isError) {
+            streamStatus.textContent = '● OFFLINE';
+            streamStatus.style.color = '#ff0000';
+        } else {
+            streamStatus.textContent = '● LIVE';
+            streamStatus.style.color = '#00ff00';
+        }
+    }
+
+    function showError(message) {
+        loadingMessage.innerHTML = 
+            '<div style="text-align: center;">' +
+            '<h3>Camera Access Required</h3>' +
+            '<p>' + message + '</p>' +
+            '<button onclick="requestCameraAccess()" style="margin-top: 15px; padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px;">Allow Camera Access</button>' +
+            '</div>';
+        loadingMessage.style.display = 'flex';
+        document.getElementById('manualStart').style.display = 'block';
+        updateStatus('Camera access needed', true);
+    }
+
+    function requestCameraAccess() {
+        console.log('Requesting camera access...');
+        loadingMessage.innerHTML = 
+            '<div class="loading-spinner"></div>' +
+            '<h3>Requesting Camera Access</h3>' +
+            '<p>Please allow camera access when prompted...</p>';
+        loadingMessage.style.display = 'flex';
+        
+        // Check if getUserMedia is supported
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            showError('Camera access is not supported in this browser. Please use Chrome, Firefox, or Safari.');
+            return;
+        }
+
+        navigator.mediaDevices.getUserMedia({ 
+            video: { 
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
+                facingMode: 'user'
+            }, 
+            audio: false 
+        })
+        .then(stream => {
+            console.log('Camera access granted!');
+            currentStream = stream;
+            video.srcObject = stream;
+            
+            video.onloadedmetadata = function() {
+                console.log('Video metadata loaded, dimensions:', video.videoWidth, 'x', video.videoHeight);
+                video.play().then(() => {
+                    console.log('Camera stream playing successfully');
+                    loadingMessage.style.display = 'none';
+                    document.getElementById('manualStart').style.display = 'none';
+                    video.style.display = 'block';
+                    updateStatus('Camera connected', false);
+                }).catch(err => {
+                    console.error('Play error:', err);
+                    showError('Failed to start camera playback. Please try again.');
+                });
+            };
+            
+            // Also try to play immediately when stream is set
+            video.oncanplay = function() {
+                console.log('Video can play, attempting to show...');
+                if (video.paused) {
+                    video.play().then(() => {
+                        console.log('Camera stream started on canplay event');
+                        loadingMessage.style.display = 'none';
+                        document.getElementById('manualStart').style.display = 'none';
+                        video.style.display = 'block';
+                        updateStatus('Camera connected', false);
+                    });
+                }
+            };
+            
+            video.onerror = function(err) {
+                console.error('Video error:', err);
+                showError('Camera stream error. Please try again.');
+            };
+        })
+        .catch(err => {
+            console.error('Camera access error:', err);
+            
+            let errorMessage = 'Camera access denied or not available';
+            if (err.name === 'NotAllowedError') {
+                errorMessage = 'Camera access was denied. Please click "Allow" when prompted by your browser, or check your browser settings to allow camera access for this site.';
+            } else if (err.name === 'NotFoundError') {
+                errorMessage = 'No camera found on this device. Please connect a camera and try again.';
+            } else if (err.name === 'NotReadableError') {
+                errorMessage = 'Camera is already in use by another application. Please close other applications using the camera and try again.';
+            } else if (err.name === 'OverconstrainedError') {
+                errorMessage = 'Camera settings are not supported. Trying with default settings...';
+                // Try with more basic constraints
+                navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+                .then(stream => {
+                    currentStream = stream;
+                    video.srcObject = stream;
+                    video.play().then(() => {
+                        loadingMessage.style.display = 'none';
+                        video.style.display = 'block';
+                        updateStatus('Camera connected', false);
+                    });
+                })
+                .catch(() => {
+                    showError('Camera access failed with all settings. Please check your camera.');
+                });
+                return;
+            }
+            
+            showError(errorMessage);
+        });
+    }
+
+    // Check if we already have camera permission
+    async function checkExistingPermission() {
+        try {
+            if (navigator.permissions) {
+                const permission = await navigator.permissions.query({ name: 'camera' });
+                console.log('Camera permission status:', permission.state);
+                if (permission.state === 'granted') {
+                    console.log('Camera permission already granted, requesting stream...');
+                    return true;
+                }
+            }
+        } catch (err) {
+            console.log('Permission API not available:', err);
+        }
+        return false;
+    }
+
+    // Initialize camera when page loads
+    document.addEventListener('DOMContentLoaded', async function() {
+        console.log('Test page loaded, checking camera availability...');
+        
+        // Check if we're on HTTPS or localhost
+        if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+            showError('Camera access requires HTTPS or localhost. Please open this file from a local server or use HTTPS.');
+            return;
+        }
+        
+        // Check if we already have permission
+        const hasPermission = await checkExistingPermission();
+        if (hasPermission) {
+            console.log('Already have permission, requesting stream immediately...');
+            requestCameraAccess();
+        } else {
+            console.log('No existing permission, will request...');
+            setTimeout(requestCameraAccess, 1000);
+        }
+    });
+
+    // Stop camera when page is hidden to save resources
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden && currentStream) {
+            currentStream.getTracks().forEach(track => track.stop());
+            console.log('Camera stopped (page hidden)');
+            currentStream = null;
+        } else if (!document.hidden && !currentStream) {
+            setTimeout(requestCameraAccess, 500);
+        }
+    });
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', function() {
+        if (currentStream) {
+            currentStream.getTracks().forEach(track => track.stop());
+            currentStream = null;
+        }
+    });
+
+    // Make requestCameraAccess globally available for the button
+    window.requestCameraAccess = requestCameraAccess;
+    </script>
+</body>
+</html>

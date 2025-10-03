@@ -22,12 +22,11 @@ class ConferenceModel {
         this.currentDay = this.detectCurrentDay();
         console.log(`Conference day automatically detected: ${this.currentDay}`);
         
-        // Calculate start time (10 minutes from now)
-        const startTime = new Date(Date.now() + 10 * 60 * 1000);
-        const startHour = startTime.getHours();
-        const startMin = startTime.getMinutes();
+        // Set start time to 2:30 AM
+        const startHour = 2;
+        const startMin = 30;
         
-        console.log(`Conference will start at ${startHour}:${startMin.toString().padStart(2, '0')}`);
+        console.log(`Conference will start at ${startHour}:${startMin.toString().padStart(2, '0')} (2:30 AM)`);
         
         // Generate agenda with calculated times
         this.allAgendaData = this.generateAgendaWithTimes(startHour, startMin);

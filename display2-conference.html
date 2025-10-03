@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NITC 2025 Conference Display - Screen 2 (Conference Mode)</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- HLS.js for streaming -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+</head>
+<body>
+    <div class="status-indicator">● LIVE - CONFERENCE</div>
+    <div class="clock" id="currentClock">00:00:00</div>
+
+    <div class="container">
+        <div id="screen2" class="screen screen-2">
+            <div id="tsparticles-right"></div>
+            <div id="currentDetail" class="current-detail">
+                
+                <!-- Conference Content Section -->
+                <div class="conference-content">
+                    <div class="current-time">12:00 PM</div>
+                    <div class="current-title">Education Technology</div>
+                    <div class="current-description">EdTech platforms and digital learning innovations.</div>
+                </div>
+
+                <!-- Camera Container for Conference Hall Camera -->
+                <div class="webcam-container">
+                    <div class="webcam-header">
+                        <div class="webcam-title">Live From Conference Hall</div>
+                        <div class="webcam-status" id="streamStatus">● CONNECTING</div>
+                    </div>
+                    
+                    <!-- Loading message before stream starts -->
+                    <div class="webcam-loading" id="loadingMessage">
+                        <div class="loading-spinner"></div>
+                        <h3>Connecting to Conference Hall Camera</h3>
+                        <p>Establishing connection to live stream...</p>
+                    </div>
+                    
+                    <!-- Video element for HLS stream -->
+                    <video
+                        id="cameraVideo"
+                        class="webcam-feed"
+                        style="display: none;"
+                        muted
+                        autoplay
+                        playsinline
+                        controls>
+                    </video>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
+    <script src="model.js"></script>
+    <script src="view.js"></script>
+    <script src="controller.js"></script>
+    <script src="app-display2.js"></script>
+
+    <script>
+    // HLS streaming for conference hall camera
+    const video = document.getElementById('cameraVideo');
+    const loadingMessage = document.getElementById('loadingMessage');
+    const streamStatus = document.getElementById('streamStatus');
+    let hls = null;
+    let connectionAttempts = 0;
+    const maxAttempts = 5;
+    const retryDelay = 3000;
+
+    // Configuration - Update these for your setup
+    const CONFIG = {
+        SERVER_URL: 'http://localhost:8000', // Change to your camera server IP
+        STREAM_PATH: '/media/live/conference/index.m3u8',
+        RETRY_ATTEMPTS: 5,
+        RETRY_DELAY: 3000
+    };
+
+    function updateStatus(message, isError = false) {
+        console.log('Stream Status:', message);
+        if (isError) {
+            streamStatus.textContent = '● OFFLINE';
+            streamStatus.style.color = '#ff0000';
+        } else {
+            streamStatus.textContent = '● LIVE';
+            streamStatus.style.color = '#00ff00';
+        }
+    }
+
+    function showError(message, canRetry = true) {
+        console.error('Stream Error:', message);
+        streamStatus.textContent = '● OFFLINE';
+        streamStatus.style.color = '#ff0000';
+        
+        let retryButton = '';
+        if (canRetry && connectionAttempts < maxAttempts) {
+            retryButton = '<button onclick="retryConnection()" style="margin-top: 15px; padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px;">Retry Connection</button>';
+        }
+        
+        loadingMessage.innerHTML = 
+            '<div style="text-align: center;">' +
+            '<h3>Conference Hall Camera Unavailable</h3>' +
+            '<p>' + message + '</p>' +
+            '<p style="font-size: 0.9em; color: #bdc3c7; margin-top: 10px;">Server: ' + CONFIG.SERVER_URL + '</p>' +
+            retryButton +
+            '</div>';
+        loadingMessage.style.display = 'flex';
+    }
+
+    function retryConnection() {
+        connectionAttempts++;
+        console.log(`Retry attempt ${connectionAttempts}/${maxAttempts}`);
+        initializeStream();
+    }
+
+    function initializeStream() {
+        console.log('🎥 Connecting to conference hall camera stream...');
+        console.log(`📡 Server: ${CONFIG.SERVER_URL}`);
+        console.log(`📺 Stream: ${CONFIG.SERVER_URL}${CONFIG.STREAM_PATH}`);
+        
+        // Check if HLS is supported
+        if (Hls.isSupported()) {
+            console.log('✅ HLS is supported, initializing stream...');
+            
+            // Create HLS instance with optimized settings
+            hls = new Hls({
+                debug: false,
+                enableWorker: true,
+                lowLatencyMode: true,
+                backBufferLength: 90,
+                maxBufferLength: 30,
+                maxMaxBufferLength: 60,
+                liveSyncDurationCount: 3,
+                liveMaxLatencyDurationCount: 5
+            });
+            
+            // Load the stream
+            const streamUrl = CONFIG.SERVER_URL + CONFIG.STREAM_PATH;
+            console.log(`🔗 Loading stream: ${streamUrl}`);
+            hls.loadSource(streamUrl);
+            hls.attachMedia(video);
+            
+            // Handle HLS events
+            hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
+                console.log('HLS manifest parsed, starting playback...');
+                video.play().then(() => {
+                    console.log('Conference hall camera stream playing');
+                    loadingMessage.style.display = 'none';
+                    video.style.display = 'block';
+                    streamStatus.textContent = '● LIVE';
+                    streamStatus.style.color = '#00ff00';
+                }).catch(err => {
+                    console.error('Play error:', err);
+                    handleStreamError('Failed to start playback');
+                });
+            });
+            
+            hls.on(Hls.Events.ERROR, function (event, data) {
+                console.error('HLS error:', data);
+                if (data.fatal) {
+                    handleStreamError('Stream connection failed');
+                }
+            });
+            
+            hls.on(Hls.Events.FRAG_LOADED, function (event, data) {
+                console.log('Stream fragment loaded');
+            });
+            
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            // Native HLS support (Safari)
+            console.log('Using native HLS support...');
+            video.src = 'http://localhost:8000/media/live/conference/index.m3u8';
+            video.addEventListener('loadedmetadata', function() {
+                console.log('Conference hall camera stream ready');
+                loadingMessage.style.display = 'none';
+                video.style.display = 'block';
+                streamStatus.textContent = '● LIVE';
+                streamStatus.style.color = '#00ff00';
+            });
+            video.addEventListener('error', function(e) {
+                console.error('Native HLS error:', e);
+                handleStreamError('Stream connection failed');
+            });
+        } else {
+            handleStreamError('HLS streaming not supported in this browser');
+        }
+    }
+
+    function handleStreamError(errorMessage) {
+        console.error('Stream error:', errorMessage);
+        streamStatus.textContent = '● OFFLINE';
+        streamStatus.style.color = '#ff0000';
+        
+        loadingMessage.innerHTML = 
+            '<div style="text-align: center;">' +
+            '<h3>Conference Hall Camera Unavailable</h3>' +
+            '<p>' + errorMessage + '</p>' +
+            '<p style="font-size: 0.9em; color: #bdc3c7; margin-top: 10px;">Make sure the camera server is running on localhost:8000</p>' +
+            '<button onclick="location.reload()" style="margin-top: 15px; padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px;">Try Again</button>' +
+            '</div>';
+        loadingMessage.style.display = 'flex';
+    }
+
+    // Initialize stream when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Conference page loaded, connecting to hall camera...');
+        setTimeout(initializeStream, 1000);
+    });
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', function() {
+        if (hls) {
+            hls.destroy();
+        }
+    });
+
+    // Reconnect on visibility change
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden && !video.srcObject && !video.src) {
+            console.log('Page visible, reconnecting to stream...');
+            initializeStream();
+        }
+    });
+    </script>
+</body>
+</html>

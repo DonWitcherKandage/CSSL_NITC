@@ -5,10 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NITC 2025 Conference Display - Screen 2</title>
     <link rel="stylesheet" href="styles.css">
-    
-    <!-- FLV.js for RTMP/FLV playback -->
-    <script src="https://cdn.jsdelivr.net/npm/flv.js@1.6.2/dist/flv.min.js"></script>
-    
 </head>
 <body>
     <div class="status-indicator">● LIVE</div>
@@ -26,7 +22,7 @@
                     <div class="current-description">EdTech platforms and digital learning innovations.</div>
                 </div>
 
-                <!-- RTMP Camera Container -->
+                <!-- Camera Container -->
                 <div class="webcam-container">
                     <div class="webcam-header">
                         <div class="webcam-title">Live From Conference Hall</div>
@@ -37,16 +33,17 @@
                     <div class="webcam-loading" id="loadingMessage">
                         <div class="loading-spinner"></div>
                         <h3>Preparing Camera Feed</h3>
-                        <p>Connecting to conference camera...</p>
+                        <p>Requesting camera access...</p>
                     </div>
                     
-                    <!-- Video element for FLV stream -->
+                    <!-- Video element for camera stream -->
                     <video
                         id="cameraVideo"
                         class="webcam-feed"
                         style="display: none;"
                         muted
-                        autoplay>
+                        autoplay
+                        playsinline>
                     </video>
                 </div>
 
@@ -61,137 +58,79 @@
     <script src="app-display2.js"></script>
 
     <script>
-    // RTMP Stream Configuration
-    const streamUrl = 'http://localhost:8080/live/conference.flv';
+    // Direct browser camera access
     const video = document.getElementById('cameraVideo');
     const loadingMessage = document.getElementById('loadingMessage');
     const streamStatus = document.getElementById('streamStatus');
-    
-    let flvPlayer = null;
-    let reconnectAttempts = 0;
-    const maxReconnectAttempts = 5;
 
     function initializeStream() {
-        if (flvjs.isSupported()) {
-            console.log('FLV.js is supported, initializing stream...');
-            
-            // Create FLV player
-            flvPlayer = flvjs.createPlayer({
-                type: 'flv',
-                url: streamUrl,
-                isLive: true
-            }, {
-                enableWorker: false,
-                enableStashBuffer: false,
-                stashInitialSize: 128,
-                autoCleanupSourceBuffer: true
-            });
-
-            // Attach to video element
-            flvPlayer.attachMediaElement(video);
-            flvPlayer.load();
-
-            // Event handlers
-            flvPlayer.on(flvjs.Events.LOADING_COMPLETE, function() {
-                console.log('Stream loading complete');
-            });
-
-            flvPlayer.on(flvjs.Events.LOADED_METADATA, function() {
-                console.log('Stream metadata loaded');
-                hideLoadingShowVideo();
+        console.log('Requesting camera access...');
+        
+        navigator.mediaDevices.getUserMedia({ 
+            video: { 
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
+                facingMode: 'user'
+            }, 
+            audio: false 
+        })
+        .then(stream => {
+            console.log('Camera access granted');
+            video.srcObject = stream;
+            video.play().then(() => {
+                console.log('Camera stream playing');
+                loadingMessage.style.display = 'none';
+                video.style.display = 'block';
                 streamStatus.textContent = '● LIVE';
                 streamStatus.style.color = '#00ff00';
+            }).catch(err => {
+                console.error('Play error:', err);
             });
-
-            flvPlayer.on(flvjs.Events.ERROR, function(errorType, errorDetail) {
-                console.log('Stream error:', errorType, errorDetail);
-                handleStreamError();
-            });
-
-            // Start playing
-            flvPlayer.play().then(() => {
-                console.log('Stream started successfully');
-            }).catch((error) => {
-                console.log('Stream play failed:', error);
-                setTimeout(attemptReconnect, 2000);
-            });
-
-        } else {
-            console.log('FLV.js not supported');
-            showErrorMessage('Your browser does not support FLV playback');
-        }
-    }
-
-    function hideLoadingShowVideo() {
-        loadingMessage.style.display = 'none';
-        video.style.display = 'block';
-        reconnectAttempts = 0; // Reset on successful connection
-    }
-
-    function handleStreamError() {
-        video.style.display = 'none';
-        streamStatus.textContent = '● RECONNECTING';
-        streamStatus.style.color = '#ff9500';
-        
-        loadingMessage.innerHTML = 
-            '<div class="loading-spinner"></div>' +
-            '<h3>Connection Lost</h3>' +
-            '<p>Attempting to reconnect...</p>';
-        loadingMessage.style.display = 'flex';
-        
-        setTimeout(attemptReconnect, 3000);
-    }
-
-    function attemptReconnect() {
-        if (reconnectAttempts < maxReconnectAttempts) {
-            reconnectAttempts++;
-            console.log(`Reconnection attempt ${reconnectAttempts}/${maxReconnectAttempts}`);
+        })
+        .catch(err => {
+            console.error('Camera error:', err);
+            streamStatus.textContent = '● OFFLINE';
+            streamStatus.style.color = '#ff0000';
             
-            // Clean up existing player
-            if (flvPlayer) {
-                flvPlayer.destroy();
-                flvPlayer = null;
+            let errorMessage = 'Camera access denied or not available';
+            if (err.name === 'NotAllowedError') {
+                errorMessage = 'Camera access denied. Please allow camera access in your browser settings.';
+            } else if (err.name === 'NotFoundError') {
+                errorMessage = 'No camera found on this device.';
+            } else if (err.name === 'NotReadableError') {
+                errorMessage = 'Camera is already in use by another application.';
             }
             
-            // Reinitialize after a delay
-            setTimeout(initializeStream, 2000);
-        } else {
-            showErrorMessage('Unable to connect to camera feed. Please refresh the page.');
-        }
+            loadingMessage.innerHTML = 
+                '<div style="text-align: center;">' +
+                '<h3>Camera Unavailable</h3>' +
+                '<p>' + errorMessage + '</p>' +
+                '<button onclick="location.reload()" style="margin-top: 15px; padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px;">Try Again</button>' +
+                '</div>';
+            loadingMessage.style.display = 'flex';
+        });
     }
 
-    function showErrorMessage(message) {
-        streamStatus.textContent = '● OFFLINE';
-        streamStatus.style.color = '#ff0000';
-        
-        loadingMessage.innerHTML = 
-            '<div style="text-align: center;">' +
-            '<h3>Camera Feed Unavailable</h3>' +
-            '<p>' + message + '</p>' +
-            '<button onclick="location.reload()" style="margin-top: 15px; padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer;">Refresh Page</button>' +
-            '</div>';
-        loadingMessage.style.display = 'flex';
-        video.style.display = 'none';
-    }
-
-    // Initialize stream when page loads
+    // Initialize camera when page loads
     document.addEventListener('DOMContentLoaded', function() {
-        console.log('Page loaded, initializing camera stream...');
-        setTimeout(initializeStream, 1000); // Small delay to ensure everything is ready
+        console.log('Page loaded, initializing camera...');
+        setTimeout(initializeStream, 1000);
     });
 
-    // Handle page visibility changes
+    // Stop camera when page is hidden to save resources
     document.addEventListener('visibilitychange', function() {
-        if (document.hidden) {
-            // Page is hidden, pause stream
-            if (flvPlayer) {
-                flvPlayer.pause();
-            }
-        } else {
-            // Page is visible, resume stream
-            if (flvPlayer) {
-                flvPlayer.play();
-            }
+        if (document.hidden && video.srcObject) {
+            video.srcObject.getTracks().forEach(track => track.stop());
+            console.log('Camera stopped (page hidden)');
+        } else if (!document.hidden && !video.srcObject) {
+            initializeStream();
+        }
+    });
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', function() {
+        if (video.srcObject) {
+            video.srcObject.getTracks().forEach(track => track.stop());
         }
     });
     </script>
