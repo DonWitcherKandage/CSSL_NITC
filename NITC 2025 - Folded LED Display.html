@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NITC 2025 Conference - Folded LED Display</title>
+    <script src="https://unpkg.com/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #000;
+            overflow: hidden;
+            width: 512px;
+            height: 863px;
+        }
+
+        .folded-container {
+            display: flex;
+            width: 512px;
+            height: 863px;
+            position: relative;
+        }
+
+        .panel-left, .panel-right {
+            width: 256px;
+            height: 863px;
+            background: linear-gradient(180deg, #081A30 0%, #124680 50%, #040E18 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .panel-right {
+            overflow-y: auto;
+        }
+
+        #tsparticles-left, #tsparticles-right {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .status-indicator {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            padding: 4px 10px;
+            background: #e67e22;
+            color: white;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 0.7em;
+            animation: blink 1.5s infinite;
+            z-index: 1001;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+
+        .clock {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            padding: 4px 10px;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 0.75em;
+            z-index: 1001;
+        }
+
+        .agenda-content {
+            position: relative;
+            z-index: 2;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+        }
+
+        .agenda-header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .conference-logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            color: white;
+        }
+
+        .event-title-section {
+            color: white;
+        }
+
+        .event-title {
+            font-size: 1.4em;
+            font-weight: bold;
+            line-height: 1.1;
+            margin-bottom: 5px;
+        }
+
+        .event-day {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .upcoming-events {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            overflow: hidden;
+        }
+
+        .upcoming-event {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px 12px;
+            border-radius: 12px;
+            border-left: 4px solid #3498db;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .upcoming-event .time {
+            color: #3498db;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        .upcoming-event .title {
+            color: white;
+            font-size: 1em;
+            line-height: 1.3;
+        }
+
+        .preview-highlight {
+            background: white !important;
+            color: #081A30 !important;
+            padding: 18px 12px !important;
+            border-radius: 12px !important;
+            transform: scale(1.02) !important;
+            box-shadow: 0 6px 25px rgba(255, 255, 255, 0.4) !important;
+            border: 3px solid #3498db !important;
+            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+            z-index: 100 !important;
+        }
+
+        .preview-highlight .time {
+            color: #081A30 !important;
+            font-weight: bold !important;
+        }
+
+        .preview-highlight .title {
+            color: #081A30 !important;
+            font-weight: 600 !important;
+        }
+
+        .preview-container {
+            position: relative;
+            z-index: 2;
+            padding: 40px 12px 20px;
+            text-align: center;
+            color: white;
+        }
+
+        .preview-header {
+            margin-bottom: 25px;
+        }
+
+        .nitc-logo {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 12px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5em;
+            color: white;
+        }
+
+        .conference-title {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .conference-subtitle {
+            font-size: 0.85em;
+            line-height: 1.3;
+            opacity: 0.95;
+        }
+
+        .countdown-section {
+            margin-bottom: 25px;
+        }
+
+        .countdown-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .event-start-info {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .event-date {
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        .event-time {
+            font-size: 0.95em;
+            margin-bottom: 6px;
+        }
+
+        .event-location {
+            font-size: 0.85em;
+        }
+
+        .countdown-display {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin: 15px 0;
+        }
+
+        .countdown-item {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 12px 8px;
+            border-radius: 10px;
+            backdrop-filter: blur(5px);
+        }
+
+        .countdown-number {
+            font-size: 2em;
+            font-weight: bold;
+            display: block;
+            line-height: 1;
+        }
+
+        .countdown-label {
+            font-size: 0.75em;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-top: 5px;
+        }
+
+        .qr-section {
+            margin-bottom: 25px;
+        }
+
+        .qr-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
+        .qr-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 12px;
+            display: inline-block;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .qr-code {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 10px;
+            border-radius: 4px;
+            background: #fff;
+            border: 1px solid #ddd;
+            padding: 5px;
+        }
+
+        .qr-code img {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .qr-text {
+            color: #333;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .qr-url {
+            color: #333;
+            font-size: 1em;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+        }
+
+        .carousel-section {
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .carousel-container {
+            width: 100%;
+            height: 150px;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .carousel-track {
+            display: flex;
+            width: 500%;
+            height: 100%;
+            animation: slideShow 20s infinite;
+        }
+
+        .carousel-slide {
+            width: 20%;
+            height: 100%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .carousel-slide:nth-child(1) { background: linear-gradient(45deg, #3498db, #2980b9); }
+        .carousel-slide:nth-child(2) { background: linear-gradient(45deg, #27ae60, #2ecc71); }
+        .carousel-slide:nth-child(3) { background: linear-gradient(45deg, #f39c12, #e67e22); }
+        .carousel-slide:nth-child(4) { background: linear-gradient(45deg, #e74c3c, #c0392b); }
+        .carousel-slide:nth-child(5) { background: linear-gradient(45deg, #9b59b6, #8e44ad); }
+
+        .carousel-content {
+            color: white;
+            z-index: 2;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .carousel-content h3 {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 6px;
+            text-shadow: 2px 2px 6px rgba(0,0,0,0.7);
+        }
+
+        .carousel-content p {
+            font-size: 0.85em;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+        }
+
+        @keyframes slideShow {
+            0%, 18% { transform: translateX(0%); }
+            20%, 38% { transform: translateX(-20%); }
+            40%, 58% { transform: translateX(-40%); }
+            60%, 78% { transform: translateX(-60%); }
+            80%, 98% { transform: translateX(-80%); }
+            100% { transform: translateX(0%); }
+        }
+    </style>
+</head>
+<body>
+    <div class="folded-container">
+        <div class="panel-left">
+            <div id="tsparticles-left"></div>
+            <div class="status-indicator">● PREVIEW</div>
+            <div class="clock" id="clockLeft">00:00:00</div>
+            
+            <div class="agenda-content">
+                <div class="agenda-header">
+                    <div class="conference-logo">N</div>
+                    <div class="event-title-section">
+                        <div class="event-title">EVENT<br>SCHEDULE</div>
+                        <div class="event-day" id="eventDay">Inauguration</div>
+                    </div>
+                </div>
+                <div id="agendaList" class="upcoming-events"></div>
+            </div>
+        </div>
+
+        <div class="panel-right">
+            <div id="tsparticles-right"></div>
+            <div class="status-indicator">● COMING SOON</div>
+            <div class="clock" id="clockRight">00:00:00</div>
+            
+            <div class="preview-container">
+                <div class="preview-header">
+                    <div class="nitc-logo">N</div>
+                    <h1 class="conference-title">NITC 2025</h1>
+                    <p class="conference-subtitle">Fostering a Human Centric Nation<br>Towards Society 5.0</p>
+                </div>
+
+                <div class="countdown-section">
+                    <h2 class="countdown-title">Starts In</h2>
+                    <div class="event-start-info">
+                        <div class="event-date">October 14, 2025</div>
+                        <div class="event-time">6:00 PM Sri Lankan Time</div>
+                        <div class="event-location">Shangri-La Hotel</div>
+                    </div>
+                    <div class="countdown-display">
+                        <div class="countdown-item">
+                            <span class="countdown-number" id="days">00</span>
+                            <span class="countdown-label">Days</span>
+                        </div>
+                        <div class="countdown-item">
+                            <span class="countdown-number" id="hours">00</span>
+                            <span class="countdown-label">Hours</span>
+                        </div>
+                        <div class="countdown-item">
+                            <span class="countdown-number" id="minutes">00</span>
+                            <span class="countdown-label">Minutes</span>
+                        </div>
+                        <div class="countdown-item">
+                            <span class="countdown-number" id="seconds">00</span>
+                            <span class="countdown-label">Seconds</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="qr-section">
+                    <h2 class="qr-title">More Info</h2>
+                    <div class="qr-container">
+                        <div class="qr-code">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https://nitc.lk" alt="QR Code">
+                        </div>
+                        <div class="qr-text">Scan for Details</div>
+                        <div class="qr-url">nitc.lk</div>
+                    </div>
+                </div>
+
+                <div class="carousel-section">
+                    <div class="carousel-container">
+                        <div class="carousel-track">
+                            <div class="carousel-slide">
+                                <div class="carousel-content">
+                                    <h3>NITC 2024</h3>
+                                    <p>Digital Transformation</p>
+                                </div>
+                            </div>
+                            <div class="carousel-slide">
+                                <div class="carousel-content">
+                                    <h3>NITC 2023</h3>
+                                    <p>Sustainable Future</p>
+                                </div>
+                            </div>
+                            <div class="carousel-slide">
+                                <div class="carousel-content">
+                                    <h3>NITC 2022</h3>
+                                    <p>Digital Sri Lanka</p>
+                                </div>
+                            </div>
+                            <div class="carousel-slide">
+                                <div class="carousel-content">
+                                    <h3>NITC 2021</h3>
+                                    <p>Innovation Summit</p>
+                                </div>
+                            </div>
+                            <div class="carousel-slide">
+                                <div class="carousel-content">
+                                    <h3>NITC Legacy</h3>
+                                    <p>43 Years Excellence</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample agenda data
+        const agendaData = [
+            { displayTime: "12:00 PM", title: "Registration & Welcome Coffee", duration: 30 },
+            { displayTime: "12:30 PM", title: "Opening Ceremony", duration: 30 },
+            { displayTime: "01:00 PM", title: "Keynote Speech - Digital Transformation", duration: 45 },
+            { displayTime: "01:45 PM", title: "Panel Discussion - AI & Society", duration: 45 },
+            { displayTime: "02:30 PM", title: "Tea Break", duration: 15 },
+            { displayTime: "02:45 PM", title: "Workshop - Emerging Technologies", duration: 60 },
+            { displayTime: "03:45 PM", title: "Awards Ceremony", duration: 30 },
+            { displayTime: "04:15 PM", title: "Networking Session", duration: 45 },
+            { displayTime: "05:00 PM", title: "Closing Remarks", duration: 30 },
+            { displayTime: "05:30 PM", title: "Evening Reception", duration: 30 }
+        ];
+
+        let currentHighlightIndex = 0;
+        const highlightDuration = 12000;
+        let eventStartTime = null;
+
+        const CONFIG = {
+            eventDate: '2025-10-14',
+            eventTime: '18:00',
+            timezone: 5.5
+        };
+
+        async function initializeParticles() {
+            try {
+                const config = {
+                    particles: {
+                        color: { value: "#ffffff" },
+                        links: { color: "#ffffff", opacity: 0.3, width: 1, distance: 120 },
+                        number: { value: 30 },
+                        opacity: { value: 0.4, random: { enable: true, minimumValue: 0.1 } },
+                        size: { value: 2, random: { enable: true, minimumValue: 1 } },
+                        move: { enable: true, speed: 0.2, direction: "none", random: true, straight: false, outModes: { default: "bounce" } }
+                    },
+                    background: { color: { value: "transparent" } },
+                    detectRetina: true,
+                    fpsLimit: 30
+                };
+
+                await tsParticles.load("tsparticles-left", config);
+                await tsParticles.load("tsparticles-right", config);
+                console.log('Particles initialized');
+            } catch (error) {
+                console.error('Particles error:', error);
+            }
+        }
+
+        function renderAgendaList() {
+            const agendaContainer = document.getElementById('agendaList');
+            if (!agendaContainer) return;
+            
+            agendaContainer.innerHTML = '';
+            const visibleCount = 3;
+            const startIndex = Math.floor(currentHighlightIndex / visibleCount) * visibleCount;
+            const endIndex = Math.min(startIndex + visibleCount, agendaData.length);
+            
+            for (let i = startIndex; i < endIndex; i++) {
+                const item = agendaData[i];
+                const eventElement = document.createElement('div');
+                eventElement.className = 'upcoming-event';
+                eventElement.innerHTML = `
+                    <div class="time">${item.displayTime}</div>
+                    <div class="title">${item.title}</div>
+                `;
+                agendaContainer.appendChild(eventElement);
+            }
+        }
+
+        function doHighlight() {
+            renderAgendaList();
+            
+            const allEvents = document.querySelectorAll('.upcoming-event');
+            allEvents.forEach(el => el.classList.remove('preview-highlight'));
+            
+            const visibleIndex = currentHighlightIndex % 3;
+            if (allEvents[visibleIndex]) {
+                allEvents[visibleIndex].classList.add('preview-highlight');
+            }
+            
+            currentHighlightIndex = (currentHighlightIndex + 1) % agendaData.length;
+        }
+
+        function initializeEventTime() {
+            const [year, month, day] = CONFIG.eventDate.split('-');
+            const [hours, minutes] = CONFIG.eventTime.split(':');
+            eventStartTime = new Date(Date.UTC(year, month - 1, day, hours, minutes));
+            eventStartTime.setTime(eventStartTime.getTime() - (CONFIG.timezone * 60 * 60 * 1000));
+        }
+
+        function getSriLankanTime() {
+            const now = new Date();
+            return new Date(now.getTime() + (CONFIG.timezone * 60 * 60 * 1000));
+        }
+
+        function updateCountdown() {
+            if (!eventStartTime) return;
+            const now = getSriLankanTime();
+            const timeDiff = eventStartTime - now;
+
+            if (timeDiff <= 0) {
+                ['days', 'hours', 'minutes', 'seconds'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.textContent = '00';
+                });
+                return;
+            }
+
+            const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+
+            const daysEl = document.getElementById('days');
+            const hoursEl = document.getElementById('hours');
+            const minutesEl = document.getElementById('minutes');
+            const secondsEl = document.getElementById('seconds');
+
+            if (daysEl) daysEl.textContent = days.toString().padStart(2, '0');
+            if (hoursEl) hoursEl.textContent = hours.toString().padStart(2, '0');
+            if (minutesEl) minutesEl.textContent = minutes.toString().padStart(2, '0');
+            if (secondsEl) secondsEl.textContent = seconds.toString().padStart(2, '0');
+        }
+
+        function updateClocks() {
+            const time = getSriLankanTime();
+            const timeString = time.getUTCHours().toString().padStart(2, '0') + ':' + 
+                              time.getUTCMinutes().toString().padStart(2, '0') + ':' + 
+                              time.getUTCSeconds().toString().padStart(2, '0');
+            
+            const leftClock = document.getElementById('clockLeft');
+            const rightClock = document.getElementById('clockRight');
+            
+            if (leftClock) leftClock.textContent = timeString;
+            if (rightClock) rightClock.textContent = timeString;
+        }
+
+        function initialize() {
+            console.log('NITC 2025 Folded LED Display initializing...');
+            
+            initializeEventTime();
+            renderAgendaList();
+            
+            setTimeout(() => {
+                initializeParticles();
+            }, 500);
+            
+            setTimeout(() => {
+                doHighlight();
+                setInterval(doHighlight, highlightDuration);
+            }, 1000);
+            
+            updateCountdown();
+            updateClocks();
+            setInterval(updateCountdown, 1000);
+            setInterval(updateClocks, 1000);
+            
+            console.log('Display ready - 512x863 (256+256)');
+        }
+
+        window.setDay = function(day) {
+            const dayEl = document.getElementById('eventDay');
+            if (dayEl) dayEl.textContent = day;
+            renderAgendaList();
+        };
+
+        window.getStatus = function() {
+            console.log('Left: Agenda (3 cards), Right: Countdown');
+            console.log('Current highlight:', currentHighlightIndex);
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initialize);
+        } else {
+            initialize();
+        }
+    </script>
+</body>
+</html>
