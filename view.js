@@ -45,13 +45,10 @@ class ConferenceView {
         
         console.log(`View initialized for ${this.isDisplay1 ? 'Display 1 (Agenda)' : 'Display 2 (Details)'}`);
         
-        // Initialize Socket.IO camera ONLY for Display 2
-        if (this.isDisplay2) {
-            console.log('Display 2 detected - attempting camera connection...');
-            setTimeout(() => {
-                this.initializeSocketCamera();
-            }, 1000);
-        }
+        // Camera integration disabled: do NOT initialize Socket.IO camera
+        this.showCameraSection = false;
+        this.cameraConnected = false;
+        this.cameraStreamingActive = false;
         
         // Set up periodic day sync (PRESERVED FROM ORIGINAL)
         this.setupDaySync();
@@ -231,44 +228,16 @@ class ConferenceView {
      * Generate camera HTML when available
      */
     generateCameraHTML() {
-        if (!this.isDisplay2 || !this.showCameraSection) {
-            return '';
-        }
-
-        return `
-            <div class="webcam-container">
-                <div class="webcam-header">
-                    <span class="webcam-title">Live from Conference Hall</span>
-                    <span class="camera-status">● CONNECTING</span>
-                </div>
-                <div class="camera-feed-container">
-                    <img 
-                        id="socketio-camera-feed" 
-                        class="webcam-feed" 
-                        alt="Live camera feed"
-                        style="object-fit: cover; width: 100%; height: 400px; background: #000;">
-                </div>
-            </div>
-        `;
+        // Camera integration removed
+        return '';
     }
 
     /**
      * Generate "coming soon" message when camera not available
      */
     generateCameraComingSoonHTML() {
-        if (!this.isDisplay2) {
-            return '';
-        }
-
-        return `
-            <div class="camera-coming-soon">
-                <div class="coming-soon-content">
-                    <div class="coming-soon-icon">📡</div>
-                    <div class="coming-soon-title">Live Feed Will Be Available Soon</div>
-                    <div class="coming-soon-subtitle">Camera is being prepared for the conference</div>
-                </div>
-            </div>
-        `;
+        // Camera integration removed
+        return '';
     }
 
     /**

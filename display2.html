@@ -22,112 +22,16 @@
                     <div class="current-description">EdTech platforms and digital learning innovations.</div>
                 </div>
 
-                <!-- Camera Container -->
-                <div class="webcam-container">
-                    <div class="webcam-header">
-                        <div class="webcam-title">Live From Conference Hall</div>
-                        <div class="webcam-status" id="streamStatus">● CONNECTING</div>
-                    </div>
-                    
-                    <!-- Loading message before stream starts -->
-                    <div class="webcam-loading" id="loadingMessage">
-                        <div class="loading-spinner"></div>
-                        <h3>Preparing Camera Feed</h3>
-                        <p>Requesting camera access...</p>
-                    </div>
-                    
-                    <!-- Video element for camera stream -->
-                    <video
-                        id="cameraVideo"
-                        class="webcam-feed"
-                        style="display: none;"
-                        muted
-                        autoplay
-                        playsinline>
-                    </video>
-                </div>
+                <!-- Camera integration removed -->
 
             </div>
         </div>
     </div>
 
-    <script src="https://unpkg.com/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
     <script src="model.js"></script>
     <script src="view.js"></script>
     <script src="controller.js"></script>
     <script src="app-display2.js"></script>
-
-    <script>
-    // Direct browser camera access
-    const video = document.getElementById('cameraVideo');
-    const loadingMessage = document.getElementById('loadingMessage');
-    const streamStatus = document.getElementById('streamStatus');
-
-    function initializeStream() {
-        console.log('Requesting camera access...');
-        
-        navigator.mediaDevices.getUserMedia({ 
-            video: { 
-                width: { ideal: 1280 },
-                height: { ideal: 720 },
-                facingMode: 'user'
-            }, 
-            audio: false 
-        })
-        .then(stream => {
-            console.log('Camera access granted');
-            video.srcObject = stream;
-            video.play().then(() => {
-                console.log('Camera stream playing');
-                loadingMessage.style.display = 'none';
-                video.style.display = 'block';
-                streamStatus.textContent = '● LIVE';
-                streamStatus.style.color = '#00ff00';
-            }).catch(err => {
-                console.error('Play error:', err);
-            });
-        })
-        .catch(err => {
-            console.error('Camera error:', err);
-            streamStatus.textContent = '● OFFLINE';
-            streamStatus.style.color = '#ff0000';
-            
-            let errorMessage = 'Camera access denied or not available';
-            if (err.name === 'NotAllowedError') {
-                errorMessage = 'Camera access denied. Please allow camera access in your browser settings.';
-            } else if (err.name === 'NotFoundError') {
-                errorMessage = 'No camera found on this device.';
-            } else if (err.name === 'NotReadableError') {
-                errorMessage = 'Camera is already in use by another application.';
-            }
-            
-            loadingMessage.innerHTML = 
-                '<div style="text-align: center;">' +
-                '<h3>Camera Unavailable</h3>' +
-                '<p>' + errorMessage + '</p>' +
-                '<button onclick="location.reload()" style="margin-top: 15px; padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px;">Try Again</button>' +
-                '</div>';
-            loadingMessage.style.display = 'flex';
-        });
-    }
-
-    // Initialize camera when page loads
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('Page loaded, initializing camera...');
-        setTimeout(initializeStream, 1000);
-    });
-
-    // Stop camera when page is hidden to save resources
-    document.addEventListener('visibilitychange', function() {
-        if (document.hidden && video.srcObject) {
-            video.srcObject.getTracks().forEach(track => track.stop());
-            console.log('Camera stopped (page hidden)');
-        } else if (!document.hidden && !video.srcObject) {
-            initializeStream();
-        }
-    });
-
-    // Cleanup on page unload
     window.addEventListener('beforeunload', function() {
         if (video.srcObject) {
             video.srcObject.getTracks().forEach(track => track.stop());

@@ -11,11 +11,11 @@ class ConferenceModel {
         const today = new Date();
         const todayStr = today.toISOString().split('T')[0];
         
-        // Conference dates
+        // Conference dates (from official site)
         this.conferenceDates = {
-            'Inauguration': todayStr,      // Today (October 3rd, 2025)
-            'Day 1': '2025-10-04',         // October 4th, 2025
-            'Day 2': '2025-10-05'          // October 5th, 2025
+            'Inauguration': '2025-10-14',  // October 14, 2025
+            'Day 1': '2025-10-15',         // October 15, 2025
+            'Day 2': '2025-10-16'          // October 16, 2025
         };
         
         // Automatically detect current day based on real date

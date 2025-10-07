@@ -20,11 +20,24 @@
             height: 863px;
         }
 
+        .rotating-circuit-element{
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            animation: rotate 20s linear infinite;
+            z-index: -1
+        }
+
         .folded-container {
             display: flex;
             width: 512px;
             height: 863px;
             position: relative;
+            /* rotor variables live here so background spans both panels */
+            --rotor1-size: 440px; /* oversized to crop ~1/4 and increase visibility */
+            --rotor2-size: 280px; /* smaller for Screen 2 top-right */
+            --rotor1-duration: 40s; /* faster */
+            --rotor2-duration: 120s; /* slower */
         }
 
         .panel-left, .panel-right {
@@ -32,7 +45,12 @@
             height: 863px;
             background: linear-gradient(180deg, #081A30 0%, #124680 50%, #040E18 100%);
             position: relative;
-            overflow: hidden;
+            overflow: hidden; /* default: contain content */
+        }
+
+        /* left panel (no special stacking now) */
+        .panel-left {
+            overflow: hidden; /* keep consistent with default group rule */
         }
 
         .panel-right {
@@ -45,7 +63,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 1;
+            z-index: 0; /* furthest back */
         }
 
         .status-indicator {
@@ -82,11 +100,11 @@
 
         .agenda-content {
             position: relative;
-            z-index: 2;
+            z-index: 3; /* above rotors */
             height: 100%;
             display: flex;
             flex-direction: column;
-            padding: 10px;
+            padding: 20px 10px 10px; /* consistent top spacing */
         }
 
         .agenda-header {
@@ -98,15 +116,56 @@
             width: 80px;
             height: 80px;
             margin: 0 auto 8px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2em;
-            color: white;
+            display: block;
+            object-fit: contain;
+            max-width: 100%;
+            height: auto;
         }
 
+        
+        /* Two decorative rotating background images clipped to their panels */
+        .panel-left::before,
+        .panel-right::after {
+            content: "";
+            position: absolute;
+            pointer-events: none;
+            transform-origin: 50% 50%;
+            z-index: 1; /* above particles, below content */
+            opacity: 0.55; /* same opacity for both */
+        }
+
+        /* Screen 1 (left panel): bottom-left rotor */
+        .panel-left::before {
+            /* Position so the right edge of the image remains within the 256px left panel */
+            left: calc(256px - var(--rotor1-size));
+            bottom: -40px;    /* deeper overscan to crop more from the bottom */
+            width: var(--rotor1-size);
+            height: var(--rotor1-size);
+            background-image: url("circuits circles 2_1.png");
+            background-repeat: no-repeat;
+            background-position: left bottom;  /* align to left-bottom per request */
+            background-size: cover; /* crop to show ~3/4 and fill corner */
+            animation: rotateSlow var(--rotor1-duration) linear infinite;
+        }
+
+        /* Screen 2 (right panel): top-right rotor */
+        .panel-right::after {
+            /* Anchor to right, crop a lot more from top and right */
+            top: -80px;
+            right: -80px;
+            width: var(--rotor2-size);
+            height: var(--rotor2-size);
+            background-image: url("circuits circles 1_1.png");
+            background-repeat: no-repeat;
+            background-position: right top;
+            background-size: cover;
+            animation: rotateSlow var(--rotor2-duration) linear infinite;
+        }
+
+        @keyframes rotateSlow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
         .event-title-section {
             color: white;
         }
@@ -151,16 +210,20 @@
             color: white;
             font-size: 1em;
             line-height: 1.3;
+            white-space: nowrap;         /* single line */
+            overflow: hidden;            /* clip overflow */
+            text-overflow: ellipsis;     /* show … */
+            max-width: 100%;
         }
 
         .preview-highlight {
             background: white !important;
             color: #081A30 !important;
             padding: 18px 12px !important;
-            border-radius: 12px !important;
+            /*border-radius: 12px !important;*/
             transform: scale(1.02) !important;
             box-shadow: 0 6px 25px rgba(255, 255, 255, 0.4) !important;
-            border: 3px solid #3498db !important;
+            border: 0.5px solid #3498db !important;
             transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
             z-index: 100 !important;
         }
@@ -177,8 +240,8 @@
 
         .preview-container {
             position: relative;
-            z-index: 2;
-            padding: 40px 12px 20px;
+            z-index: 3; /* above rotors */
+            padding: 20px 12px 20px; /* match left panel top spacing */
             text-align: center;
             color: white;
         }
@@ -191,13 +254,10 @@
             width: 100px;
             height: 100px;
             margin: 0 auto 12px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.5em;
-            color: white;
+            display: block;
+            object-fit: contain;
+            max-width: 100%;
+            height: auto;
         }
 
         .conference-title {
@@ -213,13 +273,13 @@
         }
 
         .countdown-section {
-            margin-bottom: 25px;
+            margin-bottom: 12px;
         }
 
         .countdown-title {
             font-size: 1.3em;
             font-weight: bold;
-            margin-bottom: 15px;
+            margin-bottom: 8px;
         }
 
         .event-start-info {
@@ -228,6 +288,7 @@
             border-radius: 12px;
             margin-bottom: 15px;
             backdrop-filter: blur(10px);
+            display: none; /* hide the info box on screen 2 */
         }
 
         .event-date {
@@ -249,7 +310,7 @@
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 8px;
-            margin: 15px 0;
+            margin: 8px 0;
         }
 
         .countdown-item {
@@ -350,11 +411,13 @@
             justify-content: center;
         }
 
-        .carousel-slide:nth-child(1) { background: linear-gradient(45deg, #3498db, #2980b9); }
-        .carousel-slide:nth-child(2) { background: linear-gradient(45deg, #27ae60, #2ecc71); }
-        .carousel-slide:nth-child(3) { background: linear-gradient(45deg, #f39c12, #e67e22); }
-        .carousel-slide:nth-child(4) { background: linear-gradient(45deg, #e74c3c, #c0392b); }
-        .carousel-slide:nth-child(5) { background: linear-gradient(45deg, #9b59b6, #8e44ad); }
+        /* Image slides – no text */
+        .carousel-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
 
         .carousel-content {
             color: white;
@@ -384,17 +447,26 @@
             100% { transform: translateX(0%); }
         }
     </style>
+    <style>
+        /* Remove rounded corners globally */
+        * {
+            border-radius: 0 !important;
+        }
+        img {
+            border-radius: 0 !important;
+        }
+    </style>
 </head>
-<body>
+<body>  
     <div class="folded-container">
         <div class="panel-left">
             <div id="tsparticles-left"></div>
-            <div class="status-indicator">● PREVIEW</div>
-            <div class="clock" id="clockLeft">00:00:00</div>
+            <!--<div class="status-indicator">● PREVIEW</div>
+            <div class="clock" id="clockLeft">00:00:00</div>-->
             
             <div class="agenda-content">
                 <div class="agenda-header">
-                    <div class="conference-logo">N</div>
+                    <img class="conference-logo" src="nitc-logo.png" alt="NITC Logo">
                     <div class="event-title-section">
                         <div class="event-title">EVENT<br>SCHEDULE</div>
                         <div class="event-day" id="eventDay">Inauguration</div>
@@ -406,12 +478,12 @@
 
         <div class="panel-right">
             <div id="tsparticles-right"></div>
-            <div class="status-indicator">● COMING SOON</div>
-            <div class="clock" id="clockRight">00:00:00</div>
+            <!--<div class="status-indicator">● COMING SOON</div>
+            <div class="clock" id="clockRight">00:00:00</div>-->
             
             <div class="preview-container">
                 <div class="preview-header">
-                    <div class="nitc-logo">N</div>
+                    <img class="nitc-logo" src="nitc-logo.png" alt="NITC Logo">
                     <h1 class="conference-title">NITC 2025</h1>
                     <p class="conference-subtitle">Fostering a Human Centric Nation<br>Towards Society 5.0</p>
                 </div>
@@ -458,34 +530,19 @@
                     <div class="carousel-container">
                         <div class="carousel-track">
                             <div class="carousel-slide">
-                                <div class="carousel-content">
-                                    <h3>NITC 2024</h3>
-                                    <p>Digital Transformation</p>
-                                </div>
+                                <img src="carousel 1.jpg" alt="Slide 1" />
                             </div>
                             <div class="carousel-slide">
-                                <div class="carousel-content">
-                                    <h3>NITC 2023</h3>
-                                    <p>Sustainable Future</p>
-                                </div>
+                                <img src="carousel 2.jpg" alt="Slide 2" />
                             </div>
                             <div class="carousel-slide">
-                                <div class="carousel-content">
-                                    <h3>NITC 2022</h3>
-                                    <p>Digital Sri Lanka</p>
-                                </div>
+                                <img src="carousel 3.jpg" alt="Slide 3" />
                             </div>
                             <div class="carousel-slide">
-                                <div class="carousel-content">
-                                    <h3>NITC 2021</h3>
-                                    <p>Innovation Summit</p>
-                                </div>
+                                <img src="carousel 4.jpg" alt="Slide 4" />
                             </div>
                             <div class="carousel-slide">
-                                <div class="carousel-content">
-                                    <h3>NITC Legacy</h3>
-                                    <p>43 Years Excellence</p>
-                                </div>
+                                <img src="carousel 5.jpg" alt="Slide 5" />
                             </div>
                         </div>
                     </div>
@@ -495,22 +552,26 @@
     </div>
 
     <script>
-        // Sample agenda data
-        const agendaData = [
-            { displayTime: "12:00 PM", title: "Registration & Welcome Coffee", duration: 30 },
-            { displayTime: "12:30 PM", title: "Opening Ceremony", duration: 30 },
-            { displayTime: "01:00 PM", title: "Keynote Speech - Digital Transformation", duration: 45 },
-            { displayTime: "01:45 PM", title: "Panel Discussion - AI & Society", duration: 45 },
-            { displayTime: "02:30 PM", title: "Tea Break", duration: 15 },
-            { displayTime: "02:45 PM", title: "Workshop - Emerging Technologies", duration: 60 },
-            { displayTime: "03:45 PM", title: "Awards Ceremony", duration: 30 },
-            { displayTime: "04:15 PM", title: "Networking Session", duration: 45 },
-            { displayTime: "05:00 PM", title: "Closing Remarks", duration: 30 },
-            { displayTime: "05:30 PM", title: "Evening Reception", duration: 30 }
+        // Fixed agenda only (Inauguration) – short, single-line titles
+        let agendaData = [
+            { displayTime: "06:00 PM", title: "Registration" },
+            { displayTime: "06:30 PM", title: "Arrival of Chief Guests" },
+            { displayTime: "06:35 PM", title: "National Anthem & Digital Lamp" },
+            { displayTime: "06:45 PM", title: "Welcome Performance" },
+            { displayTime: "06:55 PM", title: "Welcome Address" },
+            { displayTime: "07:10 PM", title: "Awards Segment 1" },
+            { displayTime: "07:25 PM", title: "Chief Guest Address" },
+            { displayTime: "07:45 PM", title: "Guest of Honor Keynote" },
+            { displayTime: "08:05 PM", title: "Sponsor Keynotes" },
+            { displayTime: "08:25 PM", title: "Awards Segment 2" },
+            { displayTime: "08:45 PM", title: "Closing & Vote of Thanks" },
+            { displayTime: "09:00 PM", title: "Fellowship & Cocktail" }
         ];
+        // Counters to number repeated categories (e.g., Panel Discussion 1, 2)
+        const categoryCounts = {};
 
         let currentHighlightIndex = 0;
-        const highlightDuration = 12000;
+        const REALTIME_POLL_MS = 30000; // poll real-time every 30s
         let eventStartTime = null;
 
         const CONFIG = {
@@ -518,6 +579,47 @@
             eventTime: '18:00',
             timezone: 5.5
         };
+
+        // Helpers used by renderAgendaList()
+        function escapeHtml(str){
+            return String(str)
+                .replace(/&/g,'&amp;')
+                .replace(/</g,'&lt;')
+                .replace(/>/g,'&gt;')
+                .replace(/"/g,'&quot;');
+        }
+
+        function toTitleCaseLimited(s){
+            const trimmed = String(s).trim();
+            const limited = trimmed.length > 28 ? trimmed.slice(0, 28) + '…' : trimmed;
+            return limited.replace(/\w\S*/g, (w)=> w.charAt(0).toUpperCase()+w.slice(1));
+        }
+
+        function getShortTitle(title){
+            const t = String(title).toLowerCase();
+            let category = null;
+
+            if (t.includes('panel')) category = 'Panel Discussion';
+            else if (t.includes('keynote')) category = 'Keynote';
+            else if (t.includes('registration')) category = 'Registration';
+            else if (t.includes('workshop')) category = 'Workshop';
+            else if (t.includes('tea')) category = 'Tea Break';
+            else if (t.includes('lunch')) category = 'Lunch Break';
+            else if (t.includes('awards')) category = 'Awards';
+            else if (t.includes('address')) category = 'Address';
+            else if (t.includes('sponsor')) category = 'Sponsor Session';
+            else if (t.includes('dance')) category = 'Performance';
+            else if (t.includes('networking') || t.includes('fellowship') || t.includes('cocktail')) category = 'Networking';
+            else if (t.includes('vote of thanks')) category = 'Vote of Thanks';
+            else category = toTitleCaseLimited(title);
+
+            const numbered = ['Panel Discussion','Keynote','Workshop','Awards','Sponsor Session','Performance','Address'];
+            if (numbered.includes(category)){
+                categoryCounts[category] = (categoryCounts[category] || 0) + 1;
+                return `${category} ${categoryCounts[category]}`;
+            }
+            return category;
+        }
 
         async function initializeParticles() {
             try {
@@ -535,8 +637,12 @@
                     fpsLimit: 30
                 };
 
-                await tsParticles.load("tsparticles-left", config);
-                await tsParticles.load("tsparticles-right", config);
+                if (window.tsParticles && typeof tsParticles.load === 'function') {
+                    await tsParticles.load("tsparticles-left", config);
+                    await tsParticles.load("tsparticles-right", config);
+                } else {
+                    console.warn('tsParticles not available; skipping particles init');
+                }
                 console.log('Particles initialized');
             } catch (error) {
                 console.error('Particles error:', error);
@@ -554,11 +660,12 @@
             
             for (let i = startIndex; i < endIndex; i++) {
                 const item = agendaData[i];
+                const shortTitle = getShortTitle(item.title);
                 const eventElement = document.createElement('div');
                 eventElement.className = 'upcoming-event';
                 eventElement.innerHTML = `
                     <div class="time">${item.displayTime}</div>
-                    <div class="title">${item.title}</div>
+                    <div class="title" title="${escapeHtml(item.title)}">${shortTitle}</div>
                 `;
                 agendaContainer.appendChild(eventElement);
             }
@@ -566,34 +673,36 @@
 
         function doHighlight() {
             renderAgendaList();
-            
             const allEvents = document.querySelectorAll('.upcoming-event');
             allEvents.forEach(el => el.classList.remove('preview-highlight'));
-            
             const visibleIndex = currentHighlightIndex % 3;
             if (allEvents[visibleIndex]) {
                 allEvents[visibleIndex].classList.add('preview-highlight');
             }
-            
-            currentHighlightIndex = (currentHighlightIndex + 1) % agendaData.length;
         }
 
+        // No real-time model in fixed mode
+
         function initializeEventTime() {
-            const [year, month, day] = CONFIG.eventDate.split('-');
-            const [hours, minutes] = CONFIG.eventTime.split(':');
-            eventStartTime = new Date(Date.UTC(year, month - 1, day, hours, minutes));
-            eventStartTime.setTime(eventStartTime.getTime() - (CONFIG.timezone * 60 * 60 * 1000));
+            const [year, month, day] = CONFIG.eventDate.split('-').map(Number);
+            const [hours, minutes] = CONFIG.eventTime.split(':').map(Number);
+            // Compute event start in UTC. SLT = UTC+5:30.
+            const tzHours = Math.trunc(CONFIG.timezone);
+            const tzMinutes = Math.round((CONFIG.timezone - tzHours) * 60);
+            const eventUtcMs = Date.UTC(year, month - 1, day, hours - tzHours, minutes - tzMinutes);
+            eventStartTime = new Date(eventUtcMs);
         }
 
         function getSriLankanTime() {
+            // Not used for diff; keep for clocks only
             const now = new Date();
             return new Date(now.getTime() + (CONFIG.timezone * 60 * 60 * 1000));
         }
 
         function updateCountdown() {
             if (!eventStartTime) return;
-            const now = getSriLankanTime();
-            const timeDiff = eventStartTime - now;
+            const nowUtc = new Date();
+            const timeDiff = eventStartTime - nowUtc;
 
             if (timeDiff <= 0) {
                 ['days', 'hours', 'minutes', 'seconds'].forEach(id => {
@@ -634,18 +743,23 @@
 
         function initialize() {
             console.log('NITC 2025 Folded LED Display initializing...');
-            
+            // Fixed agenda: set day label and render immediately
+            window.setDay('Inauguration');
+
             initializeEventTime();
             renderAgendaList();
+            // Immediate highlight once
+            doHighlight();
             
             setTimeout(() => {
                 initializeParticles();
             }, 500);
             
-            setTimeout(() => {
+            // Cycle highlight every 12s
+            setInterval(() => {
+                currentHighlightIndex = (currentHighlightIndex + 1) % agendaData.length;
                 doHighlight();
-                setInterval(doHighlight, highlightDuration);
-            }, 1000);
+            }, 12000);
             
             updateCountdown();
             updateClocks();
@@ -661,6 +775,37 @@
             renderAgendaList();
         };
 
+        // Allow an external controller to replace the agenda items and re-render
+        window.setAgendaData = function(items){
+            if (Array.isArray(items)) {
+                // reset numbering state
+                Object.keys(categoryCounts).forEach(k => delete categoryCounts[k]);
+                agendaData = items.map(x => ({ displayTime: x.displayTime || x.time || '', title: x.title || '' }));
+                currentHighlightIndex = 0;
+                renderAgendaList();
+                doHighlight();
+            }
+        };
+
+        // Allow an external controller to set the countdown target (Sri Lanka time)
+        window.setCountdownTarget = function(dateStr, timeStr){
+            if (!dateStr || !timeStr) return;
+            CONFIG.eventDate = dateStr;   // 'YYYY-MM-DD'
+            CONFIG.eventTime = timeStr;   // 'HH:MM' in 24h or 'HH:MM AM/PM'
+            // Normalize time to 24h
+            const m = timeStr.trim().match(/^(\d{1,2}):(\d{2})(?:\s*(AM|PM))?$/i);
+            if (m){
+                let hh = parseInt(m[1],10);
+                const mm = parseInt(m[2],10);
+                const ap = (m[3]||'').toUpperCase();
+                if (ap === 'PM' && hh < 12) hh += 12;
+                if (ap === 'AM' && hh === 12) hh = 0;
+                CONFIG.eventTime = String(hh).padStart(2,'0') + ':' + String(mm).padStart(2,'0');
+            }
+            initializeEventTime();
+            updateCountdown();
+        };
+
         window.getStatus = function() {
             console.log('Left: Agenda (3 cards), Right: Countdown');
             console.log('Current highlight:', currentHighlightIndex);
@@ -672,5 +817,7 @@
             initialize();
         }
     </script>
+    <!-- Rotor controllers removed for production -->
+    <script src="modepreview.js"></script>
 </body>
 </html>
