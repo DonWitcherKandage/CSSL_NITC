@@ -260,6 +260,117 @@
             height: auto;
         }
 
+        /* 3D spinning logo (both panels) */
+        .logo-3d-wrapper {
+            perspective: 850px;           /* strong 3D without distortion */
+            perspective-origin: 50% 50%;
+            width: 120px;                 /* slight external frame for the logo */
+            height: 120px;
+            margin: 0 auto 14px;          /* center above title */
+            overflow: visible;            /* don't clip 3D */
+            position: relative;           /* create stacking context */
+        }
+
+        .spin3d {
+            transform-style: preserve-3d;
+            transform-origin: 50% 50%;
+            will-change: transform;
+            /* gentle tilt maintained during spin */
+            animation: spinSlow3D 24s linear infinite; /* faster loop */
+            filter: drop-shadow(0 5px 16px rgba(0,0,0,0.55));
+            backface-visibility: visible; /* avoid disappearing on backface */
+            position: relative;
+            border-radius: 6px;
+            box-shadow:
+                0 1px 0 rgba(255,255,255,0.08) inset,   /* top highlight */
+                0 -1px 0 rgba(0,0,0,0.25) inset,        /* bottom shade */
+                0 8px 18px rgba(0,0,0,0.35);            /* outer depth */
+        }
+
+        @keyframes spinSlow3D {
+            0%   { transform: rotateX(16deg) rotateY(0deg)   rotateZ(0.4deg); }
+            50%  { transform: rotateX(16deg) rotateY(180deg) rotateZ(0.4deg); }
+            100% { transform: rotateX(16deg) rotateY(360deg) rotateZ(0.4deg); }
+        }
+
+        /* subtle reflective sheen for thickness illusion */
+        .spin3d::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: radial-gradient( circle at 30% 30%, rgba(255,255,255,0.18), rgba(255,255,255,0.02) 45%, rgba(0,0,0,0) 60% );
+            mix-blend-mode: screen;
+        }
+
+        /* subtle rim + box edges to suggest thickness */
+        .spin3d::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 6px;
+            background:
+                /* right edge */
+                linear-gradient(to left, rgba(0,0,0,0.35), rgba(0,0,0,0.0) 14%) right / 14% 100% no-repeat,
+                /* bottom edge */
+                linear-gradient(to top,  rgba(0,0,0,0.35), rgba(0,0,0,0.0) 14%) bottom / 100% 14% no-repeat,
+                /* top bevel */
+                linear-gradient(to bottom, rgba(255,255,255,0.10), rgba(255,255,255,0.00) 28%) top / 100% 28% no-repeat;
+            box-shadow: 0 0 0 1px rgba(255,255,255,0.06) inset;
+            pointer-events: none;
+        }
+
+        /* === Smooth multi-slice 3D stack (like before), improved === */
+        .logo-3d-wrapper { --logo-size: 120px; }
+        .logo-3d-wrapper.small { --logo-size: 90px; }
+
+        .logo-stack {
+            position: relative;
+            width: var(--logo-size);
+            height: var(--logo-size);
+            transform-style: preserve-3d;
+            animation: spinSlow3D 24s linear infinite; /* smooth endless */
+            will-change: transform;
+            --slices: 32;           /* more layers to fill gaps */
+            --depthStep: 0.6px;     /* smaller step reduces visible spacing */
+            z-index: 1;
+        }
+
+        .logo-stack .slice {
+            position: absolute;
+            inset: 0;
+            background: url('nitc-logo.png') center/contain no-repeat;
+            /* Center exactly: use (slices-1)/2 so middle sits at 0 */
+            transform: translateZ(calc((var(--i) - ((var(--slices) - 1) / 2)) * var(--depthStep)));
+            /* Remove per-slice brightness to avoid a single odd band */
+            backface-visibility: visible; /* keep visible at edge-on angles */
+        }
+
+        /* mirrored back so the logo reads correctly when viewed from behind */
+        .logo-stack .slice::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: url('nitc-logo.png') center/contain no-repeat;
+            transform: rotateY(180deg) scaleX(-1) translateZ(0.01px);
+            backface-visibility: hidden;
+        }
+
+        /* remove overlay to avoid any perceived extra 'slice' */
+        .logo-stack::before { content: none; }
+
+        /* disable billboard layer to eliminate any ghost slice */
+        .logo-billboard { display: none !important; }
+
+        /* billboard animations removed since billboard is disabled */
+        @keyframes spinCounter3D { 0%{opacity:0} 100%{opacity:0} }
+
+        /* Fade in billboard near 90° and 270° to avoid disappearance */
+        @keyframes billboardOpacity { 0%{opacity:0} 100%{opacity:0} }
+
+        /* Smaller wrapper for Screen 1 logo */
+        .logo-3d-wrapper.small { width: 90px; height: 90px; margin: 0 auto 10px; }
+
         .conference-title {
             font-size: 2em;
             font-weight: bold;
@@ -466,7 +577,43 @@
             
             <div class="agenda-content">
                 <div class="agenda-header">
-                    <img class="conference-logo" src="nitc-logo.png" alt="NITC Logo">
+                    <div class="logo-3d-wrapper small">
+                        <div class="logo-stack">
+                            <div class="slice" style="--i: 0"></div>
+                            <div class="slice" style="--i: 1"></div>
+                            <div class="slice" style="--i: 2"></div>
+                            <div class="slice" style="--i: 3"></div>
+                            <div class="slice" style="--i: 4"></div>
+                            <div class="slice" style="--i: 5"></div>
+                            <div class="slice" style="--i: 6"></div>
+                            <div class="slice" style="--i: 7"></div>
+                            <div class="slice" style="--i: 8"></div>
+                            <div class="slice" style="--i: 9"></div>
+                            <div class="slice" style="--i: 10"></div>
+                            <div class="slice" style="--i: 11"></div>
+                            <div class="slice" style="--i: 12"></div>
+                            <div class="slice" style="--i: 13"></div>
+                            <div class="slice" style="--i: 14"></div>
+                            <div class="slice" style="--i: 15"></div>
+                            <div class="slice" style="--i: 16"></div>
+                            <div class="slice" style="--i: 17"></div>
+                            <div class="slice" style="--i: 18"></div>
+                            <div class="slice" style="--i: 19"></div>
+                            <div class="slice" style="--i: 20"></div>
+                            <div class="slice" style="--i: 21"></div>
+                            <div class="slice" style="--i: 22"></div>
+                            <div class="slice" style="--i: 23"></div>
+                            <div class="slice" style="--i: 24"></div>
+                            <div class="slice" style="--i: 25"></div>
+                            <div class="slice" style="--i: 26"></div>
+                            <div class="slice" style="--i: 27"></div>
+                            <div class="slice" style="--i: 28"></div>
+                            <div class="slice" style="--i: 29"></div>
+                            <div class="slice" style="--i: 30"></div>
+                            <div class="slice" style="--i: 31"></div>
+                        </div>
+                        <div class="logo-billboard"></div>
+                    </div>
                     <div class="event-title-section">
                         <div class="event-title">EVENT<br>SCHEDULE</div>
                         <div class="event-day" id="eventDay">Inauguration</div>
@@ -483,7 +630,43 @@
             
             <div class="preview-container">
                 <div class="preview-header">
-                    <img class="nitc-logo" src="nitc-logo.png" alt="NITC Logo">
+                    <div class="logo-3d-wrapper">
+                        <div class="logo-stack">
+                            <div class="slice" style="--i: 0"></div>
+                            <div class="slice" style="--i: 1"></div>
+                            <div class="slice" style="--i: 2"></div>
+                            <div class="slice" style="--i: 3"></div>
+                            <div class="slice" style="--i: 4"></div>
+                            <div class="slice" style="--i: 5"></div>
+                            <div class="slice" style="--i: 6"></div>
+                            <div class="slice" style="--i: 7"></div>
+                            <div class="slice" style="--i: 8"></div>
+                            <div class="slice" style="--i: 9"></div>
+                            <div class="slice" style="--i: 10"></div>
+                            <div class="slice" style="--i: 11"></div>
+                            <div class="slice" style="--i: 12"></div>
+                            <div class="slice" style="--i: 13"></div>
+                            <div class="slice" style="--i: 14"></div>
+                            <div class="slice" style="--i: 15"></div>
+                            <div class="slice" style="--i: 16"></div>
+                            <div class="slice" style="--i: 17"></div>
+                            <div class="slice" style="--i: 18"></div>
+                            <div class="slice" style="--i: 19"></div>
+                            <div class="slice" style="--i: 20"></div>
+                            <div class="slice" style="--i: 21"></div>
+                            <div class="slice" style="--i: 22"></div>
+                            <div class="slice" style="--i: 23"></div>
+                            <div class="slice" style="--i: 24"></div>
+                            <div class="slice" style="--i: 25"></div>
+                            <div class="slice" style="--i: 26"></div>
+                            <div class="slice" style="--i: 27"></div>
+                            <div class="slice" style="--i: 28"></div>
+                            <div class="slice" style="--i: 29"></div>
+                            <div class="slice" style="--i: 30"></div>
+                            <div class="slice" style="--i: 31"></div>
+                        </div>
+                        <div class="logo-billboard"></div>
+                    </div>
                     <h1 class="conference-title">NITC 2025</h1>
                     <p class="conference-subtitle">Fostering a Human Centric Nation<br>Towards Society 5.0</p>
                 </div>
@@ -712,10 +895,15 @@
                 return;
             }
 
-            const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+            const dayMs = 1000 * 60 * 60 * 24;
+            // Human-friendly remaining days: when less than N full days remain, show N-1
+            // Example: 5 days + some hours -> show 5 instead of 6
+            let days = Math.ceil(timeDiff / dayMs) - 1;
+            if (days < 0) days = 0;
+            const remainderAfterDays = timeDiff - (days * dayMs);
+            const hours = Math.floor((remainderAfterDays % dayMs) / (1000 * 60 * 60));
+            const minutes = Math.floor((remainderAfterDays % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((remainderAfterDays % (1000 * 60)) / 1000);
 
             const daysEl = document.getElementById('days');
             const hoursEl = document.getElementById('hours');
