@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NITC 2025 - Folded 720x1080 (2 x 360)</title>
+  <script src="https://unpkg.com/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family: 'Arial', sans-serif; background:#000; overflow:hidden; display:grid; place-items:center; min-height:100vh; }
+
+    /* Folded container with rotor variables (scaled for 360px panels) */
+    .folded-container {
+      display:flex;
+      width: 720px;
+      height: 1080px;
+      position: relative;
+      /* rotor variables */
+      --rotor1-size: 600px; /* larger to crop nicely on taller canvas */
+      --rotor2-size: 380px;
+      --rotor1-duration: 40s;
+      --rotor2-duration: 120s;
+    }
+
+    .panel-left, .panel-right {
+      width: 360px;
+      height: 1080px;
+      background: linear-gradient(180deg, #051022 0%, #0a2a4d 50%, #020a12 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .panel-right { overflow-y: auto; }
+
+    #tsparticles-left, #tsparticles-right { position:absolute; top:0; left:0; width:100%; height:100%; z-index:0; }
+
+    /* Decorative rotating background images clipped to their panels */
+    .panel-left::before,
+    .panel-right::after {
+      content: "";
+      position: absolute;
+      pointer-events: none;
+      transform-origin: 50% 50%;
+      z-index: 1; /* above particles, below content */
+      opacity: 0.55;
+    }
+
+    /* Left panel rotor: bottom-left */
+    .panel-left::before {
+      left: calc(360px - var(--rotor1-size));
+      bottom: -60px;
+      width: var(--rotor1-size);
+      height: var(--rotor1-size);
+      background-image: url("circuits circles 2_1.png");
+      background-repeat: no-repeat;
+      background-position: left bottom;
+      background-size: cover;
+      animation: rotateSlow var(--rotor1-duration) linear infinite;
+    }
+
+    /* Right panel rotor: top-right */
+    .panel-right::after {
+      top: -120px;
+      right: -120px;
+      width: var(--rotor2-size);
+      height: var(--rotor2-size);
+      background-image: url("circuits circles 1_1.png");
+      background-repeat: no-repeat;
+      background-position: right top;
+      background-size: cover;
+      animation: rotateSlow var(--rotor2-duration) linear infinite;
+    }
+
+    @keyframes rotateSlow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+    /* Left Agenda */
+    .agenda-content {
+      position: relative;
+      z-index: 3;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      padding: 20px 10px 10px;
+    }
+
+    .agenda-header {
+      text-align: center;
+      margin-bottom: 15px;
+    }
+
+    .event-title-section { color: #fff; }
+
+    .event-title {
+      font-size: 1.4em;
+      font-weight: bold;
+      line-height: 1.1;
+      margin-bottom: 5px;
+    }
+
+    .event-day { font-size: 0.9em; opacity: 0.9; }
+
+    .upcoming-events {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow: hidden;
+    }
+
+    /* Darker global background */
+    html, body {
+      background: radial-gradient(120% 120% at 50% 0%, #0a1530 0%, #061126 45%, #030913 100%);
+      background-attachment: fixed;
+    }
+
+    .upcoming-event {
+      /* Single-corner Neon Chamfer with tech grid (no color fill by default) */
+      --neon: #2CC0FF;
+      --neon-soft: rgba(44,192,255,0.7);
+      --grid-x: rgba(44,192,255,0.10);
+      --grid-y: rgba(44,192,255,0.07);
+      position: relative;
+      overflow: hidden;
+      padding: 18px 16px;
+      color: #fff;
+      background:
+        /* vertical grid */
+        repeating-linear-gradient(90deg, var(--grid-x) 0 1px, transparent 1px 22px),
+        /* horizontal grid */
+        repeating-linear-gradient(0deg, var(--grid-y) 0 1px, transparent 1px 22px),
+        /* tiny nodes */
+        radial-gradient(2px 2px at 20% 30%, rgba(44,192,255,0.18), transparent 60%),
+        radial-gradient(2px 2px at 70% 60%, rgba(44,192,255,0.18), transparent 60%);
+      background-size: auto, auto, 100% 100%, 100% 100%;
+      animation: gridDrift 18s linear infinite;
+      /* only top-right corner chamfer */
+      clip-path: polygon(0 0, calc(100% - 28px) 0, 100% 28px, 100% 100%, 0 100%);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center; /* vertical centering */
+      align-items: flex-start; /* keep left alignment */
+      gap: 4px;
+      min-height: 120px;
+      transition: transform 0.25s ease, filter 0.25s ease, min-height 0.25s ease, padding 0.25s ease;
+    }
+
+    /* Neon perimeter stroke (subtle, no heavy shadow) */
+    .upcoming-event::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      clip-path: polygon(0 0, calc(100% - 28px) 0, 100% 28px, 100% 100%, 0 100%);
+      box-shadow: inset 0 0 0 2px var(--neon-soft);
+    }
+
+    @keyframes gridDrift {
+      0% { background-position: 0 0, 0 0, 0 0, 0 0; }
+      100% { background-position: 120px 0, 0 120px, 0 0, 0 0; }
+    }
+
+    /* Tech animations: corner pulse wedge + diagonal scan */
+    .upcoming-event::after {
+      content: "";
+      position: absolute;
+      pointer-events: none;
+      /* corner wedge */
+      width: 46px; height: 46px;
+      top: 0; right: 0;
+      background: radial-gradient(circle at 80% 20%, rgba(44,192,255,0.9), transparent 60%);
+      clip-path: polygon(100% 0, 0 0, 100% 100%);
+      filter: saturate(140%);
+      animation: cornerPulse 2.6s ease-in-out infinite;
+    }
+
+    .upcoming-event .scan {
+      position: absolute;
+      inset: 0;
+      /* soften sheen to avoid seam */
+      background: linear-gradient(115deg,
+        rgba(255,255,255,0.00) 0%,
+        rgba(255,255,255,0.08) 40%,
+        rgba(255,255,255,0.12) 50%,
+        rgba(255,255,255,0.08) 60%,
+        rgba(255,255,255,0.00) 100%);
+      mix-blend-mode: screen;
+      transform: translateX(-60%) skewX(-18deg);
+      animation: scanSweep 6s linear infinite;
+      pointer-events: none;
+    }
+
+    /* faster sheen on highlight */
+    .preview-highlight .scan { animation-duration: 3s !important; }
+
+    @keyframes scanSweep {
+      0% { transform: translateX(-60%) skewX(-18deg); }
+      100% { transform: translateX(140%) skewX(-18deg); }
+    }
+    @keyframes cornerPulse {
+      0%, 100% { opacity: 0.55; filter: drop-shadow(0 0 4px rgba(44,192,255,0.35)); }
+      50% { opacity: 0.9; filter: drop-shadow(0 0 8px rgba(44,192,255,0.6)); }
+    }
+
+    /* no pseudo frame in box mode */
+
+    .upcoming-event .time {
+      /* neon gradient text */
+      font-size: 1.1em;
+      font-weight: 800;
+      margin-bottom: 6px;
+      background: linear-gradient(90deg, #2CC0FF, #7DD3FF, #2CC0FF);
+      background-size: 200% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      animation: neonText 6s linear infinite;
+      text-shadow: 0 0 6px rgba(44,192,255,0.55);
+    }
+
+    .upcoming-event .title {
+      color: #EAF6FF;
+      font-size: 1em;
+      line-height: 1.3;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+      text-shadow: 0 0 6px rgba(12,120,200,0.25);
+    }
+
+    .preview-highlight {
+      /* distinct shape, NO fill; halo lives in child element */
+      min-height: 150px;
+      transform: none !important;
+      filter: saturate(1.28) brightness(1.08) !important;
+      /* two-corner chamfer: top-right and bottom-left */
+      clip-path: polygon(0 0, calc(100% - 36px) 0, 100% 36px, 100% 100%, 36px 100%, 0 calc(100% - 36px));
+      background: none !important;
+    }
+    .preview-highlight::before {
+      box-shadow: inset 0 0 0 2px rgba(44,192,255,0.35);
+      animation: glowPulse 2.2s ease-in-out infinite;
+    }
+    .preview-highlight::after {
+      /* corner beacons */
+      content: "";
+      position: absolute; inset: 0; pointer-events: none;
+      background:
+        radial-gradient(10px 10px at calc(100% - 16px) 16px, rgba(124,218,255,0.95), transparent 60%),
+        radial-gradient(10px 10px at 16px calc(100% - 16px), rgba(124,218,255,0.95), transparent 60%);
+      mix-blend-mode: screen;
+      animation: beaconPulse 1.8s ease-in-out infinite;
+    }
+    /* switch off other overlays on highlight */
+    .preview-highlight .scan, .preview-highlight .trace, .preview-highlight .flux, .preview-highlight .stripes { opacity: 0 !important; }
+
+    /* no rotation */
+    @keyframes spinHalo { to { transform: none; } }
+    @keyframes glowPulse {
+      0%, 100% { box-shadow: inset 0 0 0 2px rgba(44,192,255,0.30); }
+      50% { box-shadow: inset 0 0 0 3px rgba(124,218,255,0.55); }
+    }
+    @keyframes beaconPulse {
+      0%, 100% { opacity: 0.65; filter: drop-shadow(0 0 6px rgba(124,218,255,0.6)); }
+      50% { opacity: 1; filter: drop-shadow(0 0 10px rgba(124,218,255,0.9)); }
+    }
+
+    /* HALO element(s) */
+    .upcoming-event .halo {
+      position: absolute; inset: 0; pointer-events: none; opacity: 0;
+      clip-path: polygon(0 0, calc(100% - 36px) 0, 100% 36px, 100% 100%, 36px 100%, 0 calc(100% - 36px));
+      background: conic-gradient(#0B86FF, #2CC0FF, #7DD3FF, #2CC0FF, #0B86FF);
+      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+      mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      mask-composite: exclude;
+      padding: 5px;
+      border-radius: 12px;
+      animation: haloPulse 1.8s ease-in-out infinite;
+      box-shadow: 0 0 18px rgba(44,192,255,0.45), 0 0 28px rgba(124,218,255,0.35);
+    }
+    .preview-highlight .halo { opacity: 1; }
+
+    .upcoming-event .halo2 {
+      position: absolute; inset: 0; pointer-events: none; opacity: 0;
+      clip-path: polygon(0 0, calc(100% - 36px) 0, 100% 36px, 100% 100%, 36px 100%, 0 calc(100% - 36px));
+      background: conic-gradient(#7DD3FF, #2CC0FF, #0B86FF, #2CC0FF, #7DD3FF);
+      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+      mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      mask-composite: exclude;
+      padding: 5px;
+      border-radius: 12px;
+      animation: haloPulse 2.4s ease-in-out infinite reverse;
+      box-shadow: 0 0 12px rgba(124,218,255,0.35);
+    }
+    .preview-highlight .halo2 { opacity: 1; }
+
+    @keyframes haloPulse {
+      0%, 100% { filter: brightness(1) saturate(1); box-shadow: 0 0 14px rgba(44,192,255,0.35), 0 0 20px rgba(124,218,255,0.25); }
+      50% { filter: brightness(1.2) saturate(1.3); box-shadow: 0 0 22px rgba(44,192,255,0.6), 0 0 34px rgba(124,218,255,0.5); }
+    }
+
+    /* Corner ripple waves */
+    .upcoming-event .ripples { position: absolute; inset: 0; pointer-events: none; opacity: 0; }
+    .preview-highlight .ripples { opacity: 1; }
+    .upcoming-event .ripples::before,
+    .upcoming-event .ripples::after {
+      content: ""; position: absolute; width: 14px; height: 14px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(124,218,255,0.95) 0%, rgba(124,218,255,0.6) 40%, rgba(124,218,255,0) 70%);
+      animation: rippleOut 1.8s ease-out infinite;
+    }
+    .upcoming-event .ripples::before { top: 12px; right: 12px; }
+    .upcoming-event .ripples::after { bottom: 12px; left: 12px; animation-delay: .9s; }
+    @keyframes rippleOut {
+      0% { transform: scale(0.6); opacity: 0.9; }
+      70% { transform: scale(3.2); opacity: 0.15; }
+      100% { transform: scale(3.8); opacity: 0; }
+    }
+    .upcoming-event .flux {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0; /* off by default */
+      background-image:
+        repeating-linear-gradient(
+          to bottom,
+          rgba(44,192,255,0.0) 0px,
+          rgba(44,192,255,0.12) 12px,
+          rgba(44,192,255,0.0) 24px
+        );
+      background-size: 100% 24px;
+      mix-blend-mode: screen;
+    }
+    .preview-highlight .flux { opacity: 1; animation: neonRain 2.4s linear infinite; }
+
+    @keyframes neonRain {
+      0% { background-position-y: 0; }
+      100% { background-position-y: 120px; }
+    }
+
+    /* border runner animation (highlight only) */
+    .upcoming-event .trace { position: absolute; inset: 0; pointer-events: none; opacity: 0; }
+    .upcoming-event .trace::before {
+      content: ""; position: absolute; top: 0; left: 0; height: 2px; width: 200%;
+      background: linear-gradient(90deg, transparent 0%, rgba(44,192,255,0.0) 30%, rgba(44,192,255,1) 50%, rgba(44,192,255,0.0) 70%, transparent 100%);
+      animation: runnerX 1.8s linear infinite;
+    }
+    .upcoming-event .trace::after {
+      content: ""; position: absolute; top: 0; right: 0; width: 2px; height: 200%;
+      background: linear-gradient(180deg, transparent 0%, rgba(44,192,255,0.0) 30%, rgba(44,192,255,1) 50%, rgba(44,192,255,0.0) 70%, transparent 100%);
+      animation: runnerY 1.8s linear infinite;
+    }
+    .preview-highlight .trace { opacity: 1; }
+    @keyframes runnerX { 0% { transform: translateX(-50%); } 100% { transform: translateX(0%); } }
+    @keyframes runnerY { 0% { transform: translateY(-50%); } 100% { transform: translateY(0%); } }
+
+    /* Larger fonts on highlight */
+    .preview-highlight .time { font-size: 1.24em !important; letter-spacing: 0.6px; }
+    .preview-highlight .title { font-size: 1.08em !important; }
+
+    /* orbit accent dot */
+    .upcoming-event .orbit {
+      position: absolute;
+      top: 10px; left: -24px;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #7DD3FF 0%, #2CC0FF 60%, rgba(44,192,255,0.0) 70%);
+      box-shadow: 0 0 10px rgba(44,192,255,0.8), 0 0 18px rgba(125,211,255,0.6);
+      animation: orbitSlide 4.5s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes neonText {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 200% 50%; }
+    }
+    @keyframes orbitSlide {
+      0% { transform: translateX(0); opacity: 0.9; }
+      80% { opacity: 0.9; }
+      100% { transform: translateX(calc(100% + 48px)); opacity: 0; }
+    }
+
+    /* Right Preview */
+    .preview-container {
+      position: relative;
+      z-index: 3;
+      padding: 20px 12px 20px;
+      text-align: center;
+      color: #fff;
+    }
+
+    .preview-header { margin-bottom: 25px; }
+    
+    .conference-title { 
+      font-size: 2em; 
+      font-weight: bold; 
+      margin: 10px 0 5px;
+      letter-spacing: 0.5px;
+    }
+    
+    .conference-subtitle { 
+      font-size: 0.9em; 
+      line-height: 1.4; 
+      opacity: 0.95;
+      max-width: 300px;
+      margin: 0 auto;
+    }
+
+    /* 3D spinning logo (multi-slice) */
+    .logo-3d-wrapper { 
+      --logo-size: 120px; /* ensure logo renders (matches LED) */
+      perspective: 850px; 
+      perspective-origin: 50% 50%; 
+      width: 120px; 
+      height: 120px; 
+      margin: 0 auto 14px; 
+      overflow: visible; 
+      position: relative; 
+    }
+    
+    .logo-3d-wrapper.small { 
+      --logo-size: 90px; 
+      width: 90px; 
+      height: 90px; 
+      margin: 0 auto 10px; 
+    }
+    
+    .logo-stack {
+      position: relative;
+      width: var(--logo-size);
+      height: var(--logo-size);
+      transform-style: preserve-3d;
+      animation: spinSlow3D 24s linear infinite;
+      will-change: transform;
+      --slices: 32;
+      --depthStep: 0.6px;
+      z-index: 1;
+    }
+    
+    .logo-stack .slice {
+      position: absolute;
+      inset: 0;
+      background: url('nitc-logo.png') center/contain no-repeat;
+      transform: translateZ(calc((var(--i) - ((var(--slices) - 1) / 2)) * var(--depthStep)));
+      backface-visibility: visible;
+    }
+    
+    .logo-stack .slice::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: url('nitc-logo.png') center/contain no-repeat;
+      transform: rotateY(180deg) scaleX(-1) translateZ(0.01px);
+      backface-visibility: hidden;
+    }
+    /* remove overlay to avoid any perceived extra 'slice' */
+    .logo-stack::before { content: none; }
+    /* disable billboard layer to eliminate any ghost slice */
+    .logo-billboard { display: none !important; }
+    
+    @keyframes spinSlow3D { 
+      0% { transform: rotateX(16deg) rotateY(0deg) rotateZ(0.4deg); } 
+      50% { transform: rotateX(16deg) rotateY(180deg) rotateZ(0.4deg); } 
+      100% { transform: rotateX(16deg) rotateY(360deg) rotateZ(0.4deg); } 
+    }
+
+    /* Countdown (mirror original grid style) */
+    .countdown-section { margin-bottom: 12px; }
+    .countdown-title { font-size: 1.3em; font-weight: bold; margin-bottom: 8px; }
+    .event-start-info { background: rgba(255,255,255,0.1); padding: 12px; border-radius: 12px; margin-bottom: 15px; backdrop-filter: blur(10px); display: none; }
+    
+    .event-date { 
+      font-size: 1.2em; 
+      font-weight: bold; 
+      margin-bottom: 5px; 
+      color: #fff;
+    }
+    
+    .event-time { 
+      font-size: 1em; 
+      margin-bottom: 5px; 
+      color: #3498db;
+    }
+    
+    .event-location { 
+      font-size: 0.9em; 
+      opacity: 0.9;
+    }
+    
+    .countdown-section { 
+      margin: 25px 0; 
+      width: 100%;
+    }
+    
+    .countdown-title { 
+      font-size: 1.4em; 
+      font-weight: bold; 
+      margin-bottom: 15px;
+      letter-spacing: 0.5px;
+    }
+    
+    .countdown-display { 
+      display: grid; 
+      grid-template-columns: repeat(2, 1fr); 
+      gap: 10px; 
+      max-width: 300px;
+      margin: 0 auto;
+    }
+    
+    .countdown-item {
+      /* Match LED display style - no stroke */
+      position: relative;
+      overflow: hidden;
+      padding: 14px 10px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, rgba(11,211,255,0.10), rgba(11,134,255,0.08));
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      text-align: center;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(5px);
+    }
+    
+    .countdown-item::before {
+      /* subtle inner glow border */
+      content: ""; 
+      position: absolute; 
+      inset: 0; 
+      pointer-events: none;
+      border-radius: 12px;
+      box-shadow: inset 0 0 0 2px rgba(44,192,255,0.35);
+    }
+
+    .countdown-item::after {
+      /* edge sweep bar */
+      content: ""; 
+      position: absolute; 
+      left: 0; 
+      right: 0; 
+      height: 2px; 
+      top: 8px; 
+      pointer-events: none;
+      background: linear-gradient(90deg, rgba(44,192,255,0) 0%, rgba(124,218,255,0.9) 50%, rgba(44,192,255,0) 100%);
+      animation: edgeSweepX 2s linear infinite;
+      mix-blend-mode: screen;
+    }
+
+    .countdown-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+    }
+
+    @keyframes edgeSweepX {
+      0% { background-position: -200% 0; opacity: .7; }
+      50% { opacity: 1; }
+      100% { background-position: 200% 0; opacity: .7; }
+    }
+    
+    .countdown-number {
+      font-size: 2em;
+      font-weight: bold;
+      display: block;
+      line-height: 1;
+      color: #fff;
+      text-shadow: 0 0 10px rgba(44,192,255,0.6);
+    }
+    .countdown-label { font-size: 0.75em; font-weight: 600; text-transform: uppercase; margin-top: 5px; }
+
+    /* QR Code Section */
+    .qr-section { margin-bottom: 25px; }
+    .qr-title { font-size: 1.3em; font-weight: bold; margin-bottom: 12px; }
+    .qr-container { background: rgba(255, 255, 255, 0.95); padding: 15px; border-radius: 12px; display: inline-block; box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
+    .qr-code { width: 120px; height: 120px; margin: 0 auto 10px; border-radius: 4px; background: #fff; border: 1px solid #ddd; padding: 5px; }
+    .qr-code img { width: 100%; height: 100%; display: block; }
+    .qr-text { color: #333; font-size: 0.85em; font-weight: bold; margin-bottom: 5px; }
+    .qr-url { color: #333; font-size: 1em; font-weight: bold; font-family: 'Courier New', monospace; }
+
+    /* Carousel */
+    .carousel-section { width: 100%; margin-top: 20px; }
+    .carousel-container { width: 100%; height: 150px; overflow: hidden; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
+    .carousel-track { display: flex; width: 500%; height: 100%; animation: slideShow 20s infinite; }
+    .carousel-slide { width: 20%; height: 100%; position: relative; display: flex; align-items: center; justify-content: center; }
+    .carousel-slide img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    @keyframes slideShow { 0%,18%{transform:translateX(0%)} 20%,38%{transform:translateX(-20%)} 40%,58%{transform:translateX(-40%)} 60%,78%{transform:translateX(-60%)} 80%,98%{transform:translateX(-80%)} 100%{transform:translateX(0%)} }
+    .countdown-label { font-size: 0.75em; font-weight: 600; text-transform: uppercase; margin-top: 5px; }
+  </style>
+  <style>
+    /* Remove rounded corners globally (match LED) */
+    * { border-radius: 0 !important; }
+    img { border-radius: 0 !important; }
+  </style>
+</head>
+<body>
+  <div class="folded-container">
+    <!-- Left panel 360x1080 -->
+    <div class="panel panel-left">
+      <div id="tsparticles-left"></div>
+      <div class="agenda-content">
+        <div class="agenda-header">
+          <div class="logo-3d-wrapper small">
+            <div class="logo-stack">
+              <!-- 32 slices: 0..31 -->
+              <div class="slice" style="--i:0"></div>
+              <div class="slice" style="--i:1"></div>
+              <div class="slice" style="--i:2"></div>
+              <div class="slice" style="--i:3"></div>
+              <div class="slice" style="--i:4"></div>
+              <div class="slice" style="--i:5"></div>
+              <div class="slice" style="--i:6"></div>
+              <div class="slice" style="--i:7"></div>
+              <div class="slice" style="--i:8"></div>
+              <div class="slice" style="--i:9"></div>
+              <div class="slice" style="--i:10"></div>
+              <div class="slice" style="--i:11"></div>
+              <div class="slice" style="--i:12"></div>
+              <div class="slice" style="--i:13"></div>
+              <div class="slice" style="--i:14"></div>
+              <div class="slice" style="--i:15"></div>
+              <div class="slice" style="--i:16"></div>
+              <div class="slice" style="--i:17"></div>
+              <div class="slice" style="--i:18"></div>
+              <div class="slice" style="--i:19"></div>
+              <div class="slice" style="--i:20"></div>
+              <div class="slice" style="--i:21"></div>
+              <div class="slice" style="--i:22"></div>
+              <div class="slice" style="--i:23"></div>
+              <div class="slice" style="--i:24"></div>
+              <div class="slice" style="--i:25"></div>
+              <div class="slice" style="--i:26"></div>
+              <div class="slice" style="--i:27"></div>
+              <div class="slice" style="--i:28"></div>
+              <div class="slice" style="--i:29"></div>
+              <div class="slice" style="--i:30"></div>
+              <div class="slice" style="--i:31"></div>
+            </div>
+          </div>
+          <div class="event-title-section">
+            <div class="event-title">EVENT<br/>SCHEDULE</div>
+            <div class="event-day" id="eventDay">Inauguration</div>
+          </div>
+        </div>
+
+        <div id="agendaList" class="upcoming-events"></div>
+      </div>
+    </div>
+
+    <!-- Right panel 360x1080 -->
+    <div class="panel panel-right">
+      <div id="tsparticles-right"></div>
+      <div class="preview-container">
+        <div class="preview-header">
+          <div class="logo-3d-wrapper right">
+            <div class="logo-stack">
+              <!-- 32 slices: 0..31 -->
+              <div class="slice" style="--i:0"></div>
+              <div class="slice" style="--i:1"></div>
+              <div class="slice" style="--i:2"></div>
+              <div class="slice" style="--i:3"></div>
+              <div class="slice" style="--i:4"></div>
+              <div class="slice" style="--i:5"></div>
+              <div class="slice" style="--i:6"></div>
+              <div class="slice" style="--i:7"></div>
+              <div class="slice" style="--i:8"></div>
+              <div class="slice" style="--i:9"></div>
+              <div class="slice" style="--i:10"></div>
+              <div class="slice" style="--i:11"></div>
+              <div class="slice" style="--i:12"></div>
+              <div class="slice" style="--i:13"></div>
+              <div class="slice" style="--i:14"></div>
+              <div class="slice" style="--i:15"></div>
+              <div class="slice" style="--i:16"></div>
+              <div class="slice" style="--i:17"></div>
+              <div class="slice" style="--i:18"></div>
+              <div class="slice" style="--i:19"></div>
+              <div class="slice" style="--i:20"></div>
+              <div class="slice" style="--i:21"></div>
+              <div class="slice" style="--i:22"></div>
+              <div class="slice" style="--i:23"></div>
+              <div class="slice" style="--i:24"></div>
+              <div class="slice" style="--i:25"></div>
+              <div class="slice" style="--i:26"></div>
+              <div class="slice" style="--i:27"></div>
+              <div class="slice" style="--i:28"></div>
+              <div class="slice" style="--i:29"></div>
+              <div class="slice" style="--i:30"></div>
+              <div class="slice" style="--i:31"></div>
+            </div>
+          </div>
+          <h1 class="conference-title">NITC 2025</h1>
+          <p class="conference-subtitle">Fostering a Human Centric Nation<br/>Towards Society 5.0</p>
+        </div>
+
+        <div class="countdown-section">
+          <h2 class="countdown-title">Starts In</h2>
+          <div class="event-start-info">
+            <div class="event-date">October 14, 2025</div>
+            <div class="event-time">6:00 PM Sri Lankan Time</div>
+            <div class="event-location">Shangri-La Hotel</div>
+          </div>
+          <div class="countdown-display">
+            <div class="countdown-item">
+              <span class="countdown-number" id="days">00</span>
+              <span class="countdown-label">Days</span>
+            </div>
+            <div class="countdown-item">
+              <span class="countdown-number" id="hours">00</span>
+              <span class="countdown-label">Hours</span>
+            </div>
+            <div class="countdown-item">
+              <span class="countdown-number" id="minutes">00</span>
+              <span class="countdown-label">Minutes</span>
+            </div>
+            <div class="countdown-item">
+              <span class="countdown-number" id="seconds">00</span>
+              <span class="countdown-label">Seconds</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="qr-section">
+          <h2 class="qr-title">More Info</h2>
+          <div class="qr-container">
+            <div class="qr-code">
+              <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https://nitc.lk" alt="QR Code" />
+            </div>
+            <div class="qr-text">Scan for Details</div>
+            <div class="qr-url">nitc.lk</div>
+          </div>
+        </div>
+
+        <div class="carousel-section">
+          <div class="carousel-container">
+            <div class="carousel-track">
+              <div class="carousel-slide"><img src="carousel 1.jpg" alt="Slide 1" /></div>
+              <div class="carousel-slide"><img src="carousel 2.jpg" alt="Slide 2" /></div>
+              <div class="carousel-slide"><img src="carousel 3.jpg" alt="Slide 3" /></div>
+              <div class="carousel-slide"><img src="carousel 4.jpg" alt="Slide 4" /></div>
+              <div class="carousel-slide"><img src="carousel 5.jpg" alt="Slide 5" /></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Countdown: human-friendly days (ceil-1)
+    const eventStartTime = new Date('2025-10-14T18:00:00+05:30');
+    function updateCountdown() {
+      const now = new Date();
+      const diff = eventStartTime - now;
+      if (diff <= 0) {
+        ['days','hours','minutes','seconds'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = '00'; });
+        return;
+      }
+      const dayMs = 1000 * 60 * 60 * 24;
+      let days = Math.ceil(diff / dayMs) - 1; if (days < 0) days = 0;
+      const remainder = diff - (days * dayMs);
+      const hours = Math.floor((remainder % dayMs) / (1000 * 60 * 60));
+      const minutes = Math.floor((remainder % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((remainder % (1000 * 60)) / 1000);
+      const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = String(val).padStart(2,'0'); };
+      set('days', days); set('hours', hours); set('minutes', minutes); set('seconds', seconds);
+    }
+    updateCountdown(); setInterval(updateCountdown, 1000);
+
+    // Agenda functions (mirrored)
+    let agendaData = [
+      { displayTime: "06:00 PM", title: "Registration" },
+      { displayTime: "06:30 PM", title: "Arrival of Chief Guests" },
+      { displayTime: "06:35 PM", title: "National Anthem & Digital Lamp" },
+      { displayTime: "06:45 PM", title: "Welcome Performance" },
+      { displayTime: "06:55 PM", title: "Welcome Address" },
+      { displayTime: "07:10 PM", title: "Awards Segment 1" },
+      { displayTime: "07:25 PM", title: "Chief Guest Address" },
+      { displayTime: "07:45 PM", title: "Guest of Honor Keynote" },
+      { displayTime: "08:05 PM", title: "Sponsor Keynotes" },
+      { displayTime: "08:25 PM", title: "Awards Segment 2" },
+      { displayTime: "08:45 PM", title: "Closing & Vote of Thanks" },
+      { displayTime: "09:00 PM", title: "Fellowship & Cocktail" }
+    ];
+    const categoryCounts = {};
+    let currentHighlightIndex = 0;
+
+    function escapeHtml(str){
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+    function toTitleCaseLimited(s){
+      const trimmed = String(s).trim();
+      const limited = trimmed.length > 28 ? trimmed.slice(0, 28) + '…' : trimmed;
+      return limited.replace(/\w\S*/g, (w)=> w.charAt(0).toUpperCase()+w.slice(1));
+    }
+    function getShortTitle(title){
+      const t = String(title).toLowerCase();
+      let category = null;
+      if (t.includes('panel')) category = 'Panel Discussion';
+      else if (t.includes('keynote')) category = 'Keynote';
+      else if (t.includes('registration')) category = 'Registration';
+      else if (t.includes('workshop')) category = 'Workshop';
+      else if (t.includes('tea')) category = 'Tea Break';
+      else if (t.includes('lunch')) category = 'Lunch Break';
+      else if (t.includes('awards')) category = 'Awards';
+      else if (t.includes('address')) category = 'Address';
+      else if (t.includes('sponsor')) category = 'Sponsor Session';
+      else if (t.includes('dance')) category = 'Performance';
+      else if (t.includes('networking') || t.includes('fellowship') || t.includes('cocktail')) category = 'Networking';
+      else category = toTitleCaseLimited(title);
+      const numbered = ['Panel Discussion','Keynote','Workshop','Awards','Sponsor Session','Performance','Address'];
+      if (numbered.includes(category)){
+        categoryCounts[category] = (categoryCounts[category] || 0) + 1;
+        return `${category} ${categoryCounts[category]}`;
+      }
+      return category;
+    }
+    function renderAgendaList() {
+      const agendaContainer = document.getElementById('agendaList');
+      if (!agendaContainer) return;
+      agendaContainer.innerHTML = '';
+      const visibleCount = 3;
+      const startIndex = Math.floor(currentHighlightIndex / visibleCount) * visibleCount;
+      const endIndex = Math.min(startIndex + visibleCount, agendaData.length);
+      for (let i = startIndex; i < endIndex; i++) {
+        const item = agendaData[i];
+        const div = document.createElement('div');
+        div.className = 'upcoming-event';
+        div.innerHTML = `
+          <div class="time">${escapeHtml(item.displayTime)}</div>
+          <div class="title" title="${escapeHtml(item.title)}">${escapeHtml(getShortTitle(item.title))}</div>
+          <div class="scan"></div>
+          <div class="trace"></div>
+          <div class="flux"></div>
+          <div class="stripes"></div>
+          <div class="halo"></div>
+        `;
+        agendaContainer.appendChild(div);
+      }
+    }
+
+    function doHighlight() {
+      renderAgendaList();
+      const items = document.querySelectorAll('#agendaList .upcoming-event');
+      items.forEach(el => el.classList.remove('preview-highlight'));
+      const visibleIndex = currentHighlightIndex % 3;
+      if (items[visibleIndex]) {
+        items[visibleIndex].classList.add('preview-highlight');
+      }
+    }
+    
+    async function initializeParticles() {
+      try {
+        const config = {
+          particles: {
+            color: { value: "#ffffff" },
+            links: { color: "#ffffff", opacity: 0.3, width: 1, distance: 120 },
+            number: { value: 30 },
+            opacity: { value: 0.4, random: { enable: true, minimumValue: 0.1 } },
+            size: { value: 2, random: { enable: true, minimumValue: 1 } },
+            move: { enable: true, speed: 0.2, direction: "none", random: true, straight: false, outModes: { default: "bounce" } }
+          },
+          background: { color: { value: "transparent" } },
+          detectRetina: true,
+          fpsLimit: 30
+        };
+        if (window.tsParticles && typeof tsParticles.load === 'function') {
+          await tsParticles.load("tsparticles-left", config);
+          await tsParticles.load("tsparticles-right", config);
+        }
+      } catch (e) {
+        console.warn('Particles init skipped', e);
+      }
+    }
+
+    // Cycle highlight every 12 seconds like LED
+    function advanceHighlight() {
+      const container = document.getElementById('agendaList');
+      if (!container) return;
+      const items = container.querySelectorAll('.upcoming-event');
+      if (!items.length) return;
+      // remove previous
+      items.forEach(el => el.classList.remove('preview-highlight'));
+      // next index
+      currentHighlightIndex = (currentHighlightIndex + 1) % agendaData.length;
+      if (items[currentHighlightIndex]) {
+        items[currentHighlightIndex].classList.add('preview-highlight');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderAgendaList();
+      doHighlight();
+      initializeParticles();
+      setInterval(() => {
+        currentHighlightIndex = (currentHighlightIndex + 1) % agendaData.length;
+        doHighlight();
+      }, 12000);
+    });
+  </script>
+</body>
+</html>
