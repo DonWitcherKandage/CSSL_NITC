@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NITC 2025 — Break (720x1080)</title>
+  <script src="https://unpkg.com/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700&family=Inter:wght@600;700&display=swap');
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html, body { height:100%; }
+    body { font-family: 'Inter', system-ui, sans-serif; background: radial-gradient(120% 120% at 50% 0%, #0a1530 0%, #061126 45%, #030913 100%); color:#fff; overflow:hidden; }
+
+    /* Container: 2 x 360px panels */
+    .folded-container { width: 720px; height: 1080px; display:flex; position:relative; }
+    .panel { width:360px; height:100%; position:relative; overflow:hidden; background: transparent; }
+    .panel-left, .panel-right { background: transparent !important; }
+    /* remove rotating PNG rotors */
+    .panel-left::before, .panel-right::after { content: none !important; }
+    @keyframes rotateSlow { }
+
+    /* particles disabled */
+    #tsparticles-left, #tsparticles-right { display:none !important; }
+    /* disable background image layer */
+    .folded-container .hero-bg { display:none; }
+
+    /* Screen 1 (left): centered logo + tagline, larger */
+    .brand { position:relative; z-index:3; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px 10px; }
+    .brand .logo { width:220px; height:220px; margin-bottom:16px; background:url('nitc-logo.png') center/contain no-repeat; filter: drop-shadow(0 0 16px rgba(44,192,255,.5)); }
+    .brand .title { font-family:'Orbitron', sans-serif; font-size:1.6em; letter-spacing:.6px; background: linear-gradient(90deg, #2CC0FF, #7DD3FF); -webkit-background-clip:text; background-clip:text; color:transparent; text-shadow:0 0 12px rgba(44,192,255,.35); margin-bottom:12px; }
+    .brand .tag { font-size:1.05em; opacity:.95; max-width:300px; line-height:1.35; }
+
+    /* Screen 2 (right): image lines scrolling */
+    .lines { position:relative; z-index:3; height:100%; width:100%; display:flex; flex-direction:column; gap:14px; padding:20px 12px; }
+    .strip { position:relative; height:120px; overflow:hidden; border-radius:12px; box-shadow: inset 0 0 0 2px rgba(44,192,255,0.25); }
+    .strip .track { display:flex; width:max-content; height:100%; animation: slideX 22s linear infinite; }
+    .strip:nth-child(2) .track { animation-duration: 28s; animation-direction: reverse; }
+    .strip:nth-child(3) .track { animation-duration: 32s; }
+    .strip img { width:auto; height:100%; display:block; object-fit:cover; }
+    @keyframes slideX { from{ transform: translateX(0); } to { transform: translateX(-50%); } }
+
+    .break-title { font-family:'Orbitron', sans-serif; font-size:1.2em; text-align:center; margin:10px 0 0; background: linear-gradient(90deg, #2CC0FF, #7DD3FF); -webkit-background-clip:text; background-clip:text; color:transparent; text-shadow:0 0 10px rgba(44,192,255,.25); }
+  </style>
+</head>
+<body>
+  <div class="folded-container">
+    <div class="hero-bg"></div>
+    <div class="panel panel-left">
+      <div id="tsparticles-left"></div>
+      <div class="brand">
+        <div class="logo"></div>
+        <div class="title">NITC 2025</div>
+        <div class="tag">Fostering a Human Centric Nation<br/>Towards Society 5.0</div>
+      </div>
+    </div>
+    <div class="panel panel-right">
+      <div id="tsparticles-right"></div>
+      <div class="break-title">We will resume shortly</div>
+      <div class="lines">
+        <div class="strip">
+          <div class="track">
+            <img src="carousel 1.jpg" alt=""/>
+            <img src="carousel 2.jpg" alt=""/>
+            <img src="carousel 3.jpg" alt=""/>
+            <img src="carousel 4.jpg" alt=""/>
+            <img src="carousel 5.jpg" alt=""/>
+            <img src="carousel 1.jpg" alt=""/>
+            <img src="carousel 2.jpg" alt=""/>
+            <img src="carousel 3.jpg" alt=""/>
+            <img src="carousel 4.jpg" alt=""/>
+            <img src="carousel 5.jpg" alt=""/>
+          </div>
+        </div>
+        <div class="strip">
+          <div class="track">
+            <img src="carousel 3.jpg" alt=""/>
+            <img src="carousel 4.jpg" alt=""/>
+            <img src="carousel 5.jpg" alt=""/>
+            <img src="carousel 1.jpg" alt=""/>
+            <img src="carousel 2.jpg" alt=""/>
+            <img src="carousel 3.jpg" alt=""/>
+            <img src="carousel 4.jpg" alt=""/>
+            <img src="carousel 5.jpg" alt=""/>
+          </div>
+        </div>
+        <div class="strip">
+          <div class="track">
+            <img src="carousel 2.jpg" alt=""/>
+            <img src="carousel 1.jpg" alt=""/>
+            <img src="carousel 5.jpg" alt=""/>
+            <img src="carousel 4.jpg" alt=""/>
+            <img src="carousel 3.jpg" alt=""/>
+            <img src="carousel 2.jpg" alt=""/>
+            <img src="carousel 1.jpg" alt=""/>
+            <img src="carousel 5.jpg" alt=""/>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // particles removed and background sampling disabled per request
+    document.addEventListener('DOMContentLoaded', () => {});
+  </script>
+</body>
+</html>

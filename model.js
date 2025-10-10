@@ -423,6 +423,28 @@ class ConferenceModel {
      * @returns {Object} Object with eventIndex and status
      */
     findCurrentRealTimeEvent() {
+        // Respect actual conference dates: do not mark events active on a different date
+        try {
+            const today = new Date().toISOString().split('T')[0];
+            const currentDayDate = this.conferenceDates[this.currentDay];
+            if (currentDayDate) {
+                if (today < currentDayDate) {
+                    return {
+                        eventIndex: -1,
+                        status: 'waiting',
+                        message: `${this.currentDay} starts on ${currentDayDate}`
+                    };
+                }
+                if (today > currentDayDate) {
+                    return {
+                        eventIndex: -1,
+                        status: 'completed',
+                        message: `${this.currentDay} has concluded`
+                    };
+                }
+            }
+        } catch {}
+
         const currentTime = this.getCurrentRealTime();
         const currentMinutes = this.timeToMinutes(currentTime);
         const agenda = this.getAgendaData();
