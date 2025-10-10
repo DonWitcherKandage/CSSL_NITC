@@ -6,6 +6,7 @@
     <title>NITC 2025 Conference - Folded LED Display</title>
     <script src="https://unpkg.com/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700&family=Inter:wght@600;700&display=swap');
         * {
             margin: 0;
             padding: 0;
@@ -166,21 +167,13 @@
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
-        .event-title-section {
-            color: white;
-        }
-
-        .event-title {
-            font-size: 1.4em;
-            font-weight: bold;
-            line-height: 1.1;
-            margin-bottom: 5px;
-        }
-
-        .event-day {
-            font-size: 0.9em;
-            opacity: 0.9;
-        }
+        /* Header styles aligned with onevent-fold-display.html */
+        .agenda-header { text-align: center; background: transparent; padding: 0; border: 0; box-shadow: none; display: flex; flex-direction: column; align-items: center; height: 190px; margin: 0; }
+        .event-title-section { color: white; margin: 4px 0 0; padding: 0; display: flex !important; flex-direction: column !important; align-items: center !important; text-align: center !important; width: 100%; }
+        .event-title-section .event-title { order: 1 !important; }
+        .event-title-section .event-day { order: 2 !important; }
+        .event-title { display: block; font-family: 'Orbitron', sans-serif; font-size: 1.4em; font-weight: 700; line-height: 1.1; margin-bottom: 6px; letter-spacing: .5px; background: linear-gradient(90deg, #2CC0FF, #7DD3FF); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; color: transparent; text-shadow: 0 0 10px rgba(44,192,255,.3); text-align: center !important; }
+        .event-day { display: block; margin-top: 2px; font-family: 'Inter', system-ui, sans-serif; font-size: .9em; color: #7DD3FF; opacity: .95; font-weight: 600; letter-spacing: .4px; text-align: center !important; position: static !important; float: none !important; transform: none !important; top: auto !important; left: auto !important; right: auto !important; bottom: auto !important; background: transparent !important; padding: 0 !important; border: 0 !important; box-shadow: none !important; text-shadow: none; }
 
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700&family=Inter:wght@600;700&display=swap');
 
@@ -301,6 +294,21 @@
             animation: neonText 6s linear infinite;
             text-shadow: 0 0 6px rgba(44,192,255,0.55);
         }
+
+        /* Screen 1 card title font to match onevent-fold-display */
+        .upcoming-event .title {
+            font-family: 'Inter', system-ui, sans-serif;
+            color: #eaf6ff;
+            font-size: 1.02em;
+            line-height: 1.3;
+            letter-spacing: 0.2px;
+            white-space: normal;
+            overflow: visible;
+            text-overflow: clip;
+            max-width: 100%;
+            word-break: break-word;
+            text-shadow: 0 0 6px rgba(12,120,200,0.25);
+        }
         
         @keyframes neonText {
             0% { background-position: 0% center; }
@@ -314,10 +322,12 @@
             font-size: 1.02em;
             line-height: 1.3;
             letter-spacing: 0.2px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            /* allow full titles to wrap, no truncation */
+            white-space: normal;
+            overflow: visible;
+            text-overflow: clip;
             max-width: 100%;
+            word-break: break-word;
             text-shadow: 0 0 6px rgba(12,120,200,0.25);
         }
 
@@ -643,13 +653,20 @@
         /* Smaller wrapper for Screen 1 logo */
         .logo-3d-wrapper.small { width: 90px; height: 90px; margin: 0 auto 10px; }
 
+        /* Screen 2 titles to match header fonts */
         .conference-title {
+            font-family: 'Orbitron', sans-serif;
             font-size: 2em;
-            font-weight: bold;
+            font-weight: 700;
             margin-bottom: 8px;
+            letter-spacing: .5px;
+            background: linear-gradient(90deg, #2CC0FF, #7DD3FF);
+            background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; color: transparent;
+            text-shadow: 0 0 10px rgba(44,192,255,.3);
         }
 
         .conference-subtitle {
+            font-family: 'Inter', system-ui, sans-serif;
             font-size: 0.85em;
             line-height: 1.3;
             opacity: 0.95;
@@ -771,11 +788,17 @@
         }
 
         .qr-container {
-            background: rgba(255, 255, 255, 0.95);
+            background: transparent; /* no white fill */
             padding: 15px;
             border-radius: 12px;
             display: inline-block;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            box-shadow: none; /* remove heavy drop shadow */
+            position: relative;
+            backdrop-filter: blur(6px); /* light glass, optional */
+        }
+        .qr-container::before {
+            content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: 12px;
+            box-shadow: inset 0 0 0 2px rgba(44,192,255,0.35); /* match countdown border */
         }
 
         .qr-code {
@@ -783,9 +806,10 @@
             height: 120px;
             margin: 0 auto 10px;
             border-radius: 4px;
-            background: #fff;
-            border: 1px solid #ddd;
+            background: transparent; /* remove white */
+            border: 1px solid rgba(44,192,255,0.25); /* subtle neon border */
             padding: 5px;
+            box-shadow: inset 0 0 0 1px rgba(44,192,255,0.15);
         }
 
         .qr-code img {
@@ -795,14 +819,14 @@
         }
 
         .qr-text {
-            color: #333;
+            color: #fff;
             font-size: 0.85em;
             font-weight: bold;
             margin-bottom: 5px;
         }
 
         .qr-url {
-            color: #333;
+            color: #fff;
             font-size: 1em;
             font-weight: bold;
             font-family: 'Courier New', monospace;

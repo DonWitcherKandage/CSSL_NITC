@@ -10,52 +10,73 @@
   let model = null;
   try { model = new ConferenceModel(); } catch(e){ console.warn('modepreview: model not available, using local schedule.', e); }
 
-  // EDIT HERE with full schedule from https://nitc.lk/#schedule if needed
-  // Times are SLT as shown on site
+  // Fallback schedule mirrors model.js exactly (displayTime as on the event)
   const SCHEDULE = {
     'Inauguration': {
       date: '2025-10-14',
       items: [
-        { time: '06:00 PM', title: 'Registration' },
-        { time: '06:30 PM', title: 'Arrival of Chief Guests' },
-        { time: '06:35 PM', title: 'National Anthem & Digital Lamp' },
-        { time: '06:45 PM', title: 'Welcome Performance' },
-        { time: '06:55 PM', title: 'Welcome Address' },
-        { time: '07:10 PM', title: 'Awards Segment 1' },
-        { time: '07:25 PM', title: 'Chief Guest Address' },
-        { time: '07:45 PM', title: 'Guest of Honor Keynote' },
-        { time: '08:05 PM', title: 'Sponsor Keynotes' },
-        { time: '08:25 PM', title: 'Awards Segment 2' },
-        { time: '08:45 PM', title: 'Closing & Vote of Thanks' },
-        { time: '09:00 PM', title: 'Fellowship & Cocktail' }
+        { time: '05:00 PM', title: 'Registration' },
+        { time: '06:00 PM', title: 'Arrival of Chief Guest' },
+        { time: '06:05 PM', title: 'Lighting of Digital Lamp' },
+        { time: '06:10 PM', title: 'NITC 2025 Curtain Raiser' },
+        { time: '06:20 PM', title: 'CSSL National ICT Awards' },
+        { time: '06:45 PM', title: 'Address by the Chief Guest' },
+        { time: '06:55 PM', title: 'Keynote: Guest of Honor' },
+        { time: '07:15 PM', title: 'Keynote: Strategic Partner' },
+        { time: '07:25 PM', title: 'Dance Act 2' },
+        { time: '07:30 PM', title: 'CSSL ICT Awards 2024' },
+        { time: '07:40 PM', title: 'CSSL ICT Awards 2024' },
+        { time: '07:50 PM', title: 'Keynote Speaker (Diamond Sponsor 1)' },
+        { time: '07:55 PM', title: 'Keynote Speaker (Diamond Sponsor 2)' },
+        { time: '08:00 PM', title: 'Sponsor Recognition of the NITC 2024' },
+        { time: '08:10 PM', title: 'Final Dance Act' },
+        { time: '08:15 PM', title: 'Vote of Thanks' },
+        { time: '08:20 PM', title: 'Fellowship & Cocktail' }
       ]
     },
     'Day 1': {
       date: '2025-10-15',
       items: [
-        // TODO: Replace with the full Day 1 sessions from nitc.lk/#schedule
-        { time: '09:00 AM', title: 'Registration' },
-        { time: '09:30 AM', title: 'Keynote' },
-        { time: '10:15 AM', title: 'Panel Discussion' },
-        { time: '11:00 AM', title: 'Tea Break' },
-        { time: '11:15 AM', title: 'Workshop' },
-        { time: '12:30 PM', title: 'Lunch Break' },
-        { time: '02:00 PM', title: 'Panel Discussion' },
-        { time: '03:15 PM', title: 'Sponsor Session' }
+        { time: '08:15 AM', title: 'Registration' },
+        { time: '09:00 AM', title: 'Guest speech' },
+        { time: '09:20 AM', title: 'Keynote 1: Mastercard' },
+        { time: '09:45 AM', title: 'Panel Discussion 1' },
+        { time: '10:45 AM', title: 'Morning Tea' },
+        { time: '11:20 AM', title: 'Keynote 2: DMS' },
+        { time: '11:45 AM', title: 'Keynote 3: SAT' },
+        { time: '12:10 PM', title: 'Keynote 4' },
+        { time: '12:35 PM', title: 'Mr. Sumudu Rathnayake' },
+        { time: '01:00 PM', title: 'Lunch' },
+        { time: '02:00 PM', title: 'Fintech: Mr. Shashi Madanayake' },
+        { time: '02:25 PM', title: 'Fintech: Mr. Karthik Kishore' },
+        { time: '02:50 PM', title: 'Fintech: Mr. Mahesh Patel' },
+        { time: '03:15 PM', title: 'Afternoon Tea' },
+        { time: '03:35 PM', title: 'EduTech: Dr. Dayan Rajapakse' },
+        { time: '04:00 PM', title: 'TravelTech: Mr. Aruna Basnayake' },
+        { time: '04:25 PM', title: 'Cybersecurity: Mr. Sampath Wimalaweera' },
+        { time: '04:50 PM', title: 'Raffle Draw' }
       ]
     },
     'Day 2': {
       date: '2025-10-16',
       items: [
-        // TODO: Replace with the full Day 2 sessions from nitc.lk/#schedule
-        { time: '09:00 AM', title: 'Registration' },
-        { time: '09:30 AM', title: 'Keynote' },
-        { time: '10:15 AM', title: 'Panel Discussion' },
-        { time: '11:00 AM', title: 'Tea Break' },
-        { time: '11:15 AM', title: 'Workshop' },
-        { time: '12:30 PM', title: 'Lunch Break' },
-        { time: '02:00 PM', title: 'Panel Discussion' },
-        { time: '03:15 PM', title: 'Closing' }
+        { time: '08:30 AM', title: 'Registration' },
+        { time: '09:00 AM', title: 'Guest Speech' },
+        { time: '09:20 AM', title: 'Keynote 5' },
+        { time: '09:45 AM', title: 'Keynote 6' },
+        { time: '10:10 AM', title: 'Keynote 7' },
+        { time: '10:35 AM', title: 'Morning Tea' },
+        { time: '11:00 AM', title: 'Huawei Representative Keynote' },
+        { time: '11:25 AM', title: 'Panel Discussion 2' },
+        { time: '12:25 PM', title: 'Lunch' },
+        { time: '01:40 PM', title: 'InfoSec: Mr. Joseph McGuire' },
+        { time: '02:05 PM', title: 'InfoSec: Mr. Mohnissh Manukulasuriya' },
+        { time: '02:30 PM', title: 'Big Data Analysis' },
+        { time: '02:55 PM', title: 'Afternoon Tea' },
+        { time: '03:30 PM', title: 'Digital Infrastructure: Mr. Ashok Srinivasan' },
+        { time: '03:55 PM', title: 'Digital Infrastructure: Mr. Vijay Balan' },
+        { time: '04:20 PM', title: 'Digital Transport: Mr. Udana Wickramasinghe' },
+        { time: '04:45 PM', title: 'Raffle Draw' }
       ]
     }
   };
@@ -90,11 +111,22 @@
     return { label: day, date: d.date, items, first };
   }
 
+  // Prefer model data per-day when available
+  function toDisplayTime(it){
+    if (it.displayTime) return it.displayTime;
+    const t = String(it.time||'');
+    const m = t.match(/^(\d{1,2}):(\d{2})$/);
+    if (!m) return t;
+    let h = parseInt(m[1],10), mm = m[2];
+    const ap = h>=12 ? 'PM':'AM';
+    const h12 = h===0?12:(h>12? h-12 : h);
+    return `${h12}:${mm} ${ap}`;
+  }
   function bundleFromModel(day){
     if (!model) return null;
     const dateStr = (model.conferenceDates && model.conferenceDates[day]) || '';
-    const list = model.getAgendaDataForDay ? model.getAgendaDataForDay(day) : model.getAgendaData();
-    const items = Array.isArray(list) ? list.map(toItem) : [];
+    const list = (model.allAgendaData && model.allAgendaData[day]) || [];
+    const items = Array.isArray(list) ? list.map(it=>({ displayTime: toDisplayTime(it), title: it.title||'' })) : [];
     const first = firstSessionTime(items);
     return { label: day, date: dateStr, items, first };
   }
@@ -133,19 +165,44 @@
       'Day 2': SCHEDULE['Day 2'].date
     };
     const today = todayYMD();
+    const now = new Date();
 
-    if (today === dates['Day 1']){
-      const b = bundleFromModel('Day 1') || bundleFromSchedule('Day 1');
-      activate(b, 2);
-    } else if (today === dates['Day 2']){
-      const b = bundleFromModel('Day 2') || bundleFromSchedule('Day 2');
-      activate(b, 2);
+    function lastEnd(items){
+      // estimate last end as last time + 30 minutes
+      if (!items.length) return {h:23,m:59};
+      const last = items[items.length-1].displayTime || items[items.length-1].time || '23:59';
+      const m = last.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+      if (!m){ return {h:23,m:59}; }
+      let h = parseInt(m[1],10), mm = parseInt(m[2],10); const ap=(m[3]||'').toUpperCase();
+      if (ap==='PM' && h<12) h+=12; if (ap==='AM' && h===12) h=0;
+      const total = h*60+mm+30; return {h: Math.min(23, Math.floor(total/60)), m: total%60};
+    }
+
+    const todayDay = today===dates['Day 1'] ? 'Day 1' : today===dates['Day 2'] ? 'Day 2' : 'Inauguration';
+    const todayBundle = bundleFromModel(todayDay) || bundleFromSchedule(todayDay);
+    const nextDay = todayDay==='Inauguration' ? 'Day 1' : todayDay==='Day 1' ? 'Day 2' : null;
+
+    // Determine if current day is finished (after last item + buffer)
+    let finished = false;
+    if (todayBundle && todayBundle.items.length){
+      const le = lastEnd(todayBundle.items);
+      const nowH = now.getHours(), nowM = now.getMinutes();
+      finished = (nowH>le.h) || (nowH===le.h && nowM>=le.m);
+    }
+
+    if (finished && nextDay){
+      const nb = bundleFromModel(nextDay) || bundleFromSchedule(nextDay);
+      activate(nb, 2);
     } else {
-      // Default: Inauguration with fixed 18:00 target
-      const b = bundleFromModel('Inauguration') || bundleFromSchedule('Inauguration');
-      window.setDay('Inauguration');
-      window.setAgendaData(b.items);
-      window.setCountdownTarget(b.date || '2025-10-14', '18:00');
+      if (todayDay==='Inauguration'){
+        // Inaug fixed target at 18:00 on its date (matching original behavior)
+        const b = todayBundle;
+        window.setDay('Inauguration');
+        window.setAgendaData(b.items);
+        window.setCountdownTarget(b.date || dates['Inauguration'], '18:00');
+      } else {
+        activate(todayBundle, 2);
+      }
     }
   }
 

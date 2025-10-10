@@ -1,10 +1,42 @@
 # NITC 2025 Conference Real-Time Display System
 
+## Quick Overview (Current Build)
+
+- **Files you open**
+  - `NITC 2025 - Folded LED Display.html` (512x863, two 256px panels)
+  - `NITC 2025 - Folded 720x1080.html` (720x1080, two 360px panels)
+
+- **What happens on each page**
+  - **Left panel (Screen 1)** shows the agenda list.
+    - 3 cards are visible at a time; the highlighted card rotates every 12 seconds in a loop.
+    - Card time uses a neon gradient. Card titles use Inter. No hover/size changes.
+  - **Right panel (Screen 2)** shows the live countdown and QR/Carousel.
+    - Countdown targets the day’s first session time minus 2 hours.
+    - When a day finishes (after the last item + ~30 min), the countdown automatically switches to the next day.
+    - QR code block has a transparent background and a subtle neon border; caption “Scan for Details” and URL `nitc.lk` are white.
+
+- **Fonts and headers**
+  - Title (EVENT SCHEDULE, NITC 2025): Orbitron with a cyan gradient.
+  - Subtitles/day labels/card titles: Inter.
+
+- **Data source**
+  - `model.js` contains the real dates (Inauguration, Day 1, Day 2) and full agenda.
+  - `modepreview.js` reads `model.js` (if available) and drives both pages by calling:
+    - `window.setDay(<day>)`
+    - `window.setAgendaData([{displayTime,title}, ...])`
+    - `window.setCountdownTarget(<YYYY-MM-DD>, <HH:MM or HH:MM AM/PM>)`
+  - `NITC 2025 - Folded 720x1080.html` now exposes the same hooks and includes `modepreview.js`, so it stays in sync with the LED file.
+
+- **Alignment and layout**
+  - 720x1080 variant renders left-aligned (not centered) to match your other files.
+
+- **How to change the schedule/dates**
+  - Edit `model.js` only. Both displays update automatically via `modepreview.js`.
+  - Alternatively, at runtime you can call `updateConferenceDates({ 'Inauguration': 'YYYY-MM-DD', 'Day 1': 'YYYY-MM-DD', 'Day 2': 'YYYY-MM-DD' })` in the console.
+
+The detailed reference below describes the original MVC design and controls.
+
 A professional dual-display conference agenda system with real-time Sri Lankan time tracking, smooth scaling animations, and manual navigation controls.
-
-## Features
-
-- **Dual-Display Support**: Separate screens for agenda list and event details
 - **Real-Time Tracking**: Automatically follows Sri Lankan time (UTC+5:30)
 - **Manual Navigation**: Full control over event display when needed
 - **Smooth Animations**: Dramatic scaling effects with bouncy transitions

@@ -6,8 +6,9 @@
   <title>NITC 2025 - Folded 720x1080 (2 x 360)</title>
   <script src="https://unpkg.com/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700&family=Inter:wght@600;700&display=swap');
     * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family: 'Arial', sans-serif; background:#000; overflow:hidden; display:grid; place-items:center; min-height:100vh; }
+    body { font-family: 'Arial', sans-serif; background:#000; overflow:hidden; }
 
     /* Folded container with rotor variables (scaled for 360px panels) */
     .folded-container {
@@ -152,7 +153,7 @@
       inset: 0;
       pointer-events: none;
       clip-path: polygon(0 0, calc(100% - 28px) 0, 100% 28px, 100% 100%, 0 100%);
-      box-shadow: inset 0 0 0 2px var(--neon-soft);
+      box-shadow: inset 0 0 0 2px var(--neon-soft), inset 0 0 0 4px rgba(44,192,255,0.25);
     }
 
     @keyframes gridDrift {
@@ -219,36 +220,37 @@
     }
 
     .upcoming-event .title {
-      color: #EAF6FF;
-      font-size: 1em;
+      font-family: 'Inter', system-ui, sans-serif;
+      color: #eaf6ff;
+      font-size: 1.02em;
       line-height: 1.3;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      letter-spacing: 0.2px;
+      white-space: normal;
+      overflow: visible;
+      text-overflow: clip;
       max-width: 100%;
+      word-break: break-word;
       text-shadow: 0 0 6px rgba(12,120,200,0.25);
     }
 
     .preview-highlight {
-      /* distinct shape, NO fill; halo lives in child element */
+      /* match LED: single top-right chamfer with subtle fill */
       min-height: 150px;
       transform: none !important;
-      filter: saturate(1.28) brightness(1.08) !important;
-      /* two-corner chamfer: top-right and bottom-left */
-      clip-path: polygon(0 0, calc(100% - 36px) 0, 100% 36px, 100% 100%, 36px 100%, 0 calc(100% - 36px));
-      background: none !important;
+      filter: saturate(1.24) brightness(1.06) !important;
+      clip-path: polygon(0 0, calc(100% - 36px) 0, 100% 36px, 100% 100%, 0 100%);
+      background: linear-gradient(135deg, rgba(11,211,255,0.09), rgba(11,134,255,0.06)) !important;
     }
     .preview-highlight::before {
       box-shadow: inset 0 0 0 2px rgba(44,192,255,0.35);
       animation: glowPulse 2.2s ease-in-out infinite;
     }
     .preview-highlight::after {
-      /* corner beacons */
       content: "";
       position: absolute; inset: 0; pointer-events: none;
+      /* single beacon at the chamfer corner (top-right) */
       background:
-        radial-gradient(10px 10px at calc(100% - 16px) 16px, rgba(124,218,255,0.95), transparent 60%),
-        radial-gradient(10px 10px at 16px calc(100% - 16px), rgba(124,218,255,0.95), transparent 60%);
+        radial-gradient(10px 10px at calc(100% - 16px) 16px, rgba(124,218,255,0.95), transparent 60%);
       mix-blend-mode: screen;
       animation: beaconPulse 1.8s ease-in-out infinite;
     }
@@ -269,7 +271,8 @@
     /* HALO element(s) */
     .upcoming-event .halo {
       position: absolute; inset: 0; pointer-events: none; opacity: 0;
-      clip-path: polygon(0 0, calc(100% - 36px) 0, 100% 36px, 100% 100%, 36px 100%, 0 calc(100% - 36px));
+      /* single top-right chamfer to match LED */
+      clip-path: polygon(0 0, calc(100% - 36px) 0, 100% 36px, 100% 100%, 0 100%);
       background: conic-gradient(#0B86FF, #2CC0FF, #7DD3FF, #2CC0FF, #0B86FF);
       -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
       -webkit-mask-composite: xor;
@@ -284,7 +287,8 @@
 
     .upcoming-event .halo2 {
       position: absolute; inset: 0; pointer-events: none; opacity: 0;
-      clip-path: polygon(0 0, calc(100% - 36px) 0, 100% 36px, 100% 100%, 36px 100%, 0 calc(100% - 36px));
+      /* single top-right chamfer to match LED */
+      clip-path: polygon(0 0, calc(100% - 36px) 0, 100% 36px, 100% 100%, 0 100%);
       background: conic-gradient(#7DD3FF, #2CC0FF, #0B86FF, #2CC0FF, #7DD3FF);
       -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
       -webkit-mask-composite: xor;
@@ -392,15 +396,21 @@
     }
 
     .preview-header { margin-bottom: 25px; }
-    
+
+    /* Screen 2 titles aligned with onevent-fold-display.html */
     .conference-title { 
+      font-family: 'Orbitron', sans-serif;
       font-size: 2em; 
-      font-weight: bold; 
+      font-weight: 700; 
       margin: 10px 0 5px;
       letter-spacing: 0.5px;
+      background: linear-gradient(90deg, #2CC0FF, #7DD3FF);
+      background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; color: transparent;
+      text-shadow: 0 0 10px rgba(44,192,255,.3);
     }
     
     .conference-subtitle { 
+      font-family: 'Inter', system-ui, sans-serif;
       font-size: 0.9em; 
       line-height: 1.4; 
       opacity: 0.95;
@@ -570,11 +580,12 @@
     /* QR Code Section */
     .qr-section { margin-bottom: 25px; }
     .qr-title { font-size: 1.3em; font-weight: bold; margin-bottom: 12px; }
-    .qr-container { background: rgba(255, 255, 255, 0.95); padding: 15px; border-radius: 12px; display: inline-block; box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
-    .qr-code { width: 120px; height: 120px; margin: 0 auto 10px; border-radius: 4px; background: #fff; border: 1px solid #ddd; padding: 5px; }
+    .qr-container { background: transparent; padding: 15px; border-radius: 12px; display: inline-block; box-shadow: none; position: relative; backdrop-filter: blur(6px); }
+    .qr-container::before { content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: 12px; box-shadow: inset 0 0 0 2px rgba(44,192,255,0.35); }
+    .qr-code { width: 120px; height: 120px; margin: 0 auto 10px; border-radius: 4px; background: transparent; border: 1px solid rgba(44,192,255,0.25); padding: 5px; box-shadow: inset 0 0 0 1px rgba(44,192,255,0.15); }
     .qr-code img { width: 100%; height: 100%; display: block; }
-    .qr-text { color: #333; font-size: 0.85em; font-weight: bold; margin-bottom: 5px; }
-    .qr-url { color: #333; font-size: 1em; font-weight: bold; font-family: 'Courier New', monospace; }
+    .qr-text { color: #fff; font-size: 0.85em; font-weight: bold; margin-bottom: 5px; }
+    .qr-url { color: #fff; font-size: 1em; font-weight: bold; font-family: 'Courier New', monospace; }
 
     /* Carousel */
     .carousel-section { width: 100%; margin-top: 20px; }
@@ -584,7 +595,71 @@
     .carousel-slide img { width: 100%; height: 100%; object-fit: cover; display: block; }
     @keyframes slideShow { 0%,18%{transform:translateX(0%)} 20%,38%{transform:translateX(-20%)} 40%,58%{transform:translateX(-40%)} 60%,78%{transform:translateX(-60%)} 80%,98%{transform:translateX(-80%)} 100%{transform:translateX(0%)} }
     .countdown-label { font-size: 0.75em; font-weight: 600; text-transform: uppercase; margin-top: 5px; }
-  </style>
+ 
+ /* Header styles aligned with onevent-fold-display.html */
+.agenda-header {
+  text-align: center;
+  background: transparent;
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 190px;
+  margin: 0;
+}
+.event-title-section {
+  color: white;
+  margin: 4px 0 0;
+  padding: 0;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  text-align: center !important;
+  width: 100%;
+}
+.event-title-section .event-title { order: 1 !important; }
+.event-title-section .event-day { order: 2 !important; }
+
+.event-title {
+  display: block;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.4em;
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: 6px;
+  letter-spacing: .5px;
+  background: linear-gradient(90deg, #2CC0FF, #7DD3FF);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  text-shadow: 0 0 10px rgba(44,192,255,.3);
+  text-align: center !important;
+}
+.event-day {
+  display: block;
+  margin-top: 2px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: .9em;
+  color: #7DD3FF;
+  opacity: .95;
+  font-weight: 600;
+  letter-spacing: .4px;
+  text-align: center !important;
+  position: static !important;
+  float: none !important;
+  transform: none !important;
+  top: auto !important; left: auto !important; right: auto !important; bottom: auto !important;
+  background: transparent !important;
+  padding: 0 !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  text-shadow: none;
+}
+ 
+ </style>
   <style>
     /* Remove rounded corners globally (match LED) */
     * { border-radius: 0 !important; }
@@ -745,41 +820,42 @@
   </div>
 
   <script>
-    // Countdown: human-friendly days (ceil-1)
-    const eventStartTime = new Date('2025-10-14T18:00:00+05:30');
-    function updateCountdown() {
-      const now = new Date();
-      const diff = eventStartTime - now;
+    // Controller hooks compatibility (match LED)
+    const CONFIG = {
+      eventDate: '2025-10-14',   // YYYY-MM-DD
+      eventTime: '18:00',        // 24h HH:MM (SLT)
+      timezone: 5.5              // SLT offset hours
+    };
+    let eventStartTime = null;
+    function initializeEventTime(){
+      const [Y,M,D] = CONFIG.eventDate.split('-').map(Number);
+      const [h,m] = CONFIG.eventTime.split(':').map(Number);
+      const tzH = Math.trunc(CONFIG.timezone);
+      const tzM = Math.round((CONFIG.timezone - tzH) * 60);
+      const utcMs = Date.UTC(Y, M-1, D, h - tzH, m - tzM);
+      eventStartTime = new Date(utcMs);
+    }
+    function updateCountdown(){
+      if (!eventStartTime) initializeEventTime();
+      const nowUtc = new Date();
+      const diff = eventStartTime - nowUtc;
       if (diff <= 0) {
         ['days','hours','minutes','seconds'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = '00'; });
         return;
       }
-      const dayMs = 1000 * 60 * 60 * 24;
-      let days = Math.ceil(diff / dayMs) - 1; if (days < 0) days = 0;
-      const remainder = diff - (days * dayMs);
-      const hours = Math.floor((remainder % dayMs) / (1000 * 60 * 60));
-      const minutes = Math.floor((remainder % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((remainder % (1000 * 60)) / 1000);
-      const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = String(val).padStart(2,'0'); };
+      const dayMs = 1000*60*60*24;
+      let days = Math.ceil(diff/dayMs) - 1; if (days<0) days=0;
+      const rem = diff - days*dayMs;
+      const hours = Math.floor((rem % dayMs) / (1000*60*60));
+      const minutes = Math.floor((rem % (1000*60*60)) / (1000*60));
+      const seconds = Math.floor((rem % (1000*60)) / 1000);
+      const set = (id,val)=>{ const el = document.getElementById(id); if (el) el.textContent = String(val).padStart(2,'0'); };
       set('days', days); set('hours', hours); set('minutes', minutes); set('seconds', seconds);
     }
-    updateCountdown(); setInterval(updateCountdown, 1000);
+    setInterval(updateCountdown, 1000);
 
     // Agenda functions (mirrored)
-    let agendaData = [
-      { displayTime: "06:00 PM", title: "Registration" },
-      { displayTime: "06:30 PM", title: "Arrival of Chief Guests" },
-      { displayTime: "06:35 PM", title: "National Anthem & Digital Lamp" },
-      { displayTime: "06:45 PM", title: "Welcome Performance" },
-      { displayTime: "06:55 PM", title: "Welcome Address" },
-      { displayTime: "07:10 PM", title: "Awards Segment 1" },
-      { displayTime: "07:25 PM", title: "Chief Guest Address" },
-      { displayTime: "07:45 PM", title: "Guest of Honor Keynote" },
-      { displayTime: "08:05 PM", title: "Sponsor Keynotes" },
-      { displayTime: "08:25 PM", title: "Awards Segment 2" },
-      { displayTime: "08:45 PM", title: "Closing & Vote of Thanks" },
-      { displayTime: "09:00 PM", title: "Fellowship & Cocktail" }
-    ];
+    let agendaData = [];
     const categoryCounts = {};
     let currentHighlightIndex = 0;
 
@@ -847,6 +923,39 @@
       }
     }
     
+    // External hooks so modepreview.js can drive this page
+    window.setDay = function(day){
+      const el = document.getElementById('eventDay');
+      if (el) el.textContent = day;
+      renderAgendaList();
+    };
+    window.setAgendaData = function(items){
+      if (Array.isArray(items)){
+        Object.keys(categoryCounts).forEach(k=>delete categoryCounts[k]);
+        agendaData = items.map(x=>({ displayTime: x.displayTime || x.time || '', title: x.title || '' }));
+        currentHighlightIndex = 0;
+        renderAgendaList();
+        doHighlight();
+      }
+    };
+    window.setCountdownTarget = function(dateStr, timeStr){
+      if (!dateStr || !timeStr) return;
+      CONFIG.eventDate = dateStr;
+      // normalize to 24h
+      const m = timeStr.trim().match(/^(\d{1,2}):(\d{2})(?:\s*(AM|PM))?$/i);
+      if (m){
+        let hh = parseInt(m[1],10), mm = parseInt(m[2],10);
+        const ap = (m[3]||'').toUpperCase();
+        if (ap==='PM' && hh<12) hh+=12;
+        if (ap==='AM' && hh===12) hh=0;
+        CONFIG.eventTime = String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0');
+      } else {
+        CONFIG.eventTime = timeStr;
+      }
+      initializeEventTime();
+      updateCountdown();
+    };
+
     async function initializeParticles() {
       try {
         const config = {
@@ -890,11 +999,16 @@
       renderAgendaList();
       doHighlight();
       initializeParticles();
+      initializeEventTime();
+      updateCountdown();
       setInterval(() => {
-        currentHighlightIndex = (currentHighlightIndex + 1) % agendaData.length;
-        doHighlight();
+        if (agendaData.length){
+          currentHighlightIndex = (currentHighlightIndex + 1) % agendaData.length;
+          doHighlight();
+        }
       }, 12000);
     });
   </script>
+  <script src="modepreview.js"></script>
 </body>
 </html>

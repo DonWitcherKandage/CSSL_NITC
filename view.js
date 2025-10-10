@@ -20,9 +20,10 @@ class ConferenceView {
         this.debugMode = document.getElementById('debugMode');
         this.debugStatus = document.getElementById('debugStatus');
         
-        // Display identification (PRESERVED FROM ORIGINAL)
-        this.isDisplay1 = !!this.agendaList && !this.currentDetail;
-        this.isDisplay2 = !!this.currentDetail;
+        // Display identification (enhanced for combined layout)
+        this.isCombined = !!this.agendaList && !!this.currentDetail;
+        this.isDisplay1 = !!this.agendaList; // true when agenda exists (single or combined)
+        this.isDisplay2 = !!this.currentDetail; // true when details exists (single or combined)
         
         // Socket.IO camera configuration
         this.socket = null;
@@ -151,6 +152,41 @@ class ConferenceView {
             console.error('Failed to initialize camera:', error);
             this.showCameraSection = false;
             this.updateDisplayWithoutCamera();
+        }
+    }
+
+    /**
+     * Reduce font-size by 1px steps until the element's scrollWidth fits within clientWidth.
+     * Prevents a single long word from being split/hanging. Minimum font-size safeguard at 12px.
+     */
+    fitDescriptionToWidth(el) {
+        try {
+            // Respect CSS: do not split words
+            el.style.wordBreak = 'normal';
+            el.style.overflowWrap = 'normal';
+            el.style.hyphens = 'none';
+
+            // Compute initial size in pixels
+            const computed = window.getComputedStyle(el);
+            let sizePx = parseFloat(computed.fontSize);
+            const minPx = 12;
+
+            // Shrink only if content overflows horizontally
+            // Use a small async to ensure layout is ready
+            const shrink = () => {
+                let guard = 30; // safety to avoid infinite loops
+                while (el.scrollWidth > el.clientWidth && sizePx > minPx && guard-- > 0) {
+                    sizePx -= 1;
+                    el.style.fontSize = sizePx + 'px';
+                }
+            };
+            if ('requestAnimationFrame' in window) {
+                requestAnimationFrame(shrink);
+            } else {
+                setTimeout(shrink, 0);
+            }
+        } catch (e) {
+            // no-op fail safe
         }
     }
 
@@ -289,21 +325,14 @@ class ConferenceView {
     doHighlight() {
         const agenda = window.conferenceApp?.model?.getAgendaData() || [];
         if (agenda.length === 0) return;
-        
-        const allEvents = document.querySelectorAll('.current-event-card, .upcoming-event');
-        allEvents.forEach(element => {
-            element.style.transform = '';
-            element.style.boxShadow = '';
-            element.style.border = '';
-            element.style.background = '';
-            element.style.color = '';
-            element.style.padding = '';
-        });
-        
+
+        // Remove preview highlight from all cards first (no inline style overrides)
+        document.querySelectorAll('.upcoming-event').forEach(el => el.classList.remove('preview-highlight'));
+
         let targetElement = null;
         const currentCard = document.querySelector('.current-event-card');
         const upcomingEvents = document.querySelectorAll('.upcoming-event');
-        
+
         if (this.currentHighlightIndex === 0 && currentCard) {
             targetElement = currentCard;
         } else {
@@ -312,20 +341,11 @@ class ConferenceView {
                 targetElement = upcomingEvents[upcomingIndex];
             }
         }
-        
+
         if (targetElement) {
-            targetElement.style.background = 'white';
-            targetElement.style.color = '#081A30';
-            targetElement.style.padding = '25px 30px';
-            targetElement.style.borderRadius = '10px';
-            targetElement.style.transition = 'all 0.3s ease';
-            
-            const timeElement = targetElement.querySelector('.time');
-            const titleElement = targetElement.querySelector('.title');
-            if (timeElement) timeElement.style.color = '#081A30';
-            if (titleElement) titleElement.style.color = '#081A30';
+            targetElement.classList.add('preview-highlight');
         }
-        
+
         this.currentHighlightIndex = (this.currentHighlightIndex + 1) % agenda.length;
     }
 
@@ -393,20 +413,61 @@ class ConferenceView {
         return `<img src="nitc-logo.png" alt="NITC 2025 Logo">`;
     }
 
+    getNextDayFirstEvent() {
+        try {
+            const app = window.conferenceApp;
+            if (!app?.model) return null;
+            const days = app.model.getAvailableDays();
+            const today = app.model.getCurrentDay();
+            const idx = days.indexOf(today);
+            if (idx === -1) return null;
+            const nextDay = days[idx + 1];
+            if (!nextDay) return null;
+            const all = app.model.allAgendaData || {};
+            const events = all[nextDay] || [];
+            if (events.length === 0) return null;
+            return { day: nextDay, first: events[0] };
+        } catch { return null; }
+    }
+
     /**
      * Render agenda list (PRESERVED FROM ORIGINAL)
      */
     renderAgendaList(agendaData, currentIndex) {
-        if (!this.isDisplay1 || !this.agendaList) return;
+        // In combined mode, agenda should render when element exists.
+        if (!this.agendaList) return;
 
         try {
             this.agendaList.innerHTML = '';
+
+            // If before conference start (before Oct 14), show only header and return
+            const mdl = window.conferenceApp?.model;
+            if (mdl?.isBeforeConferenceStart?.()) {
+                const headerOnly = document.createElement('div');
+                headerOnly.className = 'agenda-header';
+                headerOnly.innerHTML = `
+                    <div class="logo-3d-wrapper small">
+                        <div class="logo-stack">
+                            ${Array.from({ length: 32 }).map((_, i) => `<div class="slice" style="--i: ${i}"></div>`).join('')}
+                        </div>
+                    </div>
+                    <div class="event-title-section">
+                        <div class="event-title">EVENT<br>SCHEDULE</div>
+                        <div class="event-day">${this.currentDay}</div>
+                    </div>
+                `;
+                this.agendaList.appendChild(headerOnly);
+                return;
+            }
             
+            // Header (spinning logo + event title + day) – exact structure as reference
             const headerSection = document.createElement('div');
             headerSection.className = 'agenda-header';
             headerSection.innerHTML = `
-                <div class="conference-logo">
-                    ${this.getLogoHtml()}
+                <div class="logo-3d-wrapper small">
+                    <div class="logo-stack">
+                        ${Array.from({ length: 32 }).map((_, i) => `<div class="slice" style="--i: ${i}"></div>`).join('')}
+                    </div>
                 </div>
                 <div class="event-title-section">
                     <div class="event-title">EVENT<br>SCHEDULE</div>
@@ -414,59 +475,101 @@ class ConferenceView {
                 </div>
             `;
             this.agendaList.appendChild(headerSection);
-            
-            const currentEvent = currentIndex >= 0 ? agendaData[currentIndex] : null;
-            
-            if (currentEvent) {
-                const currentEventCard = document.createElement('div');
-                currentEventCard.className = 'current-event-card';
-                currentEventCard.innerHTML = `
-                    <div class="time">${currentEvent.displayTime}</div>
-                    <div class="title">${currentEvent.title}</div>
+
+            // If the day is completed, show countdown instead of cards
+            const status = window.conferenceApp?.model?.getConferenceStatus?.() || 'active';
+            if (status === 'completed') {
+                const wrap = document.createElement('div');
+                wrap.className = 'countdown-section';
+                wrap.innerHTML = `
+                    <h2 class="countdown-title">Starts In</h2>
+                    <div class="countdown-display">
+                        <div class="countdown-item"><span class="countdown-number" id="cd-days">00</span><span class="countdown-label">Days</span></div>
+                        <div class="countdown-item"><span class="countdown-number" id="cd-hours">00</span><span class="countdown-label">Hours</span></div>
+                        <div class="countdown-item"><span class="countdown-number" id="cd-minutes">00</span><span class="countdown-label">Minutes</span></div>
+                        <div class="countdown-item"><span class="countdown-number" id="cd-seconds">00</span><span class="countdown-label">Seconds</span></div>
+                    </div>
                 `;
-                
-                currentEventCard.addEventListener('click', () => {
-                    if (this.onItemClick) {
-                        this.onItemClick(currentIndex);
-                    }
-                });
-                
-                this.agendaList.appendChild(currentEventCard);
+                this.agendaList.appendChild(wrap);
+
+                const nextInfo = this.getNextDayFirstEvent();
+                if (nextInfo) {
+                    const dates = window.conferenceApp.model.conferenceDates || {};
+                    const dateStr = dates[nextInfo.day]; // YYYY-MM-DD
+                    const timeStr = nextInfo.first.time; // HH:MM 24h
+                    const target = new Date(`${dateStr}T${timeStr}:00`);
+                    const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = String(v).padStart(2,'0'); };
+                    const tick = () => {
+                        const now = new Date();
+                        const diff = target - now;
+                        if (diff <= 0) { ['cd-days','cd-hours','cd-minutes','cd-seconds'].forEach(id=>setVal(id,0)); return; }
+                        const dayMs = 1000*60*60*24;
+                        const days = Math.floor(diff/dayMs);
+                        const hours = Math.floor((diff%dayMs)/(1000*60*60));
+                        const minutes = Math.floor((diff%(1000*60*60))/(1000*60));
+                        const seconds = Math.floor((diff%(1000*60))/1000);
+                        setVal('cd-days', days); setVal('cd-hours', hours); setVal('cd-minutes', minutes); setVal('cd-seconds', seconds);
+                    };
+                    tick();
+                    if (this._countdownTimer) clearInterval(this._countdownTimer);
+                    this._countdownTimer = setInterval(tick, 1000);
+                }
+                return; // don't render cards when completed
             }
             
             const upcomingSection = document.createElement('div');
             upcomingSection.className = 'upcoming-events';
-            
-            let hasUpcomingEvents = false;
-            for (let i = currentIndex + 1; i < agendaData.length; i++) {
-                const item = agendaData[i];
-                const upcomingEvent = document.createElement('div');
-                upcomingEvent.className = 'upcoming-event';
-                upcomingEvent.innerHTML = `
-                    <div class="time">${item.displayTime} <span style="font-size: 0.8em;">Onwards</span></div>
-                    <div class="title">${item.title}</div>
-                `;
-                
-                upcomingEvent.addEventListener('click', () => {
-                    if (this.onItemClick) {
-                        this.onItemClick(i);
-                    }
-                });
-                
-                upcomingSection.appendChild(upcomingEvent);
-                hasUpcomingEvents = true;
+
+            // Build a window of at most 3 cards: current + next two
+            const windowCards = [];
+            const statusNow = mdl?.getConferenceStatus?.() || 'waiting';
+            const canHighlight = currentIndex >= 0 && statusNow === 'active';
+            if (currentIndex >= 0 && currentIndex < agendaData.length) {
+                windowCards.push({ idx: currentIndex, cls: canHighlight ? 'upcoming-event preview-highlight' : 'upcoming-event' });
+                if (currentIndex + 1 < agendaData.length) windowCards.push({ idx: currentIndex + 1, cls: 'upcoming-event' });
+                if (currentIndex + 2 < agendaData.length) windowCards.push({ idx: currentIndex + 2, cls: 'upcoming-event' });
+            } else {
+                // Before first event: show first three
+                for (let i = 0; i < Math.min(3, agendaData.length); i++) {
+                    windowCards.push({ idx: i, cls: 'upcoming-event' });
+                }
             }
-            
-            if (!hasUpcomingEvents) {
-                const completionMessage = document.createElement('div');
-                completionMessage.className = 'upcoming-event';
-                completionMessage.innerHTML = `
-                    <div class="time" style="color: #27ae60;">Conference Complete</div>
-                    <div class="title" style="color: #27ae60;">Thank you for participating!</div>
+
+            if (windowCards.length === 0) {
+                // Day completed or no events
+                const msg = document.createElement('div');
+                msg.className = 'upcoming-event';
+                msg.innerHTML = `
+                    <div class="time">No upcoming events</div>
+                    <div class="title">Please check back later</div>
                 `;
-                upcomingSection.appendChild(completionMessage);
+                upcomingSection.appendChild(msg);
+            } else {
+                for (const c of windowCards) {
+                    const item = agendaData[c.idx];
+                    const card = document.createElement('div');
+                    card.className = c.cls;
+                    card.innerHTML = `
+                        <div class="time">${item.displayTime}</div>
+                        <div class="title">${item.title}</div>
+                        <div class="scan"></div>
+                        <div class="trace"></div>
+                        <div class="flux"></div>
+                        <div class="stripes"></div>
+                        <div class="halo"></div>
+                        <div class="halo2"></div>
+                        <div class="ripples"></div>
+                        <div class="wires"></div>
+                        <div class="edges"></div>
+                        <div class="orbit"></div>
+                    `;
+                    card.addEventListener('click', () => {
+                        if (this.onItemClick) this.onItemClick(c.idx);
+                    });
+                    upcomingSection.appendChild(card);
+                }
             }
-            
+
             this.agendaList.appendChild(upcomingSection);
             
         } catch (error) {
@@ -478,73 +581,54 @@ class ConferenceView {
      * Render current event with smart camera handling
      */
     renderCurrentEvent(currentEvent, status, nextEvent, timeUntilNext) {
-        if (!this.isDisplay2 || !this.currentDetail) return;
+        // In combined mode, details should render when element exists.
+        if (!this.currentDetail) return;
 
         try {
             this.currentDetail.innerHTML = '';
 
-            // Choose camera HTML based on connection status
-            const cameraHtml = this.showCameraSection ? 
-                this.generateCameraHTML() : 
-                this.generateCameraComingSoonHTML();
-            
             if (currentEvent && status === 'active') {
+                // Show visible livestream placeholder and vertically centered group with description
                 this.currentDetail.innerHTML = `
-                    <div class="event-content">
-                        <div class="current-time">${currentEvent.displayTime}</div>
-                        <div class="current-title">${currentEvent.title}</div>
-                        <div class="current-description">${currentEvent.description}</div>
+                    <div class="event-content" style="position:relative;display:flex;flex-direction:column;align-items:stretch;min-height:100%;">
+                        <div class="center-pack">
+                            <div class="stream-box"></div>
+                            <div class="current-description">${currentEvent.description}</div>
+                        </div>
+                        <div style="position:absolute; left:0; right:0; bottom:10px; width:100%; text-align:center; padding:0 10px; opacity:.95;">
+                            <div class="event-title">NITC 2025</div>
+                        </div>
                     </div>
-                    ${cameraHtml}
                 `;
+                // Fit description to avoid breaking a single long word across lines
+                const descEl = this.currentDetail.querySelector('.current-description');
+                if (descEl) this.fitDescriptionToWidth(descEl);
             } else if (status === 'waiting') {
-                let nextEventHtml = '';
-                if (nextEvent) {
-                    const timeText = timeUntilNext > 0 ? 
-                        `Starts in ${timeUntilNext} minutes` : 'Starting now';
-                    
-                    nextEventHtml = `
-                        <div class="next-event-preview">
-                            <h3>First Event:</h3>
-                            <div style="color: #e74c3c; font-size: 1.2em; margin-bottom: 10px;">
-                                ${nextEvent.displayTime}
-                            </div>
-                            <div style="font-size: 1.1em; margin-bottom: 10px;">
-                                ${nextEvent.title}
-                            </div>
-                            <div style="color: #f39c12; font-weight: bold;">
-                                ${timeText}
-                            </div>
-                        </div>
-                    `;
-                }
-                
+                // Waiting: show camera box + 'coming soon' texts (no line/box around text)
                 this.currentDetail.innerHTML = `
-                    <div class="event-content">
-                        <div class="no-current-event">
-                            <h2>Conference Starts Soon...</h2>
-                            <p>Please take your seats and prepare for an amazing experience</p>
-                            ${nextEventHtml}
+                    <div class="event-content" style="position:relative;min-height:100%;display:flex;flex-direction:column;align-items:stretch;">
+                        <div class="center-pack">
+                            <div class="stream-box"></div>
+                            <div class="typing-title">Event starts soon...</div>
+                            <div class="wait-sub">Please stay tuned while we prepare the next session</div>
+                        </div>
+                        <div style="position:absolute; left:0; right:0; bottom:10px; width:100%; text-align:center; padding:0 10px; opacity:.95;">
+                            <div class="event-title">NITC 2025</div>
                         </div>
                     </div>
-                    ${cameraHtml}
                 `;
             } else if (status === 'completed') {
+                const nextDayInfo = this.getNextDayFirstEvent();
+                const followText = nextDayInfo
+                    ? `Next: ${nextDayInfo.day} starts at ${nextDayInfo.first.displayTime}`
+                    : `See you at our next event!`;
                 this.currentDetail.innerHTML = `
                     <div class="event-content">
                         <div class="no-current-event">
-                            <h2>Conference Has Concluded</h2>
-                            <p>Thank you for your participation!</p>
-                            <div class="conference-info">
-                                <h4>Thank You!</h4>
-                                <p>We hope you enjoyed today's sessions</p>
-                                <p>Follow-up materials will be sent via email</p>
-                                <p>Stay connected with our community</p>
-                                <p>See you at our next event!</p>
-                            </div>
+                            <h2>Today's conference has concluded</h2>
+                            <p>${followText}</p>
                         </div>
                     </div>
-                    ${cameraHtml}
                 `;
             } else {
                 this.currentDetail.innerHTML = `
@@ -554,20 +638,9 @@ class ConferenceView {
                             <p>Waiting for event information...</p>
                         </div>
                     </div>
-                    ${cameraHtml}
                 `;
             }
 
-            // Initialize camera connection after DOM update (only if camera section is shown)
-            if (this.showCameraSection) {
-                setTimeout(() => {
-                    this.videoElement = document.getElementById('socketio-camera-feed');
-                    if (this.socket && this.socket.connected) {
-                        this.socket.emit('request-stream');
-                    }
-                }, 100);
-            }
-            
         } catch (error) {
             console.error('Error rendering current event:', error);
         }
@@ -575,6 +648,7 @@ class ConferenceView {
 
     // All preserved methods
     updateControls(currentIndex, totalEvents, isAutoMode) {
+        // Controls only apply to the agenda screen; render if present
         if (!this.isDisplay1) return;
         try {
             if (this.prevBtn) this.prevBtn.disabled = currentIndex <= 0;
@@ -650,8 +724,12 @@ class ConferenceView {
             if (this.isDisplay1 && this.agendaList) {
                 this.agendaList.innerHTML = `
                     <div class="agenda-header">
-                        <div class="conference-logo">${this.getLogoHtml()}</div>
-                        <div style="margin-left: 160px;">
+                        <div class="logo-3d-wrapper small">
+                            <div class="logo-stack">
+                                ${Array.from({ length: 32 }).map((_, i) => `<div class=\"slice\" style=\"--i: ${i}\"></div>`).join('')}
+                            </div>
+                        </div>
+                        <div class="event-title-section">
                             <div class="event-title">EVENT<br>SCHEDULE</div>
                             <div class="event-day">Loading...</div>
                         </div>

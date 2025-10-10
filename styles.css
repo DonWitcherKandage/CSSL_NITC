@@ -232,67 +232,7 @@ body {
    EXISTING STYLES (PRESERVED)
    ============================================================================ */
 
-/* Header card styling for Screen 1 */
-.agenda-header {
-    background: linear-gradient(135deg, #f0f0f0 0%, #ffffff 100%);
-    border-radius: 20px;
-    padding: 30px;
-    margin-bottom: 40px;
-    display: flex;
-    align-items: flex-start;
-    position: relative;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-    min-height: 150px;
-    z-index: 3;
-    transform: scale(1);
-    transition: transform 0.3s ease;
-}
-
-/* Logo styling - left side */
-.conference-logo {
-    flex-shrink: 0;
-    margin-right: 40px;
-}
-
-.conference-logo img {
-    max-width: 200px;
-    height: auto;
-}
-
-/* Event title section - right side, left aligned */
-.event-title-section {
-    flex: 1;
-    text-align: left;
-    position: relative;
-}
-
-/* EVENT SCHEDULE title - left aligned */
-.event-title {
-    color: #0C2E53;
-    font-size: 3.5em;
-    font-weight: bold;
-    margin-bottom: 15px;
-    text-transform: uppercase;
-    letter-spacing: 3px;
-    line-height: 1.1;
-    text-align: left;
-}
-
-/* Day indicator - full width, no corner radius */
-.event-day {
-    background: #2D3691;
-    color: white;
-    padding: 12px 30px;
-    font-weight: bold;
-    font-size: 1.3em;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    border-radius: 0;
-    position: absolute;
-    right: -30px;
-    left: 0;
-    margin-left: 0;
-}
+/* Removed old header overrides for combined folded display: .agenda-header, .conference-logo, .event-title-section, .event-title, .event-day */
 
 /* Current event card (always on top) - WITH MUCH SLOWER SCALING ANIMATION */
 .current-event-card {
