@@ -664,6 +664,9 @@
     /* Remove rounded corners globally (match LED) */
     * { border-radius: 0 !important; }
     img { border-radius: 0 !important; }
+    /* Static animated logo image (replaces 3D logo) */
+    .logo-img { width: 120px; height: 120px; object-fit: contain; display: block; margin: 0 auto 14px; }
+    .logo-img.small { width: 90px; height: 90px; margin: 0 auto 10px; }
   </style>
 </head>
 <body>
@@ -673,43 +676,7 @@
       <div id="tsparticles-left"></div>
       <div class="agenda-content">
         <div class="agenda-header">
-          <div class="logo-3d-wrapper small">
-            <div class="logo-stack">
-              <!-- 32 slices: 0..31 -->
-              <div class="slice" style="--i:0"></div>
-              <div class="slice" style="--i:1"></div>
-              <div class="slice" style="--i:2"></div>
-              <div class="slice" style="--i:3"></div>
-              <div class="slice" style="--i:4"></div>
-              <div class="slice" style="--i:5"></div>
-              <div class="slice" style="--i:6"></div>
-              <div class="slice" style="--i:7"></div>
-              <div class="slice" style="--i:8"></div>
-              <div class="slice" style="--i:9"></div>
-              <div class="slice" style="--i:10"></div>
-              <div class="slice" style="--i:11"></div>
-              <div class="slice" style="--i:12"></div>
-              <div class="slice" style="--i:13"></div>
-              <div class="slice" style="--i:14"></div>
-              <div class="slice" style="--i:15"></div>
-              <div class="slice" style="--i:16"></div>
-              <div class="slice" style="--i:17"></div>
-              <div class="slice" style="--i:18"></div>
-              <div class="slice" style="--i:19"></div>
-              <div class="slice" style="--i:20"></div>
-              <div class="slice" style="--i:21"></div>
-              <div class="slice" style="--i:22"></div>
-              <div class="slice" style="--i:23"></div>
-              <div class="slice" style="--i:24"></div>
-              <div class="slice" style="--i:25"></div>
-              <div class="slice" style="--i:26"></div>
-              <div class="slice" style="--i:27"></div>
-              <div class="slice" style="--i:28"></div>
-              <div class="slice" style="--i:29"></div>
-              <div class="slice" style="--i:30"></div>
-              <div class="slice" style="--i:31"></div>
-            </div>
-          </div>
+          <img class="logo-img small" src="NITC.gif" alt="NITC Logo" />
           <div class="event-title-section">
             <div class="event-title">EVENT<br/>SCHEDULE</div>
             <div class="event-day" id="eventDay">Inauguration</div>
@@ -725,43 +692,7 @@
       <div id="tsparticles-right"></div>
       <div class="preview-container">
         <div class="preview-header">
-          <div class="logo-3d-wrapper right">
-            <div class="logo-stack">
-              <!-- 32 slices: 0..31 -->
-              <div class="slice" style="--i:0"></div>
-              <div class="slice" style="--i:1"></div>
-              <div class="slice" style="--i:2"></div>
-              <div class="slice" style="--i:3"></div>
-              <div class="slice" style="--i:4"></div>
-              <div class="slice" style="--i:5"></div>
-              <div class="slice" style="--i:6"></div>
-              <div class="slice" style="--i:7"></div>
-              <div class="slice" style="--i:8"></div>
-              <div class="slice" style="--i:9"></div>
-              <div class="slice" style="--i:10"></div>
-              <div class="slice" style="--i:11"></div>
-              <div class="slice" style="--i:12"></div>
-              <div class="slice" style="--i:13"></div>
-              <div class="slice" style="--i:14"></div>
-              <div class="slice" style="--i:15"></div>
-              <div class="slice" style="--i:16"></div>
-              <div class="slice" style="--i:17"></div>
-              <div class="slice" style="--i:18"></div>
-              <div class="slice" style="--i:19"></div>
-              <div class="slice" style="--i:20"></div>
-              <div class="slice" style="--i:21"></div>
-              <div class="slice" style="--i:22"></div>
-              <div class="slice" style="--i:23"></div>
-              <div class="slice" style="--i:24"></div>
-              <div class="slice" style="--i:25"></div>
-              <div class="slice" style="--i:26"></div>
-              <div class="slice" style="--i:27"></div>
-              <div class="slice" style="--i:28"></div>
-              <div class="slice" style="--i:29"></div>
-              <div class="slice" style="--i:30"></div>
-              <div class="slice" style="--i:31"></div>
-            </div>
-          </div>
+          <img class="logo-img" src="NITC.gif" alt="NITC Logo" />
           <h1 class="conference-title">NITC 2025</h1>
           <p class="conference-subtitle">Fostering a Human Centric Nation<br/>Towards Society 5.0</p>
         </div>

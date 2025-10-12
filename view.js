@@ -410,7 +410,7 @@ class ConferenceView {
     }
 
     getLogoHtml() {
-        return `<img src="nitc-logo.png" alt="NITC 2025 Logo">`;
+        return `<img src="NITC.gif" alt="NITC 2025 Logo" style="width:120px;height:120px;object-fit:contain;display:block;margin:0 auto 14px;" />`;
     }
 
     getNextDayFirstEvent() {
@@ -446,11 +446,7 @@ class ConferenceView {
                 const headerOnly = document.createElement('div');
                 headerOnly.className = 'agenda-header';
                 headerOnly.innerHTML = `
-                    <div class="logo-3d-wrapper small">
-                        <div class="logo-stack">
-                            ${Array.from({ length: 32 }).map((_, i) => `<div class="slice" style="--i: ${i}"></div>`).join('')}
-                        </div>
-                    </div>
+                    <img src="NITC.gif" alt="NITC 2025 Logo" style="width:90px;height:90px;object-fit:contain;display:block;margin:8px auto 10px;" />
                     <div class="event-title-section">
                         <div class="event-title">EVENT<br>SCHEDULE</div>
                         <div class="event-day">${this.currentDay}</div>
@@ -464,11 +460,7 @@ class ConferenceView {
             const headerSection = document.createElement('div');
             headerSection.className = 'agenda-header';
             headerSection.innerHTML = `
-                <div class="logo-3d-wrapper small">
-                    <div class="logo-stack">
-                        ${Array.from({ length: 32 }).map((_, i) => `<div class="slice" style="--i: ${i}"></div>`).join('')}
-                    </div>
-                </div>
+                <img src="NITC.gif" alt="NITC 2025 Logo" style="width:90px;height:90px;object-fit:contain;display:block;margin:8px auto 10px;" />
                 <div class="event-title-section">
                     <div class="event-title">EVENT<br>SCHEDULE</div>
                     <div class="event-day">${this.currentDay}</div>
@@ -724,11 +716,7 @@ class ConferenceView {
             if (this.isDisplay1 && this.agendaList) {
                 this.agendaList.innerHTML = `
                     <div class="agenda-header">
-                        <div class="logo-3d-wrapper small">
-                            <div class="logo-stack">
-                                ${Array.from({ length: 32 }).map((_, i) => `<div class=\"slice\" style=\"--i: ${i}\"></div>`).join('')}
-                            </div>
-                        </div>
+                        <img src="NITC.gif" alt="NITC 2025 Logo" style="width:90px;height:90px;object-fit:contain;display:block;margin:8px auto 10px;" />
                         <div class="event-title-section">
                             <div class="event-title">EVENT<br>SCHEDULE</div>
                             <div class="event-day">Loading...</div>
