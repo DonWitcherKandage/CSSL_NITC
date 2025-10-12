@@ -1076,29 +1076,35 @@
     <script>
         // Fixed agenda only (Inauguration) – short, single-line titles
         let agendaData = [
-            { displayTime: "06:00 PM", title: "Registration" },
-            { displayTime: "06:30 PM", title: "Arrival of Chief Guests" },
-            { displayTime: "06:35 PM", title: "National Anthem & Digital Lamp" },
-            { displayTime: "06:45 PM", title: "Welcome Performance" },
-            { displayTime: "06:55 PM", title: "Welcome Address" },
-            { displayTime: "07:10 PM", title: "Awards Segment 1" },
-            { displayTime: "07:25 PM", title: "Chief Guest Address" },
-            { displayTime: "07:45 PM", title: "Guest of Honor Keynote" },
-            { displayTime: "08:05 PM", title: "Sponsor Keynotes" },
-            { displayTime: "08:25 PM", title: "Awards Segment 2" },
-            { displayTime: "08:45 PM", title: "Closing & Vote of Thanks" },
-            { displayTime: "09:00 PM", title: "Fellowship & Cocktail" }
+            { displayTime: "05:00 PM", title: "Registration" },
+            { displayTime: "06:00 PM", title: "Arrival of Chief Guest" },
+            { displayTime: "06:05 PM", title: "Lighting of Digital Lamp" },
+            { displayTime: "06:10 PM", title: "NITC 2025 Curtain Raiser" },
+            { displayTime: "06:20 PM", title: "CSSL National ICT Awards" },
+            { displayTime: "06:45 PM", title: "Address by the Chief Guest" },
+            { displayTime: "06:55 PM", title: "Keynote: Guest of Honor" },
+            { displayTime: "07:15 PM", title: "Keynote: Strategic Partner" },
+            { displayTime: "07:25 PM", title: "Dance Act 2" },
+            { displayTime: "07:30 PM", title: "CSSL ICT Awards 2024" },
+            { displayTime: "07:40 PM", title: "CSSL ICT Awards 2024" },
+            { displayTime: "07:50 PM", title: "Keynote Speaker (Diamond Sponsor 1)" },
+            { displayTime: "07:55 PM", title: "Keynote Speaker (Diamond Sponsor 2)" },
+            { displayTime: "08:00 PM", title: "Sponsor Recognition of the NITC 2024" },
+            { displayTime: "08:10 PM", title: "Final Dance Act" },
+            { displayTime: "08:15 PM", title: "Vote of Thanks" },
+            { displayTime: "08:20 PM", title: "Fellowship & Cocktail" }
         ];
         // Counters to number repeated categories (e.g., Panel Discussion 1, 2)
         const categoryCounts = {};
 
         let currentHighlightIndex = 0;
+        let lastRenderedGroup = -1; // render only when page group changes to avoid flicker
         const REALTIME_POLL_MS = 30000; // poll real-time every 30s
         let eventStartTime = null;
 
         const CONFIG = {
             eventDate: '2025-10-14',
-            eventTime: '18:00',
+            eventTime: '17:00',
             timezone: 5.5
         };
 
@@ -1203,10 +1209,14 @@
         }
 
         function doHighlight() {
-            renderAgendaList();
+            const groupIndex = Math.floor(currentHighlightIndex / 3);
+            if (groupIndex !== lastRenderedGroup) {
+                renderAgendaList();
+                lastRenderedGroup = groupIndex;
+            }
             const allEvents = document.querySelectorAll('.upcoming-event');
             allEvents.forEach(el => el.classList.remove('preview-highlight'));
-            const visibleIndex = currentHighlightIndex % 3;
+            const visibleIndex = Math.min(currentHighlightIndex % 3, Math.max(0, allEvents.length - 1));
             if (allEvents[visibleIndex]) {
                 allEvents[visibleIndex].classList.add('preview-highlight');
             }
@@ -1307,7 +1317,7 @@
 
         window.setDay = function(day) {
             const dayEl = document.getElementById('eventDay');
-            if (dayEl) dayEl.textContent = day;
+            if (dayEl) dayEl.textContent = 'Inauguration';
             renderAgendaList();
         };
 
@@ -1353,7 +1363,6 @@
             initialize();
         }
     </script>
-    <!-- Rotor controllers removed for production -->
-    <script src="modepreview.js"></script>
+    <!-- Rotor controllers removed for production; preview script disabled on this page to avoid overrides -->
 </body>
 </html>
