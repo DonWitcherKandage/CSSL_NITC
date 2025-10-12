@@ -18,8 +18,8 @@
 
         /* Match exact size as the folded LED display reference */
         html, body {
-            width: 512px;
-            height: 863px;
+            width: 768px;
+            height: 1152px;
             overflow: hidden;
         }
         html { background: radial-gradient(120% 120% at 50% 0%, #050d1c 0%, #030a17 45%, #010409 100%) !important; background-attachment: fixed; background-repeat: no-repeat; }
@@ -28,14 +28,14 @@
             background: radial-gradient(120% 120% at 50% 0%, #050d1c 0%, #030a17 45%, #010409 100%) !important;
             background-attachment: fixed; background-repeat: no-repeat;
             overflow: hidden; /* no scrolls */
-            width: 512px; /* total fold width */
-            height: 863px; /* total fold height */
+            width: 768px; /* total fold width */
+            height: 1152px; /* total fold height */
         }
 
         .folded-container {
             display: flex;
-            width: 512px;
-            height: 863px;
+            width: 768px;
+            height: 1152px;
             position: relative;
             /* no container background; panels carry their own */
             /* rotor variables like reference */
@@ -46,8 +46,8 @@
         }
 
         .panel-left, .panel-right {
-            width: 256px;
-            height: 863px;
+            width: 384px;
+            height: 1152px;
             background: linear-gradient(180deg, #051022 0%, #0a2a4d 50%, #020a12 100%);
             position: relative;
             overflow: hidden;
@@ -226,7 +226,8 @@
         /* Animations matching reference */
         @keyframes scanSweep { 0% { transform: translateX(-60%) skewX(-18deg); } 100% { transform: translateX(140%) skewX(-18deg); } }
         @keyframes cornerPulse { 0%, 100% { opacity: 0.55; filter: drop-shadow(0 0 4px rgba(44,192,255,0.35)); } 50% { opacity: 0.9; filter: drop-shadow(0 0 8px rgba(44,192,255,0.6)); } }
-        @keyframes wiresMove { 0% { background-position: -200% 25%, 200% 50%, -200% 75%, -200% 35%, 200% 65%; } 50% { background-position: -20% 25%, 20% 50%, -20% 75%, -20% 35%; } 100% { background-position: 200% 25%, -200% 50%, 200% 75%, 200% 35%; } }
+        @keyframes wiresMove { 0% { background-position: -200% 25%, 200% 50%, -200% 75%, -200% 35%, 200% 65%; } 50% { background-position: -20% 25%, 20% 50%, -20% 75%, -20% 35%; } 100% { background-position: 200% 25%, -200% 50%, 200% 75%, 200% 35%; }
+        }
         @keyframes neonRain { 0% { background-position-y: 0; } 100% { background-position-y: 120px; } }
         @keyframes runnerX { 0% { transform: translateX(-50%); } 100% { transform: translateX(0%); } }
         @keyframes runnerY { 0% { transform: translateY(-50%); } 100% { transform: translateY(0%); } }
@@ -248,7 +249,7 @@
             opacity: 0.55;
         }
         .panel-left::before {
-            left: calc(256px - var(--rotor1-size));
+            left: calc(384px - var(--rotor1-size));
             bottom: -40px;
             width: var(--rotor1-size);
             height: var(--rotor1-size);
