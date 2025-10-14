@@ -1239,13 +1239,14 @@
 
         function initialize() {
             console.log('NITC 2025 Folded LED Display initializing...');
-            // Fixed agenda: set day label and render immediately
-            window.setDay('Inauguration');
-
-            initializeEventTime();
-            renderAgendaList();
-            // Immediate highlight once
-            doHighlight();
+            // Do not overwrite model-driven state if ConferenceModel is available
+            if (typeof ConferenceModel === 'undefined') {
+                // Fallback only: static default for environments without model.js
+                window.setDay('Inauguration');
+                renderAgendaList();
+                // Immediate highlight once
+                doHighlight();
+            }
 
             setTimeout(() => {
                 initializeParticles();
@@ -1254,6 +1255,7 @@
             // Start drift-corrected 12s highlight loop
             startHighlightLoop();
             
+            initializeEventTime();
             updateCountdown();
             updateClocks();
             setInterval(updateCountdown, 1000);
@@ -1317,41 +1319,81 @@
         (function autoSyncFromModel(){
             try {
                 const model = new ConferenceModel();
+                function getSriLankaTodayStr(){
+                    const now = new Date();
+                    const sl = new Date(now.getTime() + Math.round(5.5*60*60*1000));
+                    return sl.getUTCFullYear()+"-"+String(sl.getUTCMonth()+1).padStart(2,'0')+"-"+String(sl.getUTCDate()).padStart(2,'0');
+                }
                 const apply = () => {
                     try {
-                        const day = model.getCurrentDay();
-                        window.setDay(day);
-                        const agenda = model.getAgendaData().map(x => ({ displayTime: x.displayTime || x.time || '', title: x.title || '' }));
-                        if (agenda && agenda.length) window.setAgendaData(agenda);
-
-                        const status = model.getConferenceStatus();
+                        // Update internal status to reflect real time before reading it
+                        if (typeof model.updateRealTimeEvent === 'function') {
+                            model.updateRealTimeEvent();
+                        }
                         const dates = model.conferenceDates || {};
-                        let dateStr = dates[day];
-                        let timeStr = null;
+                        const allDays = model.getAvailableDays();
+                        // Derive current day using Sri Lanka calendar date to avoid UTC drift
+                        const slTodayStr = getSriLankaTodayStr();
+                        let currentDay = model.getCurrentDay();
+                        for (const d of allDays){ if ((model.conferenceDates||{})[d] === slTodayStr) { currentDay = d; break; } }
+                        let status = model.getConferenceStatus();
 
+                        // Fallback: if calendar date has already moved past currentDay's date, treat as completed
+                        try {
+                            const todayStr = slTodayStr; // use Sri Lanka date
+                            const cd = dates[currentDay];
+                            if (cd && todayStr > cd) status = 'completed';
+                        } catch {}
+
+                        // Additional fallback: if today's SL time is past the last event end of currentDay, mark completed
+                        try {
+                            const curAgenda = model.allAgendaData?.[currentDay] || [];
+                            if (curAgenda.length) {
+                                const last = curAgenda[curAgenda.length - 1];
+                                const endMin = model.timeToMinutes(last.time) + (last.duration || 0);
+                                const nowMin = model.timeToMinutes(model.getCurrentRealTime());
+                                if (nowMin >= endMin) status = 'completed';
+                            }
+                        } catch {}
+
+                        // Determine which day to SHOW on Screen 1
+                        let showDay = currentDay;
+                        if (status === 'completed') {
+                            const idx = allDays.indexOf(currentDay);
+                            if (idx !== -1 && allDays[idx + 1]) showDay = allDays[idx + 1];
+                        }
+
+                        // Apply day label and agenda for the chosen day
+                        window.setDay(showDay);
+                        const showAgenda = (model.allAgendaData?.[showDay] || []).map(x => ({ displayTime: x.displayTime || x.time || '', title: x.title || '' }));
+                        if (showAgenda && showAgenda.length) window.setAgendaData(showAgenda);
+
+                        // Determine countdown target
+                        let dateStr = dates[showDay];
+                        let timeStr = null;
                         if (status === 'waiting') {
-                            timeStr = agenda[0]?.displayTime || agenda[0]?.time || null;
+                            timeStr = showAgenda[0]?.displayTime || showAgenda[0]?.time || null;
                         } else if (status === 'active') {
                             const next = model.getNextEvent();
                             if (next) timeStr = next.displayTime || next.time || null;
                         }
-
                         if (!timeStr || status === 'completed') {
-                            const days = model.getAvailableDays();
-                            const idx = days.indexOf(day);
-                            const nextDay = days[idx + 1];
+                            const idx = allDays.indexOf(currentDay);
+                            const nextDay = allDays[idx + 1];
                             if (nextDay) {
                                 dateStr = dates[nextDay];
                                 const first = (model.allAgendaData?.[nextDay] || [])[0];
                                 if (first) timeStr = first.displayTime || first.time || null;
                             }
                         }
-
                         if (dateStr && timeStr) window.setCountdownTarget(dateStr, timeStr);
                     } catch (e) { /* no-op */ }
                 };
-                apply();
-                setInterval(apply, 30000);
+                const start = () => { try { apply(); } catch(e){} };
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', () => setTimeout(start, 100));
+                } else { setTimeout(start, 100); }
+                setInterval(apply, 5000);
             } catch (e) {
                 // model not available; remain static
             }

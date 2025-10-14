@@ -194,7 +194,7 @@
 
         /* Livestream placeholder */
         .stream-box { height: 300px; width: calc(100% - 24px); margin: 0 12px; border-radius: 10px; border: 1px solid rgba(124,218,255,0.22); background: linear-gradient(135deg, rgba(9,60,96,0.16), rgba(8,32,60,0.10)); box-shadow: inset 0 0 0 1px rgba(44,192,255,0.12), inset 0 0 24px rgba(44,192,255,0.10); display: none; }
-        .preview-header { margin-bottom: 16px; text-align: center; }
+        .preview-header { margin-bottom: 0; text-align: center; }
         .nitc-logo { width: 100px; height: 100px; margin: 0 auto 12px; display: block; object-fit: contain; max-width: 100%; height: auto; }
         .conference-title { font-family: 'Orbitron', sans-serif; font-size: 2em; font-weight: 700; margin-bottom: 8px; letter-spacing: .5px; background: linear-gradient(90deg, #2CC0FF, #7DD3FF); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; color: transparent; text-shadow: 0 0 10px rgba(44,192,255,.3); }
         .conference-subtitle { font-family: 'Inter', system-ui, sans-serif; font-size: 0.9em; line-height: 1.3; opacity: 0.95; }
@@ -211,9 +211,9 @@
         @keyframes slideShow { 0%,18%{ transform: translateX(0%);} 20%,38%{ transform: translateX(-20%);} 40%,58%{ transform: translateX(-40%);} 60%,78%{ transform: translateX(-60%);} 80%,98%{ transform: translateX(-80%);} 100%{ transform: translateX(0%);} }
         .info-note { margin-top: 28px; font-size: .9em; opacity: .95; }
         /* Screen 2 persistent layout container */
-        .preview-container { display: flex; flex-direction: column; align-items: center; width: 100%; height: 100%; text-align: center; gap: 16px; padding: 0 12px; }
-        .preview-container .center-pack { flex: 1 1 auto; display: flex; align-items: center; justify-content: center; width: 100%; }
-        .preview-container .mid-wrap { flex: 0 0 auto; width: 100%; display: flex; align-items: center; justify-content: center; }
+        .preview-container { position: relative; z-index: 3; padding: 20px 12px; text-align: center; color: white; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 48px; }
+        .preview-container .center-pack { display: block; width: 100%; }
+        .preview-container .mid-wrap { display: block; width: 100%; }
         .panel-right #currentDetail { display: none; }
     </style>
 </head>

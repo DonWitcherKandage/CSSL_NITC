@@ -753,6 +753,7 @@
   </div>
 
   <script src="model.js"></script>
+  <script src="model.js"></script>
   <script>
     // Controller hooks compatibility (match LED)
     const CONFIG = {
@@ -902,7 +903,7 @@
     // External hooks so modepreview.js can drive this page
     window.setDay = function(day){
       const el = document.getElementById('eventDay');
-      if (el) el.textContent = 'Inauguration';
+      if (el) el.textContent = day || 'Inauguration';
       renderAgendaList();
     };
     window.setAgendaData = function(items){
@@ -946,34 +947,57 @@
         const model = new ConferenceModel();
         const apply = () => {
           try {
-            const day = model.getCurrentDay();
-            window.setDay(day);
-            const agenda = model.getAgendaData().map(x => ({ displayTime: x.displayTime || x.time || '', title: x.title || '' }));
-            if (agenda && agenda.length) window.setAgendaData(agenda);
-
-            const status = model.getConferenceStatus();
+            // update realtime first
+            if (typeof model.updateRealTimeEvent === 'function') model.updateRealTimeEvent();
             const dates = model.conferenceDates || {};
-            let dateStr = dates[day];
-            let timeStr = null;
+            const allDays = model.getAvailableDays();
+            const currentDay = model.getCurrentDay();
+            let status = model.getConferenceStatus();
 
+            // mark completed if date passed or time past last event end
+            try {
+              const todayStr = new Date().toISOString().split('T')[0];
+              const cd = dates[currentDay];
+              if (cd && todayStr > cd) status = 'completed';
+              const curAgenda = model.allAgendaData?.[currentDay] || [];
+              if (curAgenda.length) {
+                const last = curAgenda[curAgenda.length - 1];
+                const endMin = model.timeToMinutes(last.time) + (last.duration || 0);
+                const nowMin = model.timeToMinutes(model.getCurrentRealTime());
+                if (nowMin >= endMin) status = 'completed';
+              }
+            } catch {}
+
+            // decide day to show
+            let showDay = currentDay;
+            if (status === 'completed'){
+              const idx = allDays.indexOf(currentDay);
+              if (idx !== -1 && allDays[idx+1]) showDay = allDays[idx+1];
+            }
+
+            // apply day label and agenda for chosen day
+            window.setDay(showDay);
+            const showAgenda = (model.allAgendaData?.[showDay] || []).map(x => ({ displayTime: x.displayTime || x.time || '', title: x.title || '' }));
+            if (showAgenda && showAgenda.length) window.setAgendaData(showAgenda);
+
+            // countdown target
+            let dateStr = dates[showDay];
+            let timeStr = null;
             if (status === 'waiting') {
-              timeStr = agenda[0]?.displayTime || agenda[0]?.time || null;
+              timeStr = showAgenda[0]?.displayTime || showAgenda[0]?.time || null;
             } else if (status === 'active') {
               const next = model.getNextEvent();
               if (next) timeStr = next.displayTime || next.time || null;
             }
-
             if (!timeStr || status === 'completed') {
-              const days = model.getAvailableDays();
-              const idx = days.indexOf(day);
-              const nextDay = days[idx + 1];
+              const idx = allDays.indexOf(currentDay);
+              const nextDay = allDays[idx + 1];
               if (nextDay) {
                 dateStr = dates[nextDay];
                 const first = (model.allAgendaData?.[nextDay] || [])[0];
                 if (first) timeStr = first.displayTime || first.time || null;
               }
             }
-
             if (dateStr && timeStr) window.setCountdownTarget(dateStr, timeStr);
           } catch (e) { /* no-op */ }
         };

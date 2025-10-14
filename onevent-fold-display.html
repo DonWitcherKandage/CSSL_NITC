@@ -325,10 +325,9 @@
         /* IDs expected by existing scripts */
         #agendaList { flex: 1; overflow: hidden; background: transparent !important; }
         #currentDetail { flex: 1; overflow: hidden; background: transparent !important; }
-        .preview-container { display: flex; flex-direction: column; align-items: center; width: 100%; height: 100%; text-align: center; gap: 16px; padding: 0 12px; }
-        /* Middle section should take remaining space and be centered */
-        .preview-container .center-pack { flex: 1 1 auto; display: flex; align-items: center; justify-content: center; width: 100%; }
-        .preview-container .mid-wrap { flex: 0 0 auto; width: 100%; display: flex; align-items: center; justify-content: center; }
+        .preview-container { position: relative; z-index: 3; padding: 20px 12px; text-align: center; color: white; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 48px; }
+        .preview-container .center-pack { display: block; width: 100%; }
+        .preview-container .mid-wrap { display: block; width: 100%; }
         /* Keep right-side dynamic detail hidden so header/desc/qr remain centered */
         .panel-right #currentDetail { display: none; }
 
@@ -418,7 +417,7 @@
             background: linear-gradient(135deg, rgba(11,211,255,0.10), rgba(11,134,255,0.08));
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            margin: 12px 16px;
+            margin: 0 16px;
             min-height: 110px;
         }
         .current-description::before { content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: 12px; box-shadow: inset 0 0 0 2px rgba(44,192,255,0.35); }
@@ -436,12 +435,12 @@
             box-shadow: inset 0 0 0 1px rgba(44,192,255,0.12), inset 0 0 24px rgba(44,192,255,0.10);
             display: none;
         }
-        .preview-header { margin-bottom: 16px; text-align: center; }
+        .preview-header { margin-bottom: 0; text-align: center; }
         .nitc-logo { width: 100px; height: 100px; margin: 0 auto 12px; display: block; object-fit: contain; max-width: 100%; height: auto; }
         .conference-title { font-family: 'Orbitron', sans-serif; font-size: 2em; font-weight: 700; margin-bottom: 8px; letter-spacing: .5px; background: linear-gradient(90deg, #2CC0FF, #7DD3FF); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; color: transparent; text-shadow: 0 0 10px rgba(44,192,255,.3); }
         .conference-subtitle { font-family: 'Inter', system-ui, sans-serif; font-size: 0.9em; line-height: 1.3; opacity: 0.95; }
         /* Carousel styles (like LED reference) */
-        .carousel-section { width: 100%; margin-top: 18px; margin-bottom: 44px; }
+        .carousel-section { width: 100%; margin-top: 0; margin-bottom: 44px; }
         .carousel-container { width: 100%; height: 150px; overflow: hidden; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
         .carousel-track { display: flex; width: 500%; height: 100%; animation: slideShow 20s infinite; }
         .carousel-slide { width: 20%; height: 100%; position: relative; display: flex; align-items: center; justify-content: center; }
