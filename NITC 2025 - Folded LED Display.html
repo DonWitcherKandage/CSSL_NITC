@@ -1001,15 +1001,17 @@
         </div>
     </div>
 
+    <script src="model.js"></script>
     <script>
         // Fixed agenda only (Inauguration) – short, single-line titles
         let agendaData = [
             { displayTime: "05:00 PM", title: "Registration" },
             { displayTime: "06:00 PM", title: "Arrival of Chief Guest" },
             { displayTime: "06:05 PM", title: "Lighting of Digital Lamp" },
-            { displayTime: "06:10 PM", title: "NITC 2025 Curtain Raiser" },
+            { displayTime: "06:10 PM", title: "Welcome Dance" },
+            { displayTime: "06:13 PM", title: "Welcome Address" },
             { displayTime: "06:20 PM", title: "CSSL National ICT Awards" },
-            { displayTime: "06:45 PM", title: "Address by the Chief Guest" },
+            { displayTime: "06:45 PM", title: "Address by His Excellency" },
             { displayTime: "06:55 PM", title: "Keynote: Guest of Honor" },
             { displayTime: "07:15 PM", title: "Keynote: Strategic Partner" },
             { displayTime: "07:25 PM", title: "Dance Act 2" },
@@ -1116,12 +1118,11 @@
             
             for (let i = startIndex; i < endIndex; i++) {
                 const item = agendaData[i];
-                const shortTitle = getShortTitle(item.title);
                 const eventElement = document.createElement('div');
                 eventElement.className = 'upcoming-event';
                 eventElement.innerHTML = `
                     <div class="time">${item.displayTime}</div>
-                    <div class="title" title="${escapeHtml(item.title)}">${shortTitle}</div>
+                    <div class="title" title="${escapeHtml(item.title)}">${escapeHtml(item.title)}</div>
                     <div class="orbit"></div>
                     <div class="scan"></div>
                     <div class="trace"></div>
@@ -1254,10 +1255,18 @@
             if (Array.isArray(items)) {
                 // reset numbering state
                 Object.keys(categoryCounts).forEach(k => delete categoryCounts[k]);
-                agendaData = items.map(x => ({ displayTime: x.displayTime || x.time || '', title: x.title || '' }));
-                currentHighlightIndex = 0;
-                renderAgendaList();
-                doHighlight();
+                const normalized = items.map(x => ({ displayTime: x.displayTime || x.time || '', title: x.title || '' }));
+                const same = Array.isArray(agendaData)
+                    && agendaData.length === normalized.length
+                    && agendaData.every((it, i) => it.displayTime === normalized[i].displayTime && it.title === normalized[i].title);
+                if (!same) {
+                    agendaData = normalized;
+                    if (currentHighlightIndex >= agendaData.length) {
+                        currentHighlightIndex = Math.max(0, agendaData.length - 1);
+                    }
+                    renderAgendaList();
+                    doHighlight();
+                }
             }
         };
 
@@ -1284,6 +1293,50 @@
             console.log('Left: Agenda (3 cards), Right: Countdown');
             console.log('Current highlight:', currentHighlightIndex);
         };
+
+        // Auto-sync from model.js if available: update day, agenda, and countdown
+        (function autoSyncFromModel(){
+            try {
+                const model = new ConferenceModel();
+                const apply = () => {
+                    try {
+                        const day = model.getCurrentDay();
+                        window.setDay(day);
+                        const agenda = model.getAgendaData().map(x => ({ displayTime: x.displayTime || x.time || '', title: x.title || '' }));
+                        if (agenda && agenda.length) window.setAgendaData(agenda);
+
+                        const status = model.getConferenceStatus();
+                        const dates = model.conferenceDates || {};
+                        let dateStr = dates[day];
+                        let timeStr = null;
+
+                        if (status === 'waiting') {
+                            timeStr = agenda[0]?.displayTime || agenda[0]?.time || null;
+                        } else if (status === 'active') {
+                            const next = model.getNextEvent();
+                            if (next) timeStr = next.displayTime || next.time || null;
+                        }
+
+                        if (!timeStr || status === 'completed') {
+                            const days = model.getAvailableDays();
+                            const idx = days.indexOf(day);
+                            const nextDay = days[idx + 1];
+                            if (nextDay) {
+                                dateStr = dates[nextDay];
+                                const first = (model.allAgendaData?.[nextDay] || [])[0];
+                                if (first) timeStr = first.displayTime || first.time || null;
+                            }
+                        }
+
+                        if (dateStr && timeStr) window.setCountdownTarget(dateStr, timeStr);
+                    } catch (e) { /* no-op */ }
+                };
+                apply();
+                setInterval(apply, 30000);
+            } catch (e) {
+                // model not available; remain static
+            }
+        })();
 
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', initialize);
