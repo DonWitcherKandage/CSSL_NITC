@@ -161,7 +161,7 @@ class ConferenceModel {
         });
 
         const inauguration = withDurations([
-            { time: to24('5:00 PM'), displayTime: '5:00 PM', title: 'Registration', description: 'Arrival of Guests Registration.' },
+            { time: to24('5:00 PM'), displayTime: '5:00 PM', title: 'Registration', description: 'Arrival of Guests and Registration.' },
             { time: to24('6:00 PM'), displayTime: '6:00 PM', title: 'Arrival of Chief Guest', description: 'Introduction of the Executive Council.' },
             { time: to24('6:05 PM'), displayTime: '6:05 PM', title: 'Lighting of Digital Lamp', description: 'Digital Lamp lighting to launch NITC 2025.' },
             { time: to24('6:10 PM'), displayTime: '6:10 PM', title: 'Welcome Dance', description: 'Welcome dance by dance troop.' },

@@ -92,6 +92,10 @@
             z-index: 1001;
         }
 
+        /* Hide LIVE chip and clock on Screen 1 */
+        .panel-left .status-indicator,
+        .clock { display: none !important; }
+
         
         @keyframes blink { 0%,50%{opacity:1} 51%,100%{opacity:.3} }
 
@@ -107,6 +111,7 @@
             color: #fff;
             background: transparent !important; /* avoid any full-width color */
         }
+        .panel-right .details-layer { align-items: stretch; justify-content: flex-start; padding: 20px 0 64px; }
 
 
         /* Agenda header (logo + title + day) */
@@ -321,6 +326,10 @@
         /* IDs expected by existing scripts */
         #agendaList { flex: 1; overflow: hidden; background: transparent !important; }
         #currentDetail { flex: 1; overflow: hidden; background: transparent !important; }
+        .preview-container { display: flex; flex-direction: column; align-items: center; width: 100%; height: 100%; text-align: center; gap: 16px; padding: 0 12px; }
+        .preview-container .center-pack { flex: 1 1 auto; display: flex; align-items: center; justify-content: center; width: 100%; }
+        .preview-container .mid-wrap { flex: 0 0 auto; width: 100%; display: flex; align-items: center; justify-content: center; }
+        .panel-right #currentDetail { display: none; }
 
         /* Safety for any images/content */
         img { max-width: 100%; height: auto; }
@@ -393,15 +402,22 @@
         .event-content { width: 100%; min-height: 100%; display: flex; flex-direction: column; }
         .center-pack { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
         .current-description {
-            font-size: 1.18em;
+            font-size: calc(1.18em + 5px);
             line-height: 1.5;
             color: #eaf6ff;
             text-align: center;
-            padding: 0; /* 0px sides */
-            word-break: normal;      /* do not split words */
-            overflow-wrap: normal;    /* do not force split */
-            hyphens: none;            /* no hyphenation */
+            padding: 14px 16px;
+            word-break: keep-all;      /* keep entire words on one line */
+            overflow-wrap: normal;     /* do not force split */
+            hyphens: none;             /* no hyphenation */
+            position: relative;
+            background: linear-gradient(135deg, rgba(11,211,255,0.10), rgba(11,134,255,0.08));
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            margin: 12px 16px;
+            min-height: 110px;
         }
+        .current-description::before { content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: 12px; box-shadow: inset 0 0 0 2px rgba(44,192,255,0.35); }
         .mid-wrap { flex: 1; display: flex; align-items: center; justify-content: center; }
 
         /* Subtle livestream placeholder box (reserve area) */
@@ -414,7 +430,20 @@
             border: 1px solid rgba(124,218,255,0.22);
             background: linear-gradient(135deg, rgba(9,60,96,0.16), rgba(8,32,60,0.10));
             box-shadow: inset 0 0 0 1px rgba(44,192,255,0.12), inset 0 0 24px rgba(44,192,255,0.10);
+            display: none;
         }
+        .preview-header { margin-bottom: 16px; text-align: center; }
+        .nitc-logo { width: 100px; height: 100px; margin: 0 auto 12px; display: block; object-fit: contain; max-width: 100%; height: auto; }
+        .conference-title { font-family: 'Orbitron', sans-serif; font-size: 2em; font-weight: 700; margin-bottom: 8px; letter-spacing: .5px; background: linear-gradient(90deg, #2CC0FF, #7DD3FF); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; color: transparent; text-shadow: 0 0 10px rgba(44,192,255,.3); }
+        .conference-subtitle { font-family: 'Inter', system-ui, sans-serif; font-size: 0.9em; line-height: 1.3; opacity: 0.95; }
+        /* Carousel styles (like LED reference) */
+        .carousel-section { width: 100%; margin-top: 18px; margin-bottom: 44px; }
+        .carousel-container { width: 100%; height: 150px; overflow: hidden; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
+        .carousel-track { display: flex; width: 500%; height: 100%; animation: slideShow 20s infinite; }
+        .carousel-slide { width: 20%; height: 100%; position: relative; display: flex; align-items: center; justify-content: center; }
+        .carousel-slide img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        @keyframes slideShow { 0%,18%{ transform: translateX(0%);} 20%,38%{ transform: translateX(-20%);} 40%,58%{ transform: translateX(-40%);} 60%,78%{ transform: translateX(-60%);} 80%,98%{ transform: translateX(-80%);} 100%{ transform: translateX(0%);} }
+        .info-note { margin-top: 32px; font-size: .9em; opacity: .95; }
 
         /* Disable hover effects on Screen 1 cards to match reference visuals exactly */
         .upcoming-event { cursor: default; }
@@ -444,9 +473,43 @@
         <div class="panel-right" id="screen2">
             <div id="tsparticles-right"></div>
             <div class="details-layer">
-                <div id="currentDetail" class="current-detail">
-                    <!-- initial placeholder; will be populated by scripts -->
+                <div class="preview-container">
+                    <div class="preview-header">
+                        <img class="nitc-logo" src="NITC.gif" alt="NITC Logo" />
+                        <h1 class="conference-title">NITC 2025</h1>
+                        <p class="conference-subtitle">Fostering a Human Centric Nation<br>Towards Society 5.0</p>
+                    </div>
+
+                    <div class="center-pack">
+                        <div class="mid-wrap">
+                            <div class="current-description">Event starts soon</div>
+                        </div>
+                    </div>
+
+                    <div class="carousel-section">
+                        <div class="carousel-container">
+                            <div class="carousel-track">
+                                <div class="carousel-slide">
+                                    <img src="carousel 1.jpg" alt="Slide 1" />
+                                </div>
+                                <div class="carousel-slide">
+                                    <img src="carousel 2.jpg" alt="Slide 2" />
+                                </div>
+                                <div class="carousel-slide">
+                                    <img src="carousel 3.jpg" alt="Slide 3" />
+                                </div>
+                                <div class="carousel-slide">
+                                    <img src="carousel 4.jpg" alt="Slide 4" />
+                                </div>
+                                <div class="carousel-slide">
+                                    <img src="carousel 5.jpg" alt="Slide 5" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="info-note">Visit https://nitc.lk for more info</div>
+                    </div>
                 </div>
+                <div id="currentDetail" class="current-detail"></div>
             </div>
         </div>
     </div>
@@ -456,6 +519,97 @@
     <script src="view.js"></script>
     <script src="controller.js"></script>
     <script src="app-display1.js"></script>
+    <script src="qrcode.min.js"></script>
+    <script>
+      (function autoSyncDescription(){
+        function getHighlightedTitle(){
+          const el = document.querySelector('.upcoming-event.preview-highlight .title');
+          return el ? el.textContent.trim() : null;
+        }
+        function getDescriptionForTitle(title){
+          try{
+            if (!title) return null;
+            const agenda = (window.conferenceApp && window.conferenceApp.model && typeof window.conferenceApp.model.getAgendaData === 'function')
+              ? window.conferenceApp.model.getAgendaData() : null;
+            if (Array.isArray(agenda)){
+              const found = agenda.find(x => (x.title||'').trim() === title);
+              if (found && found.description) return String(found.description).trim();
+            }
+          }catch(e){}
+          return null;
+        }
+        function update(){
+          try {
+            const desc = document.querySelector('.panel-right .current-description');
+            if (!desc) return;
+            const t = getHighlightedTitle();
+            const d = getDescriptionForTitle(t);
+            desc.textContent = d || 'Event starts soon';
+          } catch(e) {}
+        }
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', () => {
+            update();
+            setInterval(update, 1000);
+          });
+        } else {
+          update();
+          setInterval(update, 1000);
+        }
+      })();
+      (function initLocalQR(){
+        function make(attempt){
+          try{
+            var target = document.querySelector('.panel-right .qr-code');
+            if (!target || !window.QRCode) return;
+            target.innerHTML = '';
+            var q = new QRCode(target, { width: 120, height: 120, colorDark: '#000000', colorLight: '#ffffff' });
+            q.makeCode('https://nitc.lk');
+            // verify a canvas was rendered; retry if not
+            if (!target.querySelector('canvas')){
+              if ((attempt||0) < 3){ setTimeout(()=>make((attempt||0)+1), 300); }
+            }
+          }catch(e){}
+        }
+        if (document.readyState === 'loading'){
+          document.addEventListener('DOMContentLoaded', ()=>setTimeout(()=>make(0), 200));
+        } else { setTimeout(()=>make(0), 200); }
+      })();
+      (function exactTimeHighlighter(){
+        function parseMinutes(t){
+          if (!t) return null;
+          var m=t.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i); if(!m) return null;
+          var hh=parseInt(m[1],10), mm=parseInt(m[2],10), ap=(m[3]||'').toUpperCase();
+          if(ap==='PM' && hh<12) hh+=12; if(ap==='AM' && hh===12) hh=0; return hh*60+mm;
+        }
+        function nowMinutesSL(){
+          var nowUtc = Date.now();
+          var slMs = nowUtc + Math.round(5.5 * 60 * 60 * 1000);
+          var d = new Date(slMs);
+          return d.getUTCHours()*60 + d.getUTCMinutes();
+        }
+        function update(){
+          try{
+            const items=[...document.querySelectorAll('.upcoming-event')];
+            if(!items.length) return;
+            const times=items.map(el=>parseMinutes(el.querySelector('.time')?.textContent||''));
+            const now=nowMinutesSL();
+            let idx=-1;
+            const firstIdx = times.findIndex(v=>v!=null);
+            if (firstIdx !== -1 && now < times[firstIdx]) {
+              idx = -1; // before first item -> no highlight
+            } else {
+              for(let i=0;i<times.length;i++){ if(times[i]!=null && times[i] <= now) idx=i; }
+            }
+            items.forEach(el=>el.classList.remove('preview-highlight'));
+            if(idx>=0 && items[idx]) items[idx].classList.add('preview-highlight');
+          }catch(e){}
+        }
+        if (document.readyState==='loading'){
+          document.addEventListener('DOMContentLoaded', ()=>{ update(); setInterval(update, 30000); });
+        } else { update(); setInterval(update, 30000); }
+      })();
+    </script>
     <script>
       // Initialize right panel particles on combined page
       (function initRightParticles(){
