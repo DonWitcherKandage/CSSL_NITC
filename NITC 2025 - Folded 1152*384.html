@@ -1168,6 +1168,8 @@
             }, delay);
         }
         function startHighlightLoop(){
+            // Trigger first highlight immediately (no initial wait), then every 12s
+            try { doHighlight(); } catch(e) {}
             nextHighlightAt = Date.now() + HIGHLIGHT_PERIOD_MS;
             scheduleNextHighlight();
         }
