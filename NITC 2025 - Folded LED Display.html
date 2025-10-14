@@ -181,8 +181,9 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 16px;
             overflow: hidden;
+            margin-top: 16px;
         }
 
         /* Darker global background */
@@ -283,7 +284,7 @@
 
         .upcoming-event .time {
             /* neon gradient text */
-            font-size: 1.1em;
+            font-size: calc(1.1em + 5px);
             font-weight: 800;
             margin-bottom: 6px;
             background: linear-gradient(90deg, #2CC0FF, #7DD3FF, #2CC0FF);
@@ -319,7 +320,7 @@
             /* title: modern, slightly brighter with glow */
             font-family: 'Inter', system-ui, sans-serif;
             color: #eaf6ff;
-            font-size: 1.02em;
+            font-size: calc(1.02em + 5px);
             line-height: 1.3;
             letter-spacing: 0.2px;
             /* allow full titles to wrap, no truncation */
@@ -329,6 +330,7 @@
             max-width: 100%;
             word-break: break-word;
             text-shadow: 0 0 6px rgba(12,120,200,0.25);
+            font-weight: 700;
         }
 
         .preview-highlight {
@@ -495,8 +497,8 @@
         @keyframes runnerY { 0% { transform: translateY(-50%); } 100% { transform: translateY(0%); } }
 
         /* Larger fonts on highlight */
-        .preview-highlight .time { font-size: 1.24em !important; letter-spacing: 0.6px; }
-        .preview-highlight .title { font-size: 1.08em !important; }
+        .preview-highlight .time { font-size: calc(1.24em + 5px) !important; letter-spacing: 0.6px; }
+        .preview-highlight .title { font-size: calc(1.08em + 5px) !important; }
 
         /* orbit accent dot */
         .upcoming-event .orbit {
