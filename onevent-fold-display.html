@@ -335,6 +335,8 @@
         img { max-width: 100%; height: auto; }
         /* Force all inner wrappers transparent to prevent any blue bar (except the gradient text title) */
         .agenda-list, .current-detail, .event-content, .center-pack, .wait-wrap, .wait-sub { background: transparent !important; }
+        /* Hide any header injected into the list by external renderers */
+        #agendaList .agenda-header { display: none !important; }
         /* Ensure no accidental bottom band */
         .folded-container::after { content: none; }
 
@@ -468,6 +470,7 @@
             <div id="tsparticles-left"></div>
             <div class="status-indicator">● LIVE</div>
             <div class="agenda-layer">
+                <div id="agendaHeader" class="agenda-header"></div>
                 <div id="agendaList" class="agenda-list"></div>
             </div>
         </div>
@@ -518,6 +521,37 @@
 
     <!-- Existing app scripts (both screens active on one page) -->
     <script src="model.js"></script>
+    <script>
+      // Early render to avoid showing Inauguration before our renderer takes over
+      (function earlyDayRender(){
+        try{
+          const model = new ConferenceModel();
+          const day = 'Day 1';
+          const hdr = document.getElementById('agendaHeader');
+          if (hdr) {
+            hdr.innerHTML = `
+              <img src="NITC.gif" alt="NITC 2025 Logo" style="width:90px;height:90px;object-fit:contain;display:block;margin:8px auto 10px;" />
+              <div class="event-title-section">
+                <div class="event-title">EVENT<br>SCHEDULE</div>
+                <div class="event-day">${day}</div>
+              </div>`;
+          }
+          const list = document.getElementById('agendaList');
+          if (list){
+            const items = (model.allAgendaData?.[day] || []).slice(0, 3);
+            list.innerHTML = '';
+            for (const it of items){
+              const card = document.createElement('div');
+              card.className = 'upcoming-event';
+              card.innerHTML = '<div class="time"></div><div class="title"></div><div class="scan"></div><div class="trace"></div><div class="flux"></div><div class="stripes"></div><div class="halo"></div><div class="halo2"></div><div class="wires"></div><div class="edges"></div><div class="ripples"></div><div class="orbit"></div>';
+              card.querySelector('.time').textContent = it.displayTime || it.time || '';
+              card.querySelector('.title').textContent = it.title || '';
+              list.appendChild(card);
+            }
+          }
+        }catch(e){}
+      })();
+    </script>
     <script src="view.js"></script>
     <script src="controller.js"></script>
     <script src="app-display1.js"></script>
@@ -597,6 +631,107 @@
         if (document.readyState==='loading'){
           document.addEventListener('DOMContentLoaded', ()=>{ update(); setInterval(update, 30000); });
         } else { update(); setInterval(update, 30000); }
+      })();
+    </script>
+    <script>
+      // Minimal self-contained renderer for this page (prevents external MVC from overriding)
+      (function selfRender(){
+        try{
+          const model = new ConferenceModel();
+
+          // Disable external MVC updates to this page
+          function suppress(){
+            try{
+              const app = window.conferenceApp;
+              if (app && app.view) {
+                app.view.agendaList = null; app.view.currentDetail = null;
+                app.view.renderAgendaList = function(){}; app.view.renderCurrentEvent = function(){};
+              }
+              if (app && app.controller) { app.controller.updateDisplay = function(){}; }
+            }catch(e){}
+          }
+          suppress();
+          let supTries = 0; const supIv = setInterval(()=>{ suppress(); if (++supTries>20) clearInterval(supIv); }, 500);
+
+          function renderHeader(day){
+            const hdr = document.getElementById('agendaHeader'); if (!hdr) return;
+            hdr.innerHTML = `
+              <img src="NITC.gif" alt="NITC 2025 Logo" style="width:90px;height:90px;object-fit:contain;display:block;margin:8px auto 10px;" />
+              <div class="event-title-section">
+                <div class="event-title">EVENT<br>SCHEDULE</div>
+                <div class="event-day">${day}</div>
+              </div>`;
+          }
+
+          function renderAgendaFor(day){
+            const list = document.getElementById('agendaList'); if (!list) return [];
+            const items = (model.allAgendaData?.[day] || []);
+            list.innerHTML = '';
+            for (const it of items){
+              const card = document.createElement('div');
+              card.className = 'upcoming-event';
+              card.innerHTML = '<div class="time"></div><div class="title"></div><div class="scan"></div><div class="trace"></div><div class="flux"></div><div class="stripes"></div><div class="halo"></div><div class="halo2"></div><div class="wires"></div><div class="edges"></div><div class="ripples"></div><div class="orbit"></div>';
+              card.querySelector('.time').textContent = it.displayTime || it.time || '';
+              card.querySelector('.title').textContent = it.title || '';
+              list.appendChild(card);
+            }
+            return items;
+          }
+
+          function highlightCurrentIndex(day){
+            const agenda = model.allAgendaData?.[day] || [];
+            const cards = [...document.querySelectorAll('#agendaList .upcoming-event')];
+            cards.forEach(el=>el.classList.remove('preview-highlight'));
+            function parseMin(t){ const m=String(t||'').trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i); if(!m) return null; let h=+m[1],mi=+m[2]; const ap=(m[3]||'').toUpperCase(); if(ap==='PM'&&h<12)h+=12; if(ap==='AM'&&h===12)h=0; return h*60+mi; }
+            const now = (d=>d.getHours()*60+d.getMinutes())(new Date());
+            const times = agenda.map(it=>parseMin(it.displayTime||it.time));
+            let idx=-1; const firstIdx = times.findIndex(v=>v!=null);
+            if (firstIdx !== -1 && now < times[firstIdx]) idx=-1; else for(let i=0;i<times.length;i++){ if(times[i]!=null && times[i]<=now) idx=i; }
+            if (idx>=0 && cards[idx]) cards[idx].classList.add('preview-highlight');
+            return idx;
+          }
+
+          function keepHighlightOnTop(idx){
+            const list = document.getElementById('agendaList'); if (!list) return;
+            const cards = [...list.querySelectorAll('.upcoming-event')];
+            if (idx>=0 && idx<cards.length){ const ordered = cards.slice(idx).concat(cards.slice(0,idx)); ordered.forEach(el=>list.appendChild(el)); }
+          }
+          function limitToThreeCards(){ const list=document.getElementById('agendaList'); if(!list) return; [...list.children].forEach((el,i)=>{ el.style.display = i<3 ? '' : 'none'; }); }
+
+          function setRightDescription(day, idx){
+            const descEl = document.querySelector('.panel-right .current-description'); if (!descEl) return;
+            const agenda = model.allAgendaData?.[day] || [];
+            if (idx>=0 && agenda[idx]) { descEl.textContent = agenda[idx].description || agenda[idx].title || 'Event in progress'; return; }
+            if (agenda.length){ const first=agenda[0]; descEl.textContent = 'Conference ' + day + ' starts at ' + (first.displayTime||first.time); }
+            else { descEl.textContent = 'Event starts soon'; }
+          }
+
+          function apply(){
+            try{
+              const currentDay = model.getCurrentDay();
+              let showDay = 'Day 1'; if (currentDay === 'Day 2') showDay = 'Day 2';
+              renderHeader(showDay);
+              renderAgendaFor(showDay);
+              const hi = highlightCurrentIndex(showDay);
+              keepHighlightOnTop(hi);
+              limitToThreeCards();
+              setRightDescription(showDay, hi);
+            }catch(e){}
+          }
+          if (document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', apply); } else { apply(); }
+          setInterval(apply, 30000);
+          // Early reinforcement window (first ~10s) to counter late external writes
+          let earlyTries = 0; const earlyIv = setInterval(()=>{ apply(); if (++earlyTries>5) clearInterval(earlyIv); }, 2000);
+
+          // Re-enforce header and card limit if mutations occur
+          try{
+            const list = document.getElementById('agendaList');
+            if (list){
+              const obs = new MutationObserver(()=>{ try{ renderHeader('Day 1'); limitToThreeCards(); }catch(e){} });
+              obs.observe(list, { childList: true });
+            }
+          }catch(e){}
+        }catch(e){}
       })();
     </script>
     <script>

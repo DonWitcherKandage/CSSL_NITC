@@ -335,6 +335,8 @@
         img { max-width: 100%; height: auto; }
         /* Force all inner wrappers transparent to prevent any blue bar (except the gradient text title) */
         .agenda-list, .current-detail, .event-content, .center-pack, .wait-wrap, .wait-sub { background: transparent !important; }
+        /* Hide any header injected into the list by external view renderer */
+        #agendaList .agenda-header { display: none !important; }
         /* Ensure no accidental bottom band */
         .folded-container::after { content: none; }
 
@@ -466,11 +468,12 @@
     <div class="folded-container">
         <!-- Left Panel: Screen 1 (Agenda List) -->
         <div class="panel-left" id="screen1">
-            <div id="tsparticles-left"></div>
-            <div class="status-indicator">● LIVE</div>
-            <div class="agenda-layer">
+          <div id="tsparticles-left"></div>
+          <div class="status-indicator">● LIVE</div>
+          <div class="agenda-layer">
+                <div id="agendaHeader" class="agenda-header"></div>
                 <div id="agendaList" class="agenda-list"></div>
-            </div>
+          </div>
         </div>
 
         <!-- Right Panel: Screen 2 (Current Detail / Conference Content) -->
@@ -520,9 +523,74 @@
 
     <!-- Existing app scripts (both screens active on one page) -->
     <script src="model.js"></script>
-    <script src="view.js"></script>
-    <script src="controller.js"></script>
-    <script src="app-display1.js"></script>
+    <script>
+      // Early guard to prevent external MVC from rendering into this page
+      (function mvcGuard(){
+        try {
+          if (!window.conferenceApp) window.conferenceApp = {};
+          if (!window.conferenceApp.view) window.conferenceApp.view = {};
+          if (!window.conferenceApp.controller) window.conferenceApp.controller = {};
+          window.conferenceApp.view.agendaList = null;
+          window.conferenceApp.view.currentDetail = null;
+          window.conferenceApp.view.renderAgendaList = function(){};
+          window.conferenceApp.view.renderCurrentEvent = function(){};
+          window.conferenceApp.controller.updateDisplay = function(){};
+        } catch(e) {}
+      })();
+    </script>
+    <script>
+      (function earlyDayRender(){
+        try{
+          const model = new ConferenceModel();
+          // Decide which day to show early
+          let showDay = model.getCurrentDay() === 'Inauguration' ? 'Day 1' : model.getCurrentDay();
+          // If current day already completed, preview next day
+          try{
+            const agenda = model.allAgendaData?.[model.getCurrentDay()] || [];
+            if (agenda.length){
+              const last = agenda[agenda.length-1];
+              const endMin = model.timeToMinutes(last.time) + (last.duration || 0);
+              const nowMin = model.timeToMinutes(model.getCurrentRealTime());
+              if (nowMin >= endMin){
+                const days = model.getAvailableDays();
+                const idx = days.indexOf(model.getCurrentDay());
+                const nextDay = days[idx+1];
+                if (nextDay) showDay = nextDay;
+              }
+            }
+          }catch(e){}
+
+          const hdr = document.getElementById('agendaHeader');
+          if (hdr){
+            hdr.innerHTML = `
+              <img src="NITC.gif" alt="NITC 2025 Logo" style="width:90px;height:90px;object-fit:contain;display:block;margin:8px auto 10px;" />
+              <div class="event-title-section">
+                <div class="event-title">EVENT<br>SCHEDULE</div>
+                <div class="event-day">${showDay}</div>
+              </div>`;
+          }
+          const list = document.getElementById('agendaList');
+          if (list){
+            const items = (model.allAgendaData?.[showDay] || []);
+            list.innerHTML='';
+            for (const it of items){
+              const card = document.createElement('div');
+              card.className = 'upcoming-event';
+              card.innerHTML = '<div class="time"></div><div class="title"></div><div class="scan"></div><div class="trace"></div><div class="flux"></div><div class="stripes"></div><div class="halo"></div><div class="halo2"></div><div class="wires"></div><div class="edges"></div><div class="ripples"></div><div class="orbit"></div>';
+              card.querySelector('.time').textContent = it.displayTime || it.time || '';
+              card.querySelector('.title').textContent = it.title || '';
+              list.appendChild(card);
+            }
+            // Limit to first 3 visible
+            [...list.children].forEach((el,i)=>{ el.style.display = i<3 ? '' : 'none'; });
+          }
+        }catch(e){}
+      })();
+    </script>
+    <!-- Disabled on this page to avoid overwriting Day 1/next-day render -->
+    <!-- <script src="view.js"></script> -->
+    <!-- <script src="controller.js"></script> -->
+    <!-- <script src="app-display1.js"></script> -->
     <script src="qrcode.min.js"></script>
     <script>
       (function autoSyncDescription(){
@@ -618,30 +686,77 @@
       (function autoSyncFromModel(){
         try{
           const model = new ConferenceModel();
+          // Prevent external MVC view.js from writing into this page's panels
+          try {
+            if (window.conferenceApp && window.conferenceApp.view) {
+              window.conferenceApp.view.agendaList = null;
+              window.conferenceApp.view.currentDetail = null;
+            }
+          } catch(e){}
+
+          // Keep trying to detach external view targets briefly after load (handles late init)
+          (function suppressExternalView(){
+            let tries = 0; const maxTries = 20; // ~10 seconds at 500ms
+            const iv = setInterval(()=>{
+              tries++;
+              try{
+                const app = window.conferenceApp;
+                if (app && app.view) {
+                  app.view.agendaList = null;
+                  app.view.currentDetail = null;
+                  app.view.renderAgendaList = function(){};
+                  app.view.renderCurrentEvent = function(){};
+                }
+                if (app && app.controller) {
+                  app.controller.updateDisplay = function(){};
+                }
+              }catch(e){}
+              if (tries >= maxTries) clearInterval(iv);
+            }, 500);
+          })();
+          // Long-running safeguard: keep external MVC disabled
+          setInterval(()=>{
+            try{
+              const app = window.conferenceApp;
+              if (app && app.view) {
+                app.view.agendaList = null;
+                app.view.currentDetail = null;
+              }
+            }catch(e){}
+          }, 3000);
           let countdownTimer = null;
+          let lastShowDay = 'Day 1';
 
           function stopCountdown(){ if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; } }
+
+          // Render persistent header above the agenda list
+          function renderHeader(day){
+            try{
+              const hdr = document.getElementById('agendaHeader');
+              if (!hdr) return;
+              hdr.innerHTML = `
+                <img src="NITC.gif" alt="NITC 2025 Logo" style="width:90px;height:90px;object-fit:contain;display:block;margin:8px auto 10px;" />
+                <div class="event-title-section">
+                  <div class="event-title">EVENT<br>SCHEDULE</div>
+                  <div class="event-day">${day}</div>
+                </div>
+              `;
+            }catch(e){}
+          }
 
           function renderAgendaFor(day){
             const list = document.getElementById('agendaList');
             if (!list) return [];
             const items = (model.allAgendaData?.[day] || []);
-            const current = [...list.querySelectorAll('.upcoming-event')].map(el=>({
-              t: (el.querySelector('.time')?.textContent||'').trim(),
-              s: (el.querySelector('.title')?.textContent||'').trim()
-            }));
-            const normalized = items.map(x=>({ t: x.displayTime || x.time || '', s: x.title || '' }));
-            const same = current.length===normalized.length && current.every((it,i)=> it.t===normalized[i].t && it.s===normalized[i].s);
-            if (!same){
-              list.innerHTML = '';
-              for (const it of normalized){
-                const card = document.createElement('div');
-                card.className = 'upcoming-event';
-                card.innerHTML = '<div class="time"></div><div class="title"></div><div class="scan"></div><div class="trace"></div><div class="flux"></div><div class="stripes"></div><div class="halo"></div><div class="halo2"></div><div class="wires"></div><div class="edges"></div><div class="ripples"></div><div class="orbit"></div>';
-                card.querySelector('.time').textContent = it.t;
-                card.querySelector('.title').textContent = it.s;
-                list.appendChild(card);
-              }
+            // Always rebuild to ensure correct day is shown
+            list.innerHTML = '';
+            for (const it of items){
+              const card = document.createElement('div');
+              card.className = 'upcoming-event';
+              card.innerHTML = '<div class="time"></div><div class="title"></div><div class="scan"></div><div class="trace"></div><div class="flux"></div><div class="stripes"></div><div class="halo"></div><div class="halo2"></div><div class="wires"></div><div class="edges"></div><div class="ripples"></div><div class="orbit"></div>';
+              card.querySelector('.time').textContent = it.displayTime || it.time || '';
+              card.querySelector('.title').textContent = it.title || '';
+              list.appendChild(card);
             }
             return items;
           }
@@ -650,9 +765,35 @@
             const agenda = model.allAgendaData?.[day] || [];
             const cards = [...document.querySelectorAll('#agendaList .upcoming-event')];
             cards.forEach(el=>el.classList.remove('preview-highlight'));
-            model.updateRealTimeEvent();
-            let idx = model.getCurrentEventIndex();
-            if (model.getConferenceStatus()==='waiting' && agenda.length){ idx = -1; }
+
+            function parseMinutesLocal(t){
+              if (!t) return null;
+              const m = String(t).trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+              if (!m) return null;
+              let hh = parseInt(m[1],10), mm = parseInt(m[2],10);
+              const ap = (m[3]||'').toUpperCase();
+              if (ap==='PM' && hh<12) hh+=12;
+              if (ap==='AM' && hh===12) hh=0;
+              return hh*60+mm;
+            }
+            function nowMinutesSL(){
+              const nowUtc = Date.now();
+              const slMs = nowUtc + Math.round(5.5 * 60 * 60 * 1000);
+              const d = new Date(slMs);
+              return d.getUTCHours()*60 + d.getUTCMinutes();
+            }
+
+            const times = agenda.map(it => parseMinutesLocal(it.displayTime || it.time));
+            const now = nowMinutesSL();
+            let idx = -1;
+            const firstIdx = times.findIndex(v => v != null);
+            if (firstIdx !== -1 && now < times[firstIdx]) {
+              idx = -1; // not started yet -> no highlight
+            } else {
+              for (let i = 0; i < times.length; i++) {
+                if (times[i] != null && times[i] <= now) idx = i;
+              }
+            }
             if (idx>=0 && cards[idx]) cards[idx].classList.add('preview-highlight');
             return idx;
           }
@@ -670,6 +811,18 @@
             }catch(e){}
           }
 
+          // Ensure only 3 cards are visible at a time (after reordering)
+          function limitToThreeCards(){
+            try{
+              const list = document.getElementById('agendaList');
+              if (!list) return;
+              const cards = [...list.children];
+              for (let i = 0; i < cards.length; i++) {
+                cards[i].style.display = (i < 3) ? '' : 'none';
+              }
+            }catch(e){}
+          }
+
           function setRightDescription(day, idx){
             const descEl = document.querySelector('.panel-right .current-description');
             if (!descEl) return;
@@ -681,13 +834,20 @@
               descEl.textContent = item.description || item.title || 'Event in progress';
               return;
             }
-            if (status==='waiting'){
+            // If current conference day is completed but we are previewing a different 'day',
+            // show the standard "starts at" message for that preview day.
+            const currentDayReal = model.getCurrentDay();
+            if (status==='completed' && day !== currentDayReal) {
               if (agenda.length){
                 const first = agenda[0];
                 descEl.textContent = 'Conference ' + day + ' starts at ' + (first.displayTime || first.time);
               } else {
                 descEl.textContent = 'Event starts soon';
               }
+              return;
+            }
+            if (status==='waiting'){
+              descEl.textContent = 'Event starts soon';
               return;
             }
             if (status==='completed'){
@@ -748,17 +908,39 @@
                 }
               } catch {}
 
-              // Screen 1: always show current day agenda; do not switch to next day on completion
-              const showDay = currentDay;
+              // Screen 1: Day 1 after Inauguration; else current day; if the day is completed -> preview next day
+              let showDay = currentDay === 'Inauguration' ? 'Day 1' : currentDay;
+              if (status === 'completed'){
+                const days = model.getAvailableDays();
+                const idxDay = days.indexOf(currentDay);
+                const nextDay = days[idxDay+1];
+                if (nextDay) showDay = nextDay;
+              }
+              lastShowDay = showDay;
+              renderHeader(showDay);
               renderAgendaFor(showDay);
               const hi = highlightCurrentIndex(showDay);
               keepHighlightOnTop(hi);
+              limitToThreeCards();
               // Screen 2: status-based description; on completed show countdown to next day
               setRightDescription(showDay, hi);
             }catch(e){}
           }
           apply();
           setInterval(apply, 30000);
+          // Re-enforce layout if external scripts mutate the list
+          try{
+            const list = document.getElementById('agendaList');
+            if (list) {
+              const obs = new MutationObserver(()=>{
+                try {
+                  renderHeader(lastShowDay);
+                  limitToThreeCards();
+                } catch(e) {}
+              });
+              obs.observe(list, { childList: true });
+            }
+          }catch(e){}
         }catch(e){}
       })();
     </script>
