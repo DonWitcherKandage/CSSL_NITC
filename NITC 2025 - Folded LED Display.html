@@ -1151,6 +1151,25 @@
             }
         }
 
+        // Drift-corrected 12s highlight scheduler
+        const HIGHLIGHT_PERIOD_MS = 12000;
+        let nextHighlightAt = 0;
+        function scheduleNextHighlight(){
+            const now = Date.now();
+            const delay = Math.max(0, nextHighlightAt - now);
+            setTimeout(() => {
+                // advance index and render
+                currentHighlightIndex = (currentHighlightIndex + 1) % Math.max(1, agendaData.length);
+                doHighlight();
+                nextHighlightAt += HIGHLIGHT_PERIOD_MS;
+                scheduleNextHighlight();
+            }, delay);
+        }
+        function startHighlightLoop(){
+            nextHighlightAt = Date.now() + HIGHLIGHT_PERIOD_MS;
+            scheduleNextHighlight();
+        }
+
         // No real-time model in fixed mode
 
         function initializeEventTime() {
@@ -1230,11 +1249,8 @@
                 initializeParticles();
             }, 500);
             
-            // Cycle highlight every 12s
-            setInterval(() => {
-                currentHighlightIndex = (currentHighlightIndex + 1) % agendaData.length;
-                doHighlight();
-            }, 12000);
+            // Start drift-corrected 12s highlight loop
+            startHighlightLoop();
             
             updateCountdown();
             updateClocks();
