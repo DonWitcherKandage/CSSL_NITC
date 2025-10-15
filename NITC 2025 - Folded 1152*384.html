@@ -1134,6 +1134,7 @@
                 `;
                 agendaContainer.appendChild(eventElement);
             }
+            try { requestAnimationFrame(() => doHighlight()); } catch(e) { doHighlight(); }
         }
 
         function doHighlight() {
@@ -1145,24 +1146,21 @@
             if (!list) return;
             const len = Math.max(agendaData.length, 0);
             if (len === 0) return;
-            const targetIdx = Math.min(Math.max(currentHighlightIndex, 0), len - 1);
             const cards = [...list.querySelectorAll('.upcoming-event')];
-            cards.forEach(el => el.classList.remove('preview-highlight'));
-            const target = list.querySelector(`.upcoming-event[data-idx="${targetIdx}"]`);
-            if (target) target.classList.add('preview-highlight');
-            // Reorder deterministically so target is first, followed by next two items in agenda order
-            try {
-                const N = len;
-                const sorted = cards.slice().sort((a, b) => {
-                    const ai = (Number(a.dataset.idx) - targetIdx + N) % N;
-                    const bi = (Number(b.dataset.idx) - targetIdx + N) % N;
-                    return ai - bi;
-                });
-                for (const el of sorted) list.appendChild(el);
-            } catch(e) {}
-            // Show only first 3
-            const updated = [...list.querySelectorAll('.upcoming-event')];
-            updated.forEach((el, i) => el.style.display = (i < 3) ? '' : 'none');
+            // Page-based view: show exactly 3 cards (or remaining) starting at the page of currentHighlightIndex
+            const clampedIdx = Math.min(Math.max(currentHighlightIndex, 0), len - 1);
+            const pageStart = Math.floor(clampedIdx / 3) * 3;
+            const pageEnd = Math.min(pageStart + 3, len);
+            for (const el of cards) {
+                const idx = Number(el.dataset.idx);
+                const isVisible = idx >= pageStart && idx < pageEnd;
+                el.style.display = isVisible ? '' : 'none';
+                if (idx === clampedIdx) {
+                    el.classList.add('preview-highlight');
+                } else {
+                    el.classList.remove('preview-highlight');
+                }
+            }
         }
 
         // Drift-corrected 12s highlight scheduler
