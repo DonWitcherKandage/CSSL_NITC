@@ -594,6 +594,9 @@
     <script src="qrcode.min.js"></script>
     <script>
       (function autoSyncDescription(){
+        // If ConferenceModel is present, Screen 2 is managed by setRightDescription();
+        // skip this fallback to avoid overwriting the correct description.
+        if (typeof ConferenceModel !== 'undefined') return;
         function getHighlightedTitle(){
           const el = document.querySelector('.upcoming-event.preview-highlight .title');
           return el ? el.textContent.trim() : null;

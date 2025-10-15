@@ -1157,22 +1157,42 @@
         // Drift-corrected 12s highlight scheduler
         const HIGHLIGHT_PERIOD_MS = 12000;
         let nextHighlightAt = 0;
+        let highlightTimeoutId = null;
         function scheduleNextHighlight(){
             const now = Date.now();
             const delay = Math.max(0, nextHighlightAt - now);
-            setTimeout(() => {
-                currentHighlightIndex = (currentHighlightIndex + 1) % Math.max(1, agendaData.length);
-                doHighlight();
-                nextHighlightAt += HIGHLIGHT_PERIOD_MS;
+            if (highlightTimeoutId) clearTimeout(highlightTimeoutId);
+            highlightTimeoutId = setTimeout(() => {
+                const len = Math.max(agendaData.length, 0);
+                if (len > 0) {
+                    currentHighlightIndex = (currentHighlightIndex + 1) % len;
+                    try { requestAnimationFrame(() => doHighlight()); } catch(e) { doHighlight(); }
+                }
+                // schedule next tick exactly 12s from now (no catch-up skipping)
+                nextHighlightAt = Date.now() + HIGHLIGHT_PERIOD_MS;
                 scheduleNextHighlight();
             }, delay);
         }
+        function stopHighlightLoop(){
+            if (highlightTimeoutId) { clearTimeout(highlightTimeoutId); highlightTimeoutId = null; }
+        }
         function startHighlightLoop(){
+            stopHighlightLoop();
             // Trigger first highlight immediately (no initial wait), then every 12s
-            try { doHighlight(); } catch(e) {}
+            try { requestAnimationFrame(() => doHighlight()); } catch(e) { doHighlight(); }
             nextHighlightAt = Date.now() + HIGHLIGHT_PERIOD_MS;
             scheduleNextHighlight();
         }
+
+        // Pause/resume the highlight loop based on page visibility to prevent timer drift
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                stopHighlightLoop();
+            } else {
+                // restart with a clean 12s cadence and an immediate highlight
+                startHighlightLoop();
+            }
+        });
 
         // No real-time model in fixed mode
 
@@ -1195,14 +1215,20 @@
         function updateCountdown() {
             if (!eventStartTime) return;
             const nowUtc = new Date();
-            const timeDiff = eventStartTime - nowUtc;
+            let timeDiff = eventStartTime - nowUtc;
 
             if (timeDiff <= 0) {
-                ['days', 'hours', 'minutes', 'seconds'].forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) el.textContent = '00';
-                });
-                return;
+                // If running without model.js, automatically roll forward by one day
+                if (typeof ConferenceModel === 'undefined') {
+                    eventStartTime = new Date(eventStartTime.getTime() + 24 * 60 * 60 * 1000);
+                    timeDiff = eventStartTime - nowUtc;
+                } else {
+                    ['days', 'hours', 'minutes', 'seconds'].forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) el.textContent = '00';
+                    });
+                    return;
+                }
             }
 
             const dayMs = 1000 * 60 * 60 * 24;
@@ -1302,17 +1328,30 @@
         window.setCountdownTarget = function(dateStr, timeStr){
             if (!dateStr || !timeStr) return;
             CONFIG.eventDate = dateStr;   // 'YYYY-MM-DD'
-            CONFIG.eventTime = timeStr;   // 'HH:MM' in 24h or 'HH:MM AM/PM'
-            // Normalize time to 24h
-            const m = timeStr.trim().match(/^(\d{1,2}):(\d{2})(?:\s*(AM|PM))?$/i);
-            if (m){
-                let hh = parseInt(m[1],10);
-                const mm = parseInt(m[2],10);
-                const ap = (m[3]||'').toUpperCase();
-                if (ap === 'PM' && hh < 12) hh += 12;
-                if (ap === 'AM' && hh === 12) hh = 0;
-                CONFIG.eventTime = String(hh).padStart(2,'0') + ':' + String(mm).padStart(2,'0');
-            }
+            CONFIG.eventTime = String(timeStr || '').trim();
+            // Normalize variety of formats to 24h HH:MM
+            try {
+                let t = CONFIG.eventTime
+                    .replace(/Sri Lankan Time|SLT|IST|UTC[+-]?\d{1,2}:?\d{0,2}/ig, '')
+                    .replace(/\./g, ':')
+                    .replace(/\s+/g, ' ')
+                    .trim();
+                // Extract parts: supports H, H:MM, H:MM:SS optionally with AM/PM; or H AM/PM
+                const re = /^(\d{1,2})(?::(\d{1,2}))?(?::(\d{1,2}))?\s*(AM|PM)?$/i;
+                const m = t.match(re);
+                if (m) {
+                    let hh = parseInt(m[1]||'0',10);
+                    let mm = parseInt(m[2]||'0',10);
+                    const ap = (m[4]||'').toUpperCase();
+                    if (ap === 'PM' && hh < 12) hh += 12;
+                    if (ap === 'AM' && hh === 12) hh = 0;
+                    if (hh >= 24) hh = hh % 24;
+                    if (mm >= 60) mm = mm % 60;
+                    CONFIG.eventTime = String(hh).padStart(2,'0') + ':' + String(mm).padStart(2,'0');
+                } else {
+                    // Fallback: keep previous CONFIG.eventTime if parse fails
+                }
+            } catch(e) { /* keep original */ }
             initializeEventTime();
             updateCountdown();
         };
