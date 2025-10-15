@@ -193,7 +193,7 @@ class ConferenceModel {
             { time: to24('12:35 PM'), displayTime: '12:35 PM', title: 'Mr. Sumudu Rathnayake', description: 'Driving financial inclusion through digital transformation.' },
             { time: to24('1:00 PM'), displayTime: '1:00 PM', title: 'Lunch', description: 'Lunch.' },
             { time: to24('2:00 PM'), displayTime: '2:00 PM', title: 'Fintech: Mr. Shashi Madanayake', description: 'Mastercard Mr. Shashi Madanayake.' },
-            { time: to24('2:25 PM'), displayTime: '2:25 PM', title: 'Fintech: Mr. Karthik Kishore', description: 'SAT Regional Director at Zscaler.' },
+            { time: to24('2:25 PM'), displayTime: '2:25 PM', title: 'Fintech: Mr. Mr. Vaibhav Chandra', description: 'Head of Business, Zscaler Sri Lanka' },
             { time: to24('2:50 PM'), displayTime: '2:50 PM', title: 'Fintech: Mr. Mahesh Patel', description: 'Aiken Director Products, Hitachi Payment Services (Pvt) Ltd.' },
             { time: to24('3:15 PM'), displayTime: '3:15 PM', title: 'Afternoon Tea', description: 'Afternoon Tea.' },
             { time: to24('3:35 PM'), displayTime: '3:35 PM', title: 'EduTech: Dr. Dayan Rajapakse', description: 'Responsible integration of AI in learning.' },

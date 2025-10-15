@@ -1113,18 +1113,14 @@
         function renderAgendaList() {
             const agendaContainer = document.getElementById('agendaList');
             if (!agendaContainer) return;
-            
             agendaContainer.innerHTML = '';
-            const visibleCount = 3;
-            const startIndex = Math.floor(currentHighlightIndex / visibleCount) * visibleCount;
-            const endIndex = Math.min(startIndex + visibleCount, agendaData.length);
-            
-            for (let i = startIndex; i < endIndex; i++) {
-                const item = agendaData[i];
+            for (let i = 0; i < agendaData.length; i++) {
+                const item = agendaData[i] || { displayTime: '', title: '' };
                 const eventElement = document.createElement('div');
                 eventElement.className = 'upcoming-event';
+                eventElement.dataset.idx = String(i);
                 eventElement.innerHTML = `
-                    <div class="time">${item.displayTime}</div>
+                    <div class="time">${escapeHtml(item.displayTime)}</div>
                     <div class="title" title="${escapeHtml(item.title)}">${escapeHtml(item.title)}</div>
                     <div class="orbit"></div>
                     <div class="scan"></div>
@@ -1141,47 +1137,52 @@
         }
 
         function doHighlight() {
-            const groupIndex = Math.floor(currentHighlightIndex / 3);
-            if (groupIndex !== lastRenderedGroup) {
+            // Ensure list is rendered
+            if (lastRenderedGroup === -1 && document.getElementById('agendaList')?.children.length === 0) {
                 renderAgendaList();
-                lastRenderedGroup = groupIndex;
             }
-            const allEvents = document.querySelectorAll('.upcoming-event');
-            allEvents.forEach(el => el.classList.remove('preview-highlight'));
-            const visibleIndex = Math.min(currentHighlightIndex % 3, Math.max(0, allEvents.length - 1));
-            if (allEvents[visibleIndex]) {
-                allEvents[visibleIndex].classList.add('preview-highlight');
-            }
+            const list = document.getElementById('agendaList');
+            if (!list) return;
+            const len = Math.max(agendaData.length, 0);
+            if (len === 0) return;
+            const targetIdx = Math.min(Math.max(currentHighlightIndex, 0), len - 1);
+            const cards = [...list.querySelectorAll('.upcoming-event')];
+            cards.forEach(el => el.classList.remove('preview-highlight'));
+            const target = list.querySelector(`.upcoming-event[data-idx="${targetIdx}"]`);
+            if (target) target.classList.add('preview-highlight');
+            // Reorder deterministically so target is first, followed by next two items in agenda order
+            try {
+                const N = len;
+                const sorted = cards.slice().sort((a, b) => {
+                    const ai = (Number(a.dataset.idx) - targetIdx + N) % N;
+                    const bi = (Number(b.dataset.idx) - targetIdx + N) % N;
+                    return ai - bi;
+                });
+                for (const el of sorted) list.appendChild(el);
+            } catch(e) {}
+            // Show only first 3
+            const updated = [...list.querySelectorAll('.upcoming-event')];
+            updated.forEach((el, i) => el.style.display = (i < 3) ? '' : 'none');
         }
 
         // Drift-corrected 12s highlight scheduler
         const HIGHLIGHT_PERIOD_MS = 12000;
-        let nextHighlightAt = 0;
-        let highlightTimeoutId = null;
-        function scheduleNextHighlight(){
-            const now = Date.now();
-            const delay = Math.max(0, nextHighlightAt - now);
-            if (highlightTimeoutId) clearTimeout(highlightTimeoutId);
-            highlightTimeoutId = setTimeout(() => {
+        let highlightIntervalId = null;
+        function stopHighlightLoop(){
+            if (highlightIntervalId) { clearInterval(highlightIntervalId); highlightIntervalId = null; }
+        }
+        function startHighlightLoop(){
+            stopHighlightLoop();
+            // Initial render
+            try { requestAnimationFrame(() => doHighlight()); } catch(e) { doHighlight(); }
+            // Advance exactly one card every 12s
+            highlightIntervalId = setInterval(() => {
                 const len = Math.max(agendaData.length, 0);
                 if (len > 0) {
                     currentHighlightIndex = (currentHighlightIndex + 1) % len;
                     try { requestAnimationFrame(() => doHighlight()); } catch(e) { doHighlight(); }
                 }
-                // schedule next tick exactly 12s from now (no catch-up skipping)
-                nextHighlightAt = Date.now() + HIGHLIGHT_PERIOD_MS;
-                scheduleNextHighlight();
-            }, delay);
-        }
-        function stopHighlightLoop(){
-            if (highlightTimeoutId) { clearTimeout(highlightTimeoutId); highlightTimeoutId = null; }
-        }
-        function startHighlightLoop(){
-            stopHighlightLoop();
-            // Trigger first highlight immediately (no initial wait), then every 12s
-            try { requestAnimationFrame(() => doHighlight()); } catch(e) { doHighlight(); }
-            nextHighlightAt = Date.now() + HIGHLIGHT_PERIOD_MS;
-            scheduleNextHighlight();
+            }, HIGHLIGHT_PERIOD_MS);
         }
 
         // Pause/resume the highlight loop based on page visibility to prevent timer drift
@@ -1189,7 +1190,6 @@
             if (document.hidden) {
                 stopHighlightLoop();
             } else {
-                // restart with a clean 12s cadence and an immediate highlight
                 startHighlightLoop();
             }
         });
@@ -1308,16 +1308,16 @@
                     && agendaData.length === normalized.length
                     && agendaData.every((it, i) => it.displayTime === normalized[i].displayTime && it.title === normalized[i].title);
                 if (!same) {
-                    // try to keep highlight on the same logical item
+                    // Prefer keeping the same logical item highlighted based on signature; fallback to clamped index
                     const currentItem = agendaData?.[currentHighlightIndex];
                     const signature = currentItem ? (currentItem.displayTime + '|' + currentItem.title) : null;
                     agendaData = normalized;
-                    let newIndex = 0;
+                    let newIndex = Math.min(Math.max(currentHighlightIndex, 0), Math.max(agendaData.length - 1, 0));
                     if (signature) {
-                        newIndex = Math.max(0, agendaData.findIndex(x => (x.displayTime + '|' + x.title) === signature));
-                        if (newIndex === -1) newIndex = Math.min(currentHighlightIndex, agendaData.length - 1);
+                        const foundIdx = agendaData.findIndex(x => (x.displayTime + '|' + x.title) === signature);
+                        if (foundIdx !== -1) newIndex = foundIdx;
                     }
-                    currentHighlightIndex = Math.min(Math.max(newIndex, 0), Math.max(agendaData.length - 1, 0));
+                    currentHighlightIndex = newIndex;
                     renderAgendaList();
                     doHighlight();
                 }
@@ -1410,13 +1410,20 @@
                         if (showAgenda && showAgenda.length) window.setAgendaData(showAgenda);
 
                         // Determine countdown target
+                        // Requirement: once Day 1 has started (status === 'active'), countdown must point to Day 2 start.
                         let dateStr = dates[showDay];
                         let timeStr = null;
                         if (status === 'waiting') {
                             timeStr = showAgenda[0]?.displayTime || showAgenda[0]?.time || null;
                         } else if (status === 'active') {
-                            const next = model.getNextEvent();
-                            if (next) timeStr = next.displayTime || next.time || null;
+                            // Force countdown to next day's first event (not the next event of the same day)
+                            const idx = allDays.indexOf(currentDay);
+                            const nextDay = allDays[idx + 1];
+                            if (nextDay) {
+                                dateStr = dates[nextDay];
+                                const first = (model.allAgendaData?.[nextDay] || [])[0];
+                                if (first) timeStr = first.displayTime || first.time || null;
+                            }
                         }
                         if (!timeStr || status === 'completed') {
                             const idx = allDays.indexOf(currentDay);

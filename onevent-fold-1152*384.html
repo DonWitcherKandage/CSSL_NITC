@@ -651,6 +651,8 @@
         } else { setTimeout(()=>make(0), 200); }
       })();
       (function exactTimeHighlighter(){
+        // If the model is driving the UI, don't run this fallback highlighter.
+        if (typeof ConferenceModel !== 'undefined') return;
         function parseMinutes(t){
           if (!t) return null;
           var m=t.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i); if(!m) return null;
