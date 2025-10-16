@@ -855,19 +855,22 @@
             try { return nowMinutesSL() >= (17*60); } catch { return false; }
           }
 
-          function renderConclusionLeft(){
+          function renderConclusionLeft(day){
             try {
-              const hdr = document.getElementById('agendaHeader');
               const list = document.getElementById('agendaList');
-              if (hdr) hdr.innerHTML = '';
+              // Preserve header as-is
+              renderHeader(day);
               if (list){
+                // Position message 50px below the Day 2 text
+                list.style.display = 'block';
+                list.style.padding = '0 16px';
                 list.innerHTML = `
-                  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;padding:18px 16px;text-align:center;color:#eaf6ff;">
-                    <div style="max-width:340px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
-                      <div style="font-family:'Inter',system-ui,sans-serif;font-weight:800;font-size:calc(1.02em + 5px);line-height:1.3;margin-bottom:18px;">Thank You for Being Part of NITC 2025</div>
-                      <div style="font-family:'Inter',system-ui,sans-serif;font-weight:600;font-size:calc(1.00em + 4px);line-height:1.4;opacity:.96;margin-bottom:18px;">Let’s continue to innovate, inspire, and shape the future of technology together.</div>
-                      <div style="font-family:'Inter',system-ui,sans-serif;font-weight:600;font-size:calc(1.00em + 4px);line-height:1.4;opacity:.96;margin-bottom:22px;">Stay connected for upcoming updates and highlights.</div>
-                      <div style="font-family:'Inter',system-ui,sans-serif;font-weight:800;font-size:calc(1.02em + 5px);line-height:1.3;">See you at NITC 2026!</div>
+                  <div style="margin-top:70px;display:flex;flex-direction:row;align-items:flex-start;justify-content:center;width:100%;text-align:center;color:#eaf6ff;">
+                    <div style="max-width:340px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;">
+                      <div style="font-family:'Inter',system-ui,sans-serif;font-weight:800;font-size:calc(1.18em + 7px);line-height:1.3;margin-bottom:32px;">Thank You for Being Part of NITC 2025</div>
+                      <div style="font-family:'Inter',system-ui,sans-serif;font-weight:600;font-size:calc(1.10em + 6px);line-height:1.4;opacity:.96;margin-bottom:32px;">Let’s continue to innovate, inspire, and shape the future of technology together.</div>
+                      <div style="font-family:'Inter',system-ui,sans-serif;font-weight:600;font-size:calc(1.10em + 6px);line-height:1.4;opacity:.96;margin-bottom:44px;">Stay connected for upcoming updates and highlights.</div>
+                      <div style="font-family:'Inter',system-ui,sans-serif;font-weight:800;font-size:calc(1.18em + 7px);line-height:1.3;">See you at NITC 2026!</div>
                     </div>
                   </div>`;
               }
@@ -900,7 +903,7 @@
               // If it's after 5:00 PM SLT, show conclusion messages on both screens
               if (isAfterFiveSL()){
                 lastShowDay = showDay;
-                renderConclusionLeft();
+                renderConclusionLeft(showDay);
                 const descEl = document.querySelector('.panel-right .current-description');
                 if (descEl) descEl.textContent = 'The NITC 2025 Conference has successfully concluded.';
                 return; // skip agenda rendering/highlighting
