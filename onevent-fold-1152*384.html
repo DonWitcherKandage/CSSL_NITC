@@ -852,7 +852,7 @@
             return d.getUTCHours()*60 + d.getUTCMinutes();
           }
           function isAfterFiveSL(){
-            try { return nowMinutesSL() >= (17*60); } catch { return false; }
+            try { return nowMinutesSL() >= (16*60 + 30); } catch { return false; }
           }
 
           function renderConclusionLeft(day){
@@ -861,16 +861,17 @@
               // Preserve header as-is
               renderHeader(day);
               if (list){
-                // Position message 50px below the Day 2 text
+                // Position message 75px below the Day text
                 list.style.display = 'block';
                 list.style.padding = '0 16px';
+                list.style.overflow = 'visible';
                 list.innerHTML = `
-                  <div style="margin-top:70px;display:flex;flex-direction:row;align-items:flex-start;justify-content:center;width:100%;text-align:center;color:#eaf6ff;">
-                    <div style="max-width:340px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;">
-                      <div style="font-family:'Inter',system-ui,sans-serif;font-weight:800;font-size:calc(1.18em + 7px);line-height:1.3;margin-bottom:32px;">Thank You for Being Part of NITC 2025</div>
-                      <div style="font-family:'Inter',system-ui,sans-serif;font-weight:600;font-size:calc(1.10em + 6px);line-height:1.4;opacity:.96;margin-bottom:32px;">Let’s continue to innovate, inspire, and shape the future of technology together.</div>
-                      <div style="font-family:'Inter',system-ui,sans-serif;font-weight:600;font-size:calc(1.10em + 6px);line-height:1.4;opacity:.96;margin-bottom:44px;">Stay connected for upcoming updates and highlights.</div>
-                      <div style="font-family:'Inter',system-ui,sans-serif;font-weight:800;font-size:calc(1.18em + 7px);line-height:1.3;">See you at NITC 2026!</div>
+                  <div style="margin-top:75px;display:flex;flex-direction:row;align-items:flex-start;justify-content:center;width:100%;text-align:center;color:#eaf6ff;">
+                    <div style="width:100%;max-width:360px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;white-space:normal;word-break:break-word;overflow:visible;">
+                      <div style="font-family:'Inter',system-ui,sans-serif;font-weight:800;font-size:calc(1.22em + 8px);line-height:1.3;margin-bottom:36px;">Thank You for Being Part of NITC 2025</div>
+                      <div style="font-family:'Inter',system-ui,sans-serif;font-weight:400;font-size:calc(1.10em + 6px);line-height:1.4;opacity:.96;margin-bottom:36px;">Let’s continue to innovate, inspire, and shape the future of technology together.</div>
+                      <div style="font-family:'Inter',system-ui,sans-serif;font-weight:600;font-size:calc(1.10em + 6px);line-height:1.4;opacity:.96;margin-bottom:48px;">Stay connected for upcoming updates and highlights.</div>
+                      <div style="font-family:'Inter',system-ui,sans-serif;font-weight:800;font-size:calc(1.22em + 8px);line-height:1.3;">See you at NITC 2026!</div>
                     </div>
                   </div>`;
               }
