@@ -730,7 +730,9 @@
             }catch(e){}
           }, 3000);
           let countdownTimer = null;
-          let lastShowDay = 'Day 1';
+          // Force this display to show Day 2 now
+          const FORCE_DAY = 'Day 2';
+          let lastShowDay = FORCE_DAY;
 
           function stopCountdown(){ if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; } }
 
@@ -831,66 +833,43 @@
           function setRightDescription(day, idx){
             const descEl = document.querySelector('.panel-right .current-description');
             if (!descEl) return;
-            const status = model.getConferenceStatus();
             const agenda = model.allAgendaData?.[day] || [];
+            // Always show the highlighted item's exact description from the model
             stopCountdown();
-            if (status==='active' && idx>=0 && agenda[idx]){
+            if (idx>=0 && agenda[idx]){
               const item = agenda[idx];
               descEl.textContent = item.description || item.title || 'Event in progress';
-              return;
-            }
-            // If current conference day is completed but we are previewing a different 'day',
-            // show the standard "starts at" message for that preview day.
-            const currentDayReal = model.getCurrentDay();
-            if (status==='completed' && day !== currentDayReal) {
-              if (agenda.length){
-                const first = agenda[0];
-                descEl.textContent = 'Conference ' + day + ' starts at ' + (first.displayTime || first.time);
-              } else {
-                descEl.textContent = 'Event starts soon';
-              }
-              return;
-            }
-            if (status==='waiting'){
+            } else {
               descEl.textContent = 'Event starts soon';
-              return;
             }
-            if (status==='completed'){
-              const days = model.getAvailableDays();
-              const idxDay = days.indexOf(day);
-              const nextDay = days[idxDay+1];
-              if (nextDay){
-                const nextDate = model.conferenceDates?.[nextDay];
-                const first = (model.allAgendaData?.[nextDay]||[])[0];
-                const timeStr = first?.displayTime || first?.time || null;
-                if (nextDate && timeStr){
-                  function parseTarget(dateStr, time){
-                    const m = String(time).trim().match(/^(\d{1,2}):(\d{2})(?:\s*(AM|PM))?$/i);
-                    let hh = 0, mm = 0; let ap='';
-                    if (m){ hh=parseInt(m[1],10); mm=parseInt(m[2],10); ap=(m[3]||'').toUpperCase(); if (ap==='PM' && hh<12) hh+=12; if (ap==='AM' && hh===12) hh=0; }
-                    const [Y,M,D] = dateStr.split('-').map(Number);
-                    const offsetMs = Math.round(5.5*60*60*1000);
-                    const utcMs = Date.UTC(Y, M-1, D, hh-5, mm-30, 0, 0);
-                    return new Date(utcMs + offsetMs);
-                  }
-                  const target = parseTarget(nextDate, timeStr);
-                  function tick(){
-                    const now = new Date();
-                    const diff = target.getTime() - now.getTime();
-                    if (diff <= 0){ descEl.textContent = 'Starting soon'; stopCountdown(); return; }
-                    const s = Math.floor(diff/1000);
-                    const d = Math.floor(s/86400); const h=Math.floor((s%86400)/3600); const m=Math.floor((s%3600)/60); const ss=s%60;
-                    const parts = [];
-                    if (d>0) parts.push(d+'d');
-                    parts.push(String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(ss).padStart(2,'0'));
-                    descEl.textContent = 'Conference ' + nextDay + ' starts in ' + parts.join(' ');
-                  }
-                  tick(); countdownTimer = setInterval(tick, 1000);
-                  return;
-                }
+          }
+
+          // Utility: current minutes in Sri Lankan time
+          function nowMinutesSL(){
+            const nowUtc = Date.now();
+            const slMs = nowUtc + Math.round(5.5 * 60 * 60 * 1000);
+            const d = new Date(slMs);
+            return d.getUTCHours()*60 + d.getUTCMinutes();
+          }
+          function isAfterFiveSL(){
+            try { return nowMinutesSL() >= (17*60); } catch { return false; }
+          }
+
+          function renderConclusionLeft(){
+            try {
+              const hdr = document.getElementById('agendaHeader');
+              const list = document.getElementById('agendaList');
+              if (hdr) hdr.innerHTML = '';
+              if (list){
+                list.innerHTML = `
+                  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;padding:16px;text-align:center;color:#eaf6ff;gap:10px;">
+                    <div style="font-family:'Inter',system-ui,sans-serif;font-weight:800;font-size:calc(1.02em + 5px);line-height:1.3;">Thank You for Being Part of NITC 2025</div>
+                    <div style="font-family:'Inter',system-ui,sans-serif;font-weight:600;font-size:calc(1.02em + 5px);line-height:1.35;opacity:.95;">Let’s continue to innovate, inspire, and shape the future of technology together.</div>
+                    <div style="font-family:'Inter',system-ui,sans-serif;font-weight:600;font-size:calc(1.02em + 5px);line-height:1.35;opacity:.95;">Stay connected for upcoming updates and highlights.</div>
+                    <div style="font-family:'Inter',system-ui,sans-serif;font-weight:800;font-size:calc(1.02em + 5px);line-height:1.3;margin-top:4px;">See you at NITC 2026!</div>
+                  </div>`;
               }
-              descEl.textContent = 'Conference concluded for the day';
-            }
+            } catch(e) {}
           }
 
           function apply(){
@@ -913,14 +892,18 @@
                 }
               } catch {}
 
-              // Screen 1: Day 1 after Inauguration; else current day; if the day is completed -> preview next day
-              let showDay = currentDay === 'Inauguration' ? 'Day 1' : currentDay;
-              if (status === 'completed'){
-                const days = model.getAvailableDays();
-                const idxDay = days.indexOf(currentDay);
-                const nextDay = days[idxDay+1];
-                if (nextDay) showDay = nextDay;
+              // Force show Day 2 on Screen 1 regardless of current status
+              let showDay = FORCE_DAY || (currentDay === 'Inauguration' ? 'Day 1' : currentDay);
+
+              // If it's after 5:00 PM SLT, show conclusion messages on both screens
+              if (isAfterFiveSL()){
+                lastShowDay = showDay;
+                renderConclusionLeft();
+                const descEl = document.querySelector('.panel-right .current-description');
+                if (descEl) descEl.textContent = 'The NITC 2025 Conference has successfully concluded.';
+                return; // skip agenda rendering/highlighting
               }
+
               lastShowDay = showDay;
               renderHeader(showDay);
               renderAgendaFor(showDay);
