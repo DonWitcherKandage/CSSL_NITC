@@ -30,6 +30,7 @@ class ConferenceModel {
         this.isAutoMode = false; // Manual mode disabled for real-time
         this.lastRealTimeCheck = null; // Track when we last checked real time
         this.conferenceStatus = 'waiting'; // waiting, active, completed
+        this.timeOffsetMinutes = 0;
         
         // Check for day changes every minute
         this.setupDayChangeDetection();
@@ -110,8 +111,8 @@ class ConferenceModel {
      */
     isAfterFinalEnd() {
         try {
-            // 17:00 +05:30 is 11:30 UTC
-            const finalEndUTC = new Date('2025-10-16T11:30:00Z');
+            // 16:30 +05:30 is 11:00 UTC
+            const finalEndUTC = new Date('2025-10-16T11:00:00Z');
             const now = new Date();
             return now.getTime() >= finalEndUTC.getTime();
         } catch {
@@ -149,6 +150,19 @@ class ConferenceModel {
             const h12 = H === 0 ? 12 : (H>12?H-12:H);
             return `${h12}:${String(M).padStart(2,'0')} ${ap}`;
         };
+        const addMinutes = (hhmm, mins) => {
+            const [H,M] = hhmm.split(':').map(Number);
+            const total = H*60 + M + mins;
+            const mod = ((total % (24*60)) + (24*60)) % (24*60);
+            const nh = Math.floor(mod/60);
+            const nm = mod % 60;
+            return `${String(nh).padStart(2,'0')}:${String(nm).padStart(2,'0')}`;
+        };
+        const shiftTimes = (arr, mins) => arr.map(it => {
+            const shifted = addMinutes(it.time, mins);
+            return { ...it, time: shifted, displayTime: disp(shifted) };
+        });
+        const OFFSET_MINUTES = 0;
         const withDurations = (arr) => arr.map((it, i) => {
             const curM = parseInt(it.time.split(':')[0],10)*60 + parseInt(it.time.split(':')[1],10);
             const next = arr[i+1];
@@ -157,10 +171,14 @@ class ConferenceModel {
                 const nm = parseInt(next.time.split(':')[0],10)*60 + parseInt(next.time.split(':')[1],10);
                 dur = Math.max(5, nm - curM);
             }
+            if (!next && it.title === 'Raffle Draw') {
+                const endM = 16*60 + 30; // 4:30 PM end for raffle draw
+                dur = Math.max(5, endM - curM);
+            }
             return { ...it, duration: dur };
         });
 
-        const inauguration = withDurations([
+        const inauguration = ([
             { time: to24('5:00 PM'), displayTime: '5:00 PM', title: 'Registration', description: 'Arrival of Guests and Registration.' },
             { time: to24('6:00 PM'), displayTime: '6:00 PM', title: 'Arrival of Chief Guest', description: 'Introduction of the Executive Council.' },
             { time: to24('6:05 PM'), displayTime: '6:05 PM', title: 'Lighting of Digital Lamp', description: 'Digital Lamp lighting to launch NITC 2025.' },
@@ -181,7 +199,7 @@ class ConferenceModel {
             { time: to24('8:20 PM'), displayTime: '8:20 PM', title: 'Fellowship & Cocktail', description: 'Fellowship & Cocktail.' }
         ]);
 
-        const day1 = withDurations([
+        const day1 = ([
             { time: to24('8:15 AM'), displayTime: '8:15 AM', title: 'Registration', description: 'Registration.' },
             { time: to24('9:00 AM'), displayTime: '9:00 AM', title: 'Guest speech', description: 'Guest speaker: Mr. Sanjaya Karunasena, CEO of GovTech.' },
             { time: to24('9:20 AM'), displayTime: '9:20 AM', title: 'Keynote 1: Mastercard', description: 'Mr. Sandun Hapugoda, Country Manager at Mastercard.' },
@@ -202,7 +220,7 @@ class ConferenceModel {
             { time: to24('4:50 PM'), displayTime: '4:50 PM', title: 'Raffle Draw', description: 'Raffle Draw.' }
         ]);
 
-        const day2 = withDurations([
+        const day2 = ([
             { time: to24('8:30 AM'), displayTime: '8:30 AM', title: 'Registration', description: 'Registration.' },
             { time: to24('9:00 AM'), displayTime: '9:00 AM', title: 'Guest Speech', description: 'Hon. Chathuranga Abeysinghe, Deputy Minister of Industry and Entrepreneurship Development.' },
             { time: to24('9:20 AM'), displayTime: '9:20 AM', title: 'Keynote 5', description: 'Mr. Nachiket Limaye, Principal, Services Business Development.' },
@@ -211,18 +229,20 @@ class ConferenceModel {
             { time: to24('10:35 AM'), displayTime: '10:35 AM', title: 'Morning Tea', description: 'Morning Tea.' },
             { time: to24('11:00 AM'), displayTime: '11:00 AM', title: 'Keynote 8', description: 'Mr. Wang Yujue Data Center Architect, Huawei Asia-Pacific.' },
             { time: to24('11:25 AM'), displayTime: '11:25 AM', title: 'Panel Discussion 2', description: 'Business Automation and Agentic AI Mastercard, DMS, SAT, Fortinet.'},
-            { time: to24('12:25 PM'), displayTime: '12:25 PM', title: 'Lunch', description: 'Lunch.' },
-            { time: to24('1:40 PM'), displayTime: '1:40 PM', title: 'InfoSec: Mr. Joseph McGuire', description: 'Mastercard Principal, Innovation Consulting.' },
-            { time: to24('2:05 PM'), displayTime: '2:05 PM', title: 'InfoSec: Mr. Mohnissh Manukulasuriya', description: 'Kaspersky Cybersecurity Framework for Resilience.' },
-            { time: to24('2:30 PM'), displayTime: '2:30 PM', title: 'Big Data Analysis', description: 'Mr. Varuna Jayalath Country Director, Dell Technologies, Sri Lanka, and Maldives.' },
-            { time: to24('2:55 PM'), displayTime: '2:55 PM', title: 'Afternoon Tea', description: 'Afternoon Tea.' },
-            { time: to24('3:30 PM'), displayTime: '3:30 PM', title: 'Digital Infrastructure: Mr. Ashok Srinivasan', description: 'Shaping digital infrastructure.' },
-            { time: to24('3:55 PM'), displayTime: '3:55 PM', title: 'Digital Infrastructure: Mr. Vijay Balan', description: 'Intelligent IT financial management in human-centric society.' },
-            { time: to24('4:20 PM'), displayTime: '4:20 PM', title: 'Digital Transport: Mr. Udana Wickramasinghe', description: 'Smart tourism and technologies shaping travel industry.' },
-            { time: to24('4:45 PM'), displayTime: '4:45 PM', title: 'Raffle Draw', description: 'Raffle Draw.' }
+            { time: to24('1:00 PM'), displayTime: '1:00 PM', title: 'Lunch', description: 'Lunch.' },
+            { time: to24('2:00 PM'), displayTime: '2:00 PM', title: 'InfoSec: Mr. Joseph McGuire', description: 'Mastercard Principal, Innovation Consulting.' },
+            { time: to24('2:25 PM'), displayTime: '2:25 PM', title: 'InfoSec: Mr. Mohnissh Manukulasuriya', description: 'Kaspersky Cybersecurity Framework for Resilience.' },
+            { time: to24('2:50 PM'), displayTime: '2:50 PM', title: 'Big Data Analysis', description: 'Mr. Varuna Jayalath Country Director, Dell Technologies, Sri Lanka, and Maldives.' },
+            { time: to24('3:15 PM'), displayTime: '3:15 PM', title: 'Digital Infrastructure: Mr. Ashok Srinivasan', description: 'Shaping digital infrastructure.' },
+            { time: to24('3:40 PM'), displayTime: '3:40 PM', title: 'Digital Infrastructure: Mr. Vijay Balan', description: 'Intelligent IT financial management in human-centric society.' },
+            { time: to24('4:05 PM'), displayTime: '4:05 PM', title: 'Raffle Draw', description: 'Raffle Draw.' }
         ]);
 
-        return { 'Inauguration': inauguration, 'Day 1': day1, 'Day 2': day2 };
+        const inaugurationShifted = withDurations(shiftTimes(inauguration, OFFSET_MINUTES));
+        const day1Shifted = withDurations(shiftTimes(day1, OFFSET_MINUTES));
+        const day2Shifted = withDurations(shiftTimes(day2, OFFSET_MINUTES));
+
+        return { 'Inauguration': inaugurationShifted, 'Day 1': day1Shifted, 'Day 2': day2Shifted };
     }
 
     /**
@@ -401,7 +421,7 @@ class ConferenceModel {
     getCurrentRealTime() {
         const now = new Date();
         // Convert to Sri Lankan time (UTC+5:30)
-        const sriLankanTime = new Date(now.getTime() + (5.5 * 60 * 60 * 1000));
+        const sriLankanTime = new Date(now.getTime() + (5.5 * 60 * 60 * 1000) + (this.timeOffsetMinutes * 60 * 1000));
         return sriLankanTime.getUTCHours().toString().padStart(2, '0') + ':' + 
                sriLankanTime.getUTCMinutes().toString().padStart(2, '0');
     }
@@ -413,7 +433,7 @@ class ConferenceModel {
     getCurrentRealTimeWithSeconds() {
         const now = new Date();
         // Convert to Sri Lankan time (UTC+5:30)
-        const sriLankanTime = new Date(now.getTime() + (5.5 * 60 * 60 * 1000));
+        const sriLankanTime = new Date(now.getTime() + (5.5 * 60 * 60 * 1000) + (this.timeOffsetMinutes * 60 * 1000));
         return sriLankanTime.getUTCHours().toString().padStart(2, '0') + ':' + 
                sriLankanTime.getUTCMinutes().toString().padStart(2, '0') + ':' + 
                sriLankanTime.getUTCSeconds().toString().padStart(2, '0');
@@ -602,6 +622,13 @@ class ConferenceModel {
         }
     }
 
+    setTimeOffsetMinutes(minutes) {
+        if (Number.isFinite(minutes)) {
+            this.timeOffsetMinutes = minutes;
+            this.updateRealTimeEvent();
+        }
+    }
+
     /**
      * Reset to real-time mode (stop manual overrides)
      */
@@ -615,6 +642,13 @@ class ConferenceModel {
 window.updateConferenceDates = function(dates) {
     if (window.conferenceApp && window.conferenceApp.model) {
         window.conferenceApp.model.updateConferenceDates(dates);
+    }
+};
+
+// Add global function to update time offset (in minutes). Example: updateTimeOffset(-60)
+window.updateTimeOffset = function(minutes) {
+    if (window.conferenceApp && window.conferenceApp.model) {
+        window.conferenceApp.model.setTimeOffsetMinutes(minutes);
     }
 };
 
